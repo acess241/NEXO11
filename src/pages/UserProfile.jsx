@@ -42,7 +42,10 @@ export default function UserProfile() {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) return
+    if (!user) {
+      navigate('/auth', { replace: true })
+      return
+    }
 
     const { data: meu, error: meuError } = await supabase
       .from('profiles')
@@ -309,6 +312,23 @@ export default function UserProfile() {
     } finally {
       setProcessandoBloqueio(false)
     }
+  }
+
+  if (!perfil && erro) {
+    return (
+      <div className="container">
+        <div className="page">
+          <div className="empty-state profile-empty-state">
+            <h3>Perfil indisponível</h3>
+            <p>{erro}</p>
+            <button type="button" className="btn" onClick={carregarPerfil}>
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    )
   }
 
   if (!perfil) return <SocialLoader variant="profile" showBottomNav />

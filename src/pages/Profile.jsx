@@ -37,6 +37,7 @@ export default function Profile() {
   const [contasSalvas, setContasSalvas] = useState([])
   const [alternandoContaId, setAlternandoContaId] = useState('')
   const [mensagemPerfil, setMensagemPerfil] = useState('')
+  const [erroCarregamento, setErroCarregamento] = useState('')
 
   const navigate = useNavigate()
 
@@ -226,6 +227,8 @@ export default function Profile() {
   }
 
   async function carregarPerfil() {
+    setErroCarregamento('')
+
     try {
       const {
         data: { user },
@@ -239,7 +242,20 @@ export default function Profile() {
       setAccountIdAtual(user.id)
       setEmailConta(user.email || '')
 
-      const { data: perfilData } = await supabase.from('profiles').select('*').eq('account_id', user.id).single()
+      const { data: perfilData, error: perfilError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('account_id', user.id)
+        .maybeSingle()
+
+      if (perfilError) throw perfilError
+      if (!perfilData?.id) {
+        setErroCarregamento(
+          'Sua conta está autenticada, mas o perfil ainda não foi criado no banco. Entre novamente ou conclua o cadastro.'
+        )
+        return
+      }
+
       setPerfil(perfilData)
       await sincronizarContaAtualNoDispositivo(user.id, perfilData, user.email || '')
 
@@ -263,6 +279,10 @@ export default function Profile() {
       } else {
         setRepublicados([])
       }
+    } catch (error) {
+      console.error('[Nexo11 Profile] Falha ao carregar perfil', error)
+      setPerfil(null)
+      setErroCarregamento('Não foi possível carregar seu perfil agora. Tente novamente.')
     } finally {
       setCarregando(false)
     }
@@ -272,6 +292,23 @@ export default function Profile() {
 
   if (carregando || alternandoContaGlobal) {
     return <SocialLoader variant="profile" showBottomNav />
+  }
+
+  if (!perfil) {
+    return (
+      <div className="container">
+        <div className="page">
+          <div className="empty-state profile-empty-state">
+            <h3>Perfil indisponível</h3>
+            <p>{erroCarregamento || 'Não encontramos os dados deste perfil.'}</p>
+            <button type="button" className="btn" onClick={carregarPerfil}>
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    )
   }
 
   return (
