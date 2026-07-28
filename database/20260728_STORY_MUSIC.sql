@@ -73,6 +73,26 @@ grant select on public.story_music_library to authenticated;
 
 commit;
 
+-- Catálogo inicial de faixas instrumentais originais do NEXO.
+-- Troque SEU_ENDERECO abaixo pela raiz pública atual caso não use GitHub Pages.
+insert into public.story_music_library
+  (title, artist, audio_url, duration_seconds, genre, mood, is_featured, rights_source)
+select *
+from (values
+  ('Pulso NEXO', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/nexo-pulso.wav', 18, 'Eletrônica instrumental', 'animada', true, 'Produção original NEXO'),
+  ('Aurora Neon', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/aurora-neon.wav', 18, 'Ambient instrumental', 'calma', true, 'Produção original NEXO'),
+  ('Modo Foco', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/modo-foco.wav', 18, 'Lo-fi instrumental', 'foco', true, 'Produção original NEXO'),
+  ('Conexão', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/conexao.wav', 18, 'Pop instrumental', 'animada', false, 'Produção original NEXO'),
+  ('Respiro', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/respiro.wav', 18, 'Ambient instrumental', 'calma', false, 'Produção original NEXO'),
+  ('Passo à Frente', 'NEXO Originals', 'https://acess241.github.io/NEXO11/music/passo-a-frente.wav', 18, 'Eletrônica instrumental', 'animada', true, 'Produção original NEXO')
+) as faixa(title, artist, audio_url, duration_seconds, genre, mood, is_featured, rights_source)
+where not exists (
+  select 1
+  from public.story_music_library existente
+  where lower(existente.title) = lower(faixa.title)
+    and lower(existente.artist) = lower(faixa.artist)
+);
+
 -- PARA ADICIONAR UMA FAIXA AUTORIZADA:
 -- 1. Envie o arquivo para um bucket público no Supabase Storage.
 -- 2. Substitua os valores abaixo e execute apenas este INSERT.
