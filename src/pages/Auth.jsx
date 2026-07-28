@@ -258,9 +258,23 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
   }
 
   async function criarPerfilAutomatico(userId, nomeBase, usernameBase, extra = {}) {
+    const nomeFinal = formatDisplayName(nomeBase || 'Novo usuário')
+    let usernameFinal = (usernameBase || '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9._]/g, '')
+      .slice(0, 30)
+
+    if (!usernameFinal) usernameFinal = `user${userId.replace(/-/g, '').slice(0, 8)}`
+    if (usernameFinal.startsWith('.')) usernameFinal = usernameFinal.replace(/^\.+/, '')
+    if (usernameFinal.endsWith('.')) usernameFinal = usernameFinal.replace(/\.+$/, '')
+    if (usernameFinal.includes('..')) usernameFinal = usernameFinal.replace(/\.{2,}/g, '.')
+    if (!usernameFinal) usernameFinal = `user${userId.replace(/-/g, '').slice(0, 8)}`
+
     const { data: perfilExistente, error: erroBusca } = await supabase
       .from('profiles')
-      .select('id, role, teacher_subject, teacher_school, teacher_registration, teacher_department')
+      .select('id, nome, username, role, teacher_subject, teacher_school, teacher_registration, teacher_department')
       .eq('account_id', userId)
       .limit(1)
       .maybeSingle()
@@ -275,6 +289,27 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
     if (perfilExistente) {
       const patch = {}
+      const usernameAtual = `${perfilExistente.username || ''}`.trim().toLowerCase()
+      const usernameEhTemporario = !usernameAtual || /^user_?[a-f0-9]{8,}$/i.test(usernameAtual)
+
+      if (!`${perfilExistente.nome || ''}`.trim() && nomeFinal) {
+        patch.nome = nomeFinal
+      }
+
+      if (usernameEhTemporario && usernameFinal && usernameFinal !== usernameAtual) {
+        const { data: conflitoUsername, error: erroConflitoUsername } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', usernameFinal)
+          .neq('id', perfilExistente.id)
+          .limit(1)
+
+        if (erroConflitoUsername) throw erroConflitoUsername
+        patch.username = conflitoUsername?.length
+          ? `${usernameFinal}${userId.replace(/-/g, '').slice(0, 4)}`
+          : usernameFinal
+      }
+
       if (roleFinal === 'teacher' && `${perfilExistente.role || ''}`.toLowerCase() !== 'teacher') {
         patch.role = 'teacher'
       }
@@ -319,21 +354,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
       }
       return true
     }
-
-    const nomeFinal = formatDisplayName(nomeBase || 'Novo usuário')
-
-    let usernameFinal = (usernameBase || '')
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '')
-      .replace(/[^a-z0-9._]/g, '')
-      .slice(0, 30)
-
-    if (!usernameFinal) usernameFinal = `user${userId.replace(/-/g, '').slice(0, 8)}`
-    if (usernameFinal.startsWith('.')) usernameFinal = usernameFinal.replace(/^\.+/, '')
-    if (usernameFinal.endsWith('.')) usernameFinal = usernameFinal.replace(/\.+$/, '')
-    if (usernameFinal.includes('..')) usernameFinal = usernameFinal.replace(/\.{2,}/g, '.')
-    if (!usernameFinal) usernameFinal = `user${userId.replace(/-/g, '').slice(0, 8)}`
 
     const { data: jaExiste, error: erroUsername } = await supabase
       .from('profiles')
