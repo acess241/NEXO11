@@ -257,7 +257,13 @@ export default function Profile() {
       }
 
       setPerfil(perfilData)
-      await sincronizarContaAtualNoDispositivo(user.id, perfilData, user.email || '')
+      try {
+        await sincronizarContaAtualNoDispositivo(user.id, perfilData, user.email || '')
+      } catch (syncError) {
+        // A lista de contas salvas é apenas uma conveniência local. Falhas de
+        // armazenamento do navegador não podem derrubar o perfil carregado.
+        console.warn('[Nexo11 Profile] Não foi possível sincronizar a conta no dispositivo', syncError)
+      }
 
       const [postsResp, seguidoresResp, seguindoResp, repostsResp] = await Promise.all([
         supabase.from('posts').select('*').eq('profile_id', perfilData.id).order('created_at', { ascending: false }),
@@ -282,7 +288,14 @@ export default function Profile() {
     } catch (error) {
       console.error('[Nexo11 Profile] Falha ao carregar perfil', error)
       setPerfil(null)
-      setErroCarregamento('Não foi possível carregar seu perfil agora. Tente novamente.')
+      const codigo = `${error?.code || ''}`.trim()
+      const mensagem = `${error?.message || ''}`.trim()
+      const detalhe = [codigo, mensagem].filter(Boolean).join(' — ')
+      setErroCarregamento(
+        detalhe
+          ? `Não foi possível carregar seu perfil. Detalhe: ${detalhe}`
+          : 'Não foi possível carregar seu perfil agora. Tente novamente.'
+      )
     } finally {
       setCarregando(false)
     }
