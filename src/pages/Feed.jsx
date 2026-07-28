@@ -5,6 +5,7 @@ import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
 import { supabase } from '../lib/supabase'
+import logoNexo from '/logo-novo.png'
 
 function IconeEstrela({ preenchida }) {
   return (
@@ -1059,7 +1060,7 @@ export default function Feed() {
           onClick={() => navigate('/')}
           aria-label="Ir para o início"
         >
-          <img src="/logo-novo.png" alt="" />
+          <img src={logoNexo} alt="Logo NEXO" />
           <span>NEXO</span>
         </button>
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import SocialLoader from '../components/SocialLoader'
 import { supabase } from '../lib/supabase'
+import logoOxente from '/oxente-logo.png'
 import {
   LIVE_CHAT_UPDATED_EVENT,
   classroomMembershipStatus,
@@ -2676,7 +2677,7 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
               </p>
             </div>
 
-            <img src="/oxente-logo.png" alt="Logo Atividades" className="oxente-hero-logo" />
+            <img src={logoOxente} alt="Logo Atividades" className="oxente-hero-logo" />
           </section>
         ) : null}
 
