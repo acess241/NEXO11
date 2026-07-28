@@ -392,9 +392,11 @@ export default function Notifications() {
         return 'repostou seu post'
       case 'story':
         return 'publicou um story'
-      case 'message':
-        return 'te enviou uma mensagem'
-      default:
+        case 'message':
+          return 'te enviou uma mensagem'
+        case 'mention':
+          return 'mencionou você em um post'
+        default:
         return 'interagiu com você'
     }
   }

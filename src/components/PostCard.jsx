@@ -2,6 +2,7 @@
 import { normalizarTipoPost, obterMediaKind, POST_TYPE_META } from '../lib/postTypes'
 import { formatDisplayName } from '../lib/textFormat'
 import VerifiedBadge from './VerifiedBadge'
+import MentionText from './MentionText'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -73,7 +74,11 @@ export default function PostCard({
         </div>
       </button>
 
-      {tipo === 'nota' && post.content ? <p className="post-content">{post.content}</p> : null}
+      {tipo === 'nota' && post.content ? (
+        <p className="post-content">
+          <MentionText text={post.content} />
+        </p>
+      ) : null}
 
       {tipo !== 'nota' ? (
         <div className="post-media-wrap">
@@ -104,7 +109,11 @@ export default function PostCard({
         </div>
       ) : null}
 
-      {tipo !== 'nota' && post.content ? <p className="post-caption">{post.content}</p> : null}
+      {tipo !== 'nota' && post.content ? (
+        <p className="post-caption">
+          <MentionText text={post.content} />
+        </p>
+      ) : null}
 
       <div className="post-actions">
         <button

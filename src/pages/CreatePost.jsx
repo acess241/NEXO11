@@ -10,6 +10,7 @@ import {
 } from '../lib/postTypes'
 import { supabase } from '../lib/supabase'
 import InstantCameraSheet from '../components/InstantCameraSheet'
+import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 
 function IconeNotas() {
   return (
@@ -102,6 +103,9 @@ export default function CreatePost() {
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [sugestoesMencao, setSugestoesMencao] = useState([])
+  const [buscandoMencoes, setBuscandoMencoes] = useState(false)
+  const [intervaloMencao, setIntervaloMencao] = useState(null)
 
   const inputArquivoRef = useRef(null)
   const navigate = useNavigate()
@@ -117,6 +121,39 @@ export default function CreatePost() {
       }
     }
   }, [preview])
+
+  useEffect(() => {
+    if (!intervaloMencao) {
+      setSugestoesMencao([])
+      setBuscandoMencoes(false)
+      return undefined
+    }
+
+    let ativo = true
+    const timer = setTimeout(async () => {
+      setBuscandoMencoes(true)
+      const busca = intervaloMencao.busca
+      let query = supabase
+        .from('profiles')
+        .select('id, nome, username, foto_url, is_verified')
+        .not('username', 'is', null)
+        .order('is_verified', { ascending: false })
+        .limit(6)
+
+      if (busca) query = query.ilike('username', `${busca}%`)
+
+      const { data, error } = await query
+      if (!ativo) return
+
+      setSugestoesMencao(error ? [] : data || [])
+      setBuscandoMencoes(false)
+    }, 180)
+
+    return () => {
+      ativo = false
+      clearTimeout(timer)
+    }
+  }, [intervaloMencao])
 
   async function carregarPerfil() {
     try {
@@ -191,6 +228,39 @@ export default function CreatePost() {
     setCameraFotoAberta(true)
   }
 
+  function atualizarConteudo(event) {
+    const valor = event.target.value
+    const cursor = event.target.selectionStart ?? valor.length
+    const antesDoCursor = valor.slice(0, cursor)
+    const correspondencia = antesDoCursor.match(/(^|\s)@([a-zA-Z0-9._]{0,30})$/)
+
+    setConteudo(valor)
+
+    if (!correspondencia) {
+      setIntervaloMencao(null)
+      return
+    }
+
+    const inicio = cursor - correspondencia[2].length - 1
+    setIntervaloMencao({
+      inicio,
+      fim: cursor,
+      busca: correspondencia[2].toLowerCase(),
+    })
+  }
+
+  function escolherMencao(username) {
+    if (!intervaloMencao) return
+
+    setConteudo(
+      `${conteudo.slice(0, intervaloMencao.inicio)}@${username} ${conteudo.slice(
+        intervaloMencao.fim
+      )}`
+    )
+    setIntervaloMencao(null)
+    setSugestoesMencao([])
+  }
+
   async function uploadMidia(profileId) {
     if (!arquivo) return null
 
@@ -249,6 +319,34 @@ export default function CreatePost() {
       })
 
       if (error) throw error
+
+      const usernamesMencionados = [
+        ...new Set(
+          [...texto.matchAll(/@([a-zA-Z0-9._]+)/g)].map((match) =>
+            match[1].toLowerCase()
+          )
+        ),
+      ]
+
+      if (usernamesMencionados.length) {
+        const { data: mencionados } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('username', usernamesMencionados)
+
+        await Promise.all(
+          (mencionados || [])
+            .filter((mencionado) => mencionado.id !== perfil.id)
+            .map((mencionado) =>
+              criarNotificacaoSePermitido({
+                receiverProfileId: mencionado.id,
+                actorProfileId: perfil.id,
+                type: 'mention',
+                metadata: { kind: 'post_mention' },
+              })
+            )
+        )
+      }
 
       setSucesso('Post publicado com sucesso!')
       setConteudo('')
@@ -404,13 +502,48 @@ export default function CreatePost() {
                   ? 'Legenda da foto'
                   : 'Texto do video'}
               </label>
-              <textarea
-                className="edit-input edit-textarea"
-                placeholder={placeholderPorTipo(tipo)}
-                value={conteudo}
-                onChange={(e) => setConteudo(e.target.value)}
-                rows={4}
-              />
+              <div className="mention-composer">
+                <textarea
+                  className="edit-input edit-textarea"
+                  placeholder={`${placeholderPorTipo(tipo)} Use @ para mencionar alguém`}
+                  value={conteudo}
+                  onChange={atualizarConteudo}
+                  rows={4}
+                />
+
+                {intervaloMencao ? (
+                  <div className="mention-suggestions" role="listbox" aria-label="Perfis para mencionar">
+                    {buscandoMencoes ? (
+                      <p className="mention-loading">Buscando pessoas...</p>
+                    ) : sugestoesMencao.length ? (
+                      sugestoesMencao.map((pessoa) => (
+                        <button
+                          key={pessoa.id}
+                          type="button"
+                          className="mention-suggestion"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => escolherMencao(pessoa.username)}
+                        >
+                          <span className="mention-suggestion-avatar">
+                            {pessoa.foto_url ? (
+                              <img src={pessoa.foto_url} alt="" />
+                            ) : (
+                              (pessoa.nome || pessoa.username).charAt(0).toUpperCase()
+                            )}
+                          </span>
+                          <span>
+                            <strong>{pessoa.nome || pessoa.username}</strong>
+                            <small>@{pessoa.username}</small>
+                          </span>
+                          {pessoa.is_verified ? <span className="mention-verified">✓</span> : null}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="mention-loading">Nenhum perfil encontrado.</p>
+                    )}
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <p className="create-post-hint">
