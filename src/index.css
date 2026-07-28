@@ -1382,6 +1382,14 @@ img {
   background: #000;
 }
 
+.story-viewer-video {
+  object-fit: contain;
+}
+
+.story-viewer-media-wrap.is-video .story-click-zone {
+  width: 18%;
+}
+
 .story-click-zone {
   position: absolute;
   top: 0;
@@ -1697,6 +1705,13 @@ img {
   object-fit: cover;
   border-radius: 18px;
   background: #050505;
+}
+
+.story-editor-video {
+  display: block;
+  aspect-ratio: 9 / 16;
+  max-height: min(68dvh, 620px);
+  object-fit: contain;
 }
 
 .story-upload-placeholder {

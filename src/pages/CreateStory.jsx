@@ -25,11 +25,34 @@ function IconeCamera() {
 }
 
 const DURACAO_STORY_SEGUNDOS = 15
+const DURACAO_MAXIMA_VIDEO_SEGUNDOS = 60
+const TAMANHO_MAXIMO_VIDEO = 100 * 1024 * 1024
+
+function obterDuracaoVideo(file) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    const url = URL.createObjectURL(file)
+
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => {
+      const duracao = Number.isFinite(video.duration) ? video.duration : 0
+      URL.revokeObjectURL(url)
+      resolve(duracao)
+    }
+    video.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('video_invalido'))
+    }
+    video.src = url
+  })
+}
 
 export default function CreateStory() {
   const [perfil, setPerfil] = useState(null)
   const [arquivo, setArquivo] = useState(null)
   const [preview, setPreview] = useState('')
+  const [mediaKind, setMediaKind] = useState('image')
+  const [duracaoStory, setDuracaoStory] = useState(DURACAO_STORY_SEGUNDOS)
   const [caption, setCaption] = useState('')
   const [cameraAberta, setCameraAberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
@@ -85,21 +108,53 @@ export default function CreateStory() {
     }
   }
 
-  function aplicarArquivoSelecionado(file) {
+  async function aplicarArquivoSelecionado(file) {
     if (!file) return
+
+    const ehImagem = file.type.startsWith('image/')
+    const ehVideo = file.type.startsWith('video/')
+
+    if (!ehImagem && !ehVideo) {
+      setErro('Escolha uma foto ou um vídeo válido.')
+      return
+    }
+
+    if (ehVideo && file.size > TAMANHO_MAXIMO_VIDEO) {
+      setErro('O vídeo deve ter no máximo 100 MB.')
+      return
+    }
+
+    let duracao = DURACAO_STORY_SEGUNDOS
+    if (ehVideo) {
+      try {
+        duracao = await obterDuracaoVideo(file)
+      } catch {
+        setErro('Não foi possível abrir este vídeo.')
+        return
+      }
+
+      if (duracao <= 0 || duracao > DURACAO_MAXIMA_VIDEO_SEGUNDOS) {
+        setErro('O vídeo do story deve ter no máximo 60 segundos.')
+        return
+      }
+    }
+
     if (preview && preview.startsWith('blob:')) {
       URL.revokeObjectURL(preview)
     }
 
+    setErro('')
     setArquivo(file)
+    setMediaKind(ehVideo ? 'video' : 'image')
+    setDuracaoStory(ehVideo ? Math.max(1, Math.ceil(duracao)) : DURACAO_STORY_SEGUNDOS)
     setPreview(URL.createObjectURL(file))
   }
 
-  function escolherArquivo(event) {
+  async function escolherArquivo(event) {
     const file = event.target.files?.[0]
     if (!file) return
 
-    aplicarArquivoSelecionado(file)
+    await aplicarArquivoSelecionado(file)
     event.target.value = ''
   }
 
@@ -118,7 +173,7 @@ export default function CreateStory() {
     setSucesso('')
 
     if (!arquivo) {
-      setErro('Selecione uma imagem para o story.')
+      setErro('Selecione uma foto ou um vídeo para o story.')
       return
     }
 
@@ -137,6 +192,8 @@ export default function CreateStory() {
         .from('stories')
         .upload(nomeArquivo, arquivo, {
           upsert: true,
+          contentType: arquivo.type || undefined,
+          cacheControl: '86400',
         })
 
       if (uploadError) throw uploadError
@@ -152,8 +209,9 @@ export default function CreateStory() {
         .insert({
           profile_id: perfil.id,
           media_url: publicUrl,
+          media_kind: mediaKind,
           caption: caption.trim(),
-          duration_seconds: DURACAO_STORY_SEGUNDOS,
+          duration_seconds: duracaoStory,
         })
 
       if (insertError) throw insertError
@@ -161,6 +219,8 @@ export default function CreateStory() {
       setSucesso('Story publicado com sucesso!')
       setArquivo(null)
       setPreview('')
+      setMediaKind('image')
+      setDuracaoStory(DURACAO_STORY_SEGUNDOS)
       setCaption('')
 
       setTimeout(() => {
@@ -215,7 +275,17 @@ export default function CreateStory() {
         <div className="story-create-card">
           <div className="story-preview-area">
             {preview ? (
-              <img src={preview} alt="Preview do story" className="story-editor-preview" />
+              mediaKind === 'video' ? (
+                <video
+                  src={preview}
+                  className="story-editor-preview story-editor-video"
+                  controls
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <img src={preview} alt="Preview do story" className="story-editor-preview" />
+              )
             ) : (
               <button
                 type="button"
@@ -225,14 +295,14 @@ export default function CreateStory() {
                 <span className="story-plus">
                   <IconeCamera />
                 </span>
-                <p>Tire uma foto ou escolha da galeria</p>
+                <p>Tire uma foto ou escolha uma foto ou vídeo</p>
               </button>
             )}
 
             <input
               ref={inputFileRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               onChange={escolherArquivo}
               style={{ display: 'none' }}
             />
@@ -252,13 +322,13 @@ export default function CreateStory() {
               className="create-post-media-btn"
               onClick={abrirGaleria}
             >
-              Escolher da galeria
+              Foto ou vídeo da galeria
             </button>
           </div>
 
           {preview && (
             <button type="button" className="change-photo-btn" onClick={abrirCamera}>
-              Tirar outra foto
+              {mediaKind === 'video' ? 'Trocar vídeo' : 'Tirar outra foto'}
             </button>
           )}
 
@@ -276,7 +346,11 @@ export default function CreateStory() {
 
             <div className="edit-field">
               <label>Duracao do story</label>
-              <div className="story-duration-select">15 segundos (fixo)</div>
+              <div className="story-duration-select">
+                {mediaKind === 'video'
+                  ? `${duracaoStory} segundos`
+                  : '15 segundos'}
+              </div>
             </div>
 
             <button className="btn edit-submit-btn" type="submit" disabled={enviando}>
@@ -289,7 +363,7 @@ export default function CreateStory() {
       <InstantCameraSheet
         open={cameraAberta}
         onClose={() => setCameraAberta(false)}
-        onCapture={aplicarArquivoSelecionado}
+        onCapture={(file) => void aplicarArquivoSelecionado(file)}
         onOpenGallery={abrirGaleria}
         title="Story"
         subtitle="Tire sua foto agora"

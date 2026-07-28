@@ -11,6 +11,11 @@ function formatarTempoRelativo(dataIso) {
   return `${Math.floor(diff / 86400)} d`
 }
 
+function storyEhVideo(story) {
+  if (`${story?.media_kind || ''}`.toLowerCase() === 'video') return true
+  return /\.(mp4|webm|mov|m4v|ogg)(?:$|[?#])/i.test(`${story?.media_url || ''}`)
+}
+
 function StoryViewer({
   grupo,
   perfilAtual,
@@ -25,6 +30,7 @@ function StoryViewer({
   const [apagando, setApagando] = useState(false)
 
   const storyAtual = grupo?.stories?.[indiceAtual]
+  const ehVideo = storyEhVideo(storyAtual)
   const ehMeuStory = Boolean(
     perfilAtual?.id &&
       storyAtual?.profile_id &&
@@ -41,7 +47,9 @@ function StoryViewer({
 
     onStoryViewed(storyAtual.id)
 
-    const duracao = (storyAtual.duration_seconds || 5) * 1000
+    if (storyEhVideo(storyAtual)) return undefined
+
+    const duracao = (storyAtual.duration_seconds || 15) * 1000
     const timer = setTimeout(() => {
       if (indiceAtual < grupo.stories.length - 1) {
         setIndiceAtual((prev) => prev + 1)
@@ -113,7 +121,7 @@ function StoryViewer({
                 style={
                   index === indiceAtual
                     ? {
-                        animationDuration: `${storyAtual.duration_seconds || 5}s`,
+                        animationDuration: `${storyAtual.duration_seconds || 15}s`,
                       }
                     : undefined
                 }
@@ -169,17 +177,30 @@ function StoryViewer({
           </div>
         </div>
 
-        <div className="story-viewer-media-wrap">
+        <div className={`story-viewer-media-wrap ${ehVideo ? 'is-video' : ''}`}>
           <button
             type="button"
             className="story-click-zone left"
             onClick={voltar}
           />
-          <img
-            src={storyAtual.media_url}
-            alt="Story"
-            className="story-viewer-media"
-          />
+          {ehVideo ? (
+            <video
+              key={storyAtual.id}
+              src={storyAtual.media_url}
+              className="story-viewer-media story-viewer-video"
+              autoPlay
+              playsInline
+              controls
+              preload="auto"
+              onEnded={avancar}
+            />
+          ) : (
+            <img
+              src={storyAtual.media_url}
+              alt="Story"
+              className="story-viewer-media"
+            />
+          )}
           <button
             type="button"
             className="story-click-zone right"
@@ -189,7 +210,7 @@ function StoryViewer({
 
         <div className="story-viewer-footer">
           <p className="story-duration-text">
-            Duracao: {storyAtual.duration_seconds || 5}s
+            Duração: {storyAtual.duration_seconds || 15}s
           </p>
           {storyAtual.caption ? (
             <p className="story-caption">{storyAtual.caption}</p>
