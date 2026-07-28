@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
+import ConfirmDialog from '../components/ConfirmDialog'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
 import { nomeCurso } from '../lib/academy'
@@ -38,6 +39,8 @@ export default function Profile() {
   const [alternandoContaId, setAlternandoContaId] = useState('')
   const [mensagemPerfil, setMensagemPerfil] = useState('')
   const [erroCarregamento, setErroCarregamento] = useState('')
+  const [confirmarExclusao, setConfirmarExclusao] = useState(false)
+  const [apagandoConta, setApagandoConta] = useState(false)
 
   const navigate = useNavigate()
 
@@ -128,6 +131,34 @@ export default function Profile() {
   async function sairDaConta() {
     await supabase.auth.signOut()
     navigate('/auth')
+  }
+
+  async function apagarMinhaConta() {
+    if (apagandoConta) return
+
+    setApagandoConta(true)
+    setMensagemPerfil('')
+
+    try {
+      const { error } = await supabase.rpc('nexo_delete_my_account')
+      if (error) throw error
+
+      removerContaSalva(accountIdAtual)
+      await supabase.auth.signOut({ scope: 'local' })
+      navigate('/auth', { replace: true })
+      window.location.reload()
+    } catch (error) {
+      const detalhe = `${error?.message || ''}`.trim()
+      setMensagemPerfil(
+        detalhe
+          ? `Não foi possível apagar a conta. Detalhe: ${detalhe}`
+          : 'Não foi possível apagar a conta agora.'
+      )
+      setConfirmarExclusao(false)
+      setMenuAberto(false)
+    } finally {
+      setApagandoConta(false)
+    }
   }
 
   async function adicionarOutraConta() {
@@ -508,6 +539,15 @@ export default function Profile() {
                 <button type="button" className="profile-sidepanel-item" onClick={adicionarOutraConta}>
                   Adicionar mais uma conta
                 </button>
+
+                <button
+                  type="button"
+                  className="profile-sidepanel-item danger"
+                  onClick={() => setConfirmarExclusao(true)}
+                  disabled={apagandoConta}
+                >
+                  Apagar conta
+                </button>
               </section>
             </div>
           </aside>
@@ -596,6 +636,24 @@ export default function Profile() {
       </div>
 
       <BottomNav />
+      <ConfirmDialog
+        open={confirmarExclusao}
+        title="Apagar sua conta?"
+        description="Seu perfil, mensagens, grupos, publicações, XP e demais dados vinculados serão excluídos. Esta ação não pode ser desfeita."
+        onClose={() => {
+          if (!apagandoConta) setConfirmarExclusao(false)
+        }}
+        options={[
+          {
+            id: 'delete-account',
+            label: apagandoConta ? 'Apagando conta...' : 'Apagar definitivamente',
+            hint: 'Todos os dados vinculados serão removidos',
+            danger: true,
+            disabled: apagandoConta,
+            onClick: apagarMinhaConta,
+          },
+        ]}
+      />
     </div>
   )
 }
