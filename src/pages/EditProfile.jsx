@@ -130,8 +130,24 @@ export default function EditProfile() {
     const arquivo = event.target.files?.[0]
     if (!arquivo) return
 
+    setErro('')
+    setSucesso('')
+
+    if (!arquivo.type.startsWith('image/')) {
+      setErro('Escolha um arquivo de imagem.')
+      event.target.value = ''
+      return
+    }
+
+    if (arquivo.size > 8 * 1024 * 1024) {
+      setErro('A foto deve ter no máximo 8 MB.')
+      event.target.value = ''
+      return
+    }
+
     setFotoArquivo(arquivo)
     setPreviewFoto(URL.createObjectURL(arquivo))
+    event.target.value = ''
   }
 
   async function uploadFoto(profileId) {
@@ -252,11 +268,46 @@ export default function EditProfile() {
     }
   }
 
+  async function salvarFotoOficial() {
+    if (!perfil || !fotoArquivo || salvando) return
+
+    setErro('')
+    setSucesso('')
+    setSalvando(true)
+
+    try {
+      const fotoFinal = await uploadFoto(perfil.id)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ foto_url: fotoFinal })
+        .eq('id', perfil.id)
+        .eq('account_id', perfil.account_id)
+
+      if (error) throw error
+
+      setPerfil((atual) => ({ ...atual, foto_url: fotoFinal }))
+      setPreviewFoto(fotoFinal)
+      setFotoArquivo(null)
+      setSucesso('Foto oficial atualizada com sucesso.')
+    } catch (error) {
+      const mensagem = `${error?.message || ''}`.trim()
+      setErro(
+        mensagem
+          ? `Não foi possível atualizar a foto oficial: ${mensagem}`
+          : 'Não foi possível atualizar a foto oficial.'
+      )
+    } finally {
+      setSalvando(false)
+    }
+  }
+
   if (carregando) {
     return <SocialLoader variant="editor" showBottomNav />
   }
 
   const inicialNome = nome?.charAt(0)?.toUpperCase() || 'U'
+  const ehPerfilOficial =
+    Boolean(perfil?.is_verified) && `${perfil?.username || ''}`.toLowerCase() === 'nexo11'
 
   return (
     <div className="container">
@@ -287,23 +338,48 @@ export default function EditProfile() {
 
         <section className="edit-profile-card">
           <div className="edit-avatar-area">
-            {previewFoto ? (
-              <img
-                src={previewFoto}
-                alt={nome || 'Avatar'}
-                className="edit-profile-avatar"
-              />
-            ) : (
-              <div className="edit-profile-avatar fallback">{inicialNome}</div>
-            )}
+            <button
+              type="button"
+              className="edit-avatar-picker"
+              onClick={() => inputFotoRef.current?.click()}
+              aria-label={ehPerfilOficial ? 'Trocar foto oficial do NEXO 11' : 'Trocar foto do perfil'}
+            >
+              {previewFoto ? (
+                <img
+                  src={previewFoto}
+                  alt={nome || 'Avatar'}
+                  className="edit-profile-avatar"
+                />
+              ) : (
+                <span className="edit-profile-avatar fallback">{inicialNome}</span>
+              )}
+              <span className="edit-avatar-picker-overlay">Trocar foto</span>
+            </button>
 
             <button
               type="button"
               className="change-photo-btn"
               onClick={() => inputFotoRef.current?.click()}
             >
-              Alterar foto
+              {ehPerfilOficial ? 'Escolher nova foto oficial' : 'Alterar foto'}
             </button>
+
+            {ehPerfilOficial && fotoArquivo ? (
+              <button
+                type="button"
+                className="btn official-photo-save-btn"
+                onClick={salvarFotoOficial}
+                disabled={salvando}
+              >
+                {salvando ? 'Salvando foto...' : 'Salvar nova foto oficial'}
+              </button>
+            ) : null}
+
+            {ehPerfilOficial ? (
+              <p className="official-photo-help">
+                A foto será atualizada em todo o aplicativo sem alterar o @NEXO11 nem o verificado.
+              </p>
+            ) : null}
 
             <input
               ref={inputFotoRef}

@@ -1676,6 +1676,48 @@ img {
   font-family: inherit;
 }
 
+.edit-avatar-picker {
+  position: relative;
+  display: inline-grid;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.edit-avatar-picker-overlay {
+  position: absolute;
+  inset: auto 5px 5px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.edit-avatar-picker:hover .edit-avatar-picker-overlay,
+.edit-avatar-picker:focus-visible .edit-avatar-picker-overlay {
+  opacity: 1;
+}
+
+.official-photo-save-btn {
+  width: min(100%, 320px);
+  margin-top: 4px;
+}
+
+.official-photo-help {
+  max-width: 440px;
+  margin: 2px auto 0;
+  color: #98a099;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .mention-composer {
   position: relative;
 }
