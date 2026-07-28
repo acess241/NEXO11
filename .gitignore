@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
+supabase-service-role*
+*.log
+.DS_Store
+tmp_schools.csv
+public/books/1ano/matematica/matematica-para-compreender-o-mundo-1.pdf
