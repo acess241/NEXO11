@@ -335,6 +335,9 @@ export default function UserProfile() {
   if (!perfil) return <SocialLoader variant="profile" showBottomNav />
 
   const ehMeuPerfil = meuPerfil?.id === perfil.id
+  const ehPerfilOficial = Boolean(
+    perfil.is_verified && `${perfil.username || ''}`.toLowerCase() === 'nexo11'
+  )
   const podeVerConteudo = !bloqueadoPorMim && (ehMeuPerfil || !perfilPrivado || seguindo)
   const textoBotaoFollow = seguindo ? 'Seguindo' : perfilPrivado ? (solicitacaoPendente ? 'Solicitado' : 'Solicitar') : 'Seguir'
   const classeBotaoFollow = seguindo || solicitacaoPendente ? 'profile-secondary-btn' : 'profile-primary-btn'
@@ -411,8 +414,18 @@ export default function UserProfile() {
 
           {!ehMeuPerfil && (
             <div className="profile-buttons-modern two-actions">
-              <button className={classeBotaoFollow} onClick={alternarFollow} disabled={alternandoFollow || bloqueadoPorMim}>
-                {bloqueadoPorMim ? 'Bloqueado' : alternandoFollow ? 'Processando...' : textoBotaoFollow}
+              <button
+                className={classeBotaoFollow}
+                onClick={alternarFollow}
+                disabled={ehPerfilOficial || alternandoFollow || bloqueadoPorMim}
+              >
+                {bloqueadoPorMim
+                  ? 'Bloqueado'
+                  : ehPerfilOficial
+                  ? 'Seguindo'
+                  : alternandoFollow
+                  ? 'Processando...'
+                  : textoBotaoFollow}
               </button>
 
               <button

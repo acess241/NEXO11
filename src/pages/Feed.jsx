@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import PostCard from '../components/PostCard'
+import VerifiedBadge from '../components/VerifiedBadge'
 import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
 import { supabase } from '../lib/supabase'
@@ -139,8 +140,9 @@ function calcularPontuacaoRelevancia(post) {
   const pesoRecencia = 42 / Math.pow(idadeHoras + 2, 0.62)
   const bonusMidia = post.media_url ? 3 : 0
   const bonusVideo = post.post_type === 'nexis' ? 2 : 0
+  const bonusPerfilOficial = post.autor?.is_verified ? 10000 : 0
 
-  return pesoEngajamento + pesoRecencia + bonusMidia + bonusVideo
+  return pesoEngajamento + pesoRecencia + bonusMidia + bonusVideo + bonusPerfilOficial
 }
 
 function ordenarPostsPorRelevancia(posts) {
@@ -152,6 +154,16 @@ function ordenarPostsPorRelevancia(posts) {
       return scoreB - scoreA
     }
 
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
+}
+
+function ordenarPostsComOficialPrimeiro(posts) {
+  return [...posts].sort((a, b) => {
+    const oficialA = a.autor?.is_verified ? 1 : 0
+    const oficialB = b.autor?.is_verified ? 1 : 0
+
+    if (oficialA !== oficialB) return oficialB - oficialA
     return new Date(b.created_at) - new Date(a.created_at)
   })
 }
@@ -189,6 +201,7 @@ export default function Feed() {
   const [posts, setPosts] = useState([])
   const [stories, setStories] = useState([])
   const [meuPerfil, setMeuPerfil] = useState(null)
+  const [perfilOficial, setPerfilOficial] = useState(null)
   const [feedEmDescoberta, setFeedEmDescoberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -344,6 +357,18 @@ export default function Feed() {
       const perfil = await garantirPerfilUsuario(user)
 
       setMeuPerfil(perfil)
+
+      const perfisOficiais = await safeSelect(
+        'FEED_OFFICIAL_PROFILE_LOAD',
+        supabase
+          .from('profiles')
+          .select('id, nome, username, foto_url, bio, is_verified')
+          .eq('is_verified', true)
+          .eq('username', 'nexo11')
+          .limit(1),
+        []
+      )
+      setPerfilOficial(perfisOficiais[0] || null)
 
       const seguindoData = perfil?.id
         ? await safeSelect(
@@ -503,9 +528,7 @@ export default function Feed() {
 
       const postsOrdenados = usuarioNovo
         ? ordenarPostsPorRelevancia(postsFinal)
-        : [...postsFinal].sort(
-            (a, b) => new Date(b.created_at) - new Date(a.created_at)
-          )
+        : ordenarPostsComOficialPrimeiro(postsFinal)
 
       setPosts(postsOrdenados)
 
@@ -1107,6 +1130,31 @@ export default function Feed() {
           onOpenProfile={abrirPerfilPorUsername}
           onDeleteStory={apagarStory}
         />
+
+        {perfilOficial && perfilOficial.id !== meuPerfil?.id ? (
+          <button
+            type="button"
+            className="feed-official-profile-card"
+            onClick={() => abrirPerfilPorUsername(perfilOficial.username)}
+          >
+            <div className="feed-official-profile-avatar">
+              {perfilOficial.foto_url ? (
+                <img src={perfilOficial.foto_url} alt="NEXO 11" />
+              ) : (
+                <span>NX</span>
+              )}
+            </div>
+            <div>
+              <span>PERFIL OFICIAL</span>
+              <strong>
+                @{perfilOficial.username}
+                <VerifiedBadge verified={perfilOficial.is_verified} />
+              </strong>
+              <p>{perfilOficial.bio || 'Novidades e comunicados oficiais do NEXO 11.'}</p>
+            </div>
+            <b>Ver perfil</b>
+          </button>
+        ) : null}
 
         {posts.length === 0 ? (
           <div className="empty-state">

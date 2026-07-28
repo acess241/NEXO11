@@ -14329,3 +14329,98 @@ body[data-theme='verde'] .card {
   height: 15px;
   flex-basis: 15px;
 }
+
+.feed-official-profile-card {
+  width: 100%;
+  margin: 12px 0 20px;
+  padding: 18px;
+  border: 1px solid rgba(25, 239, 69, 0.34);
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  color: #ffffff;
+  text-align: left;
+  background:
+    radial-gradient(circle at 0 0, rgba(25, 239, 69, 0.16), transparent 45%),
+    #0d120e;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+}
+
+.feed-official-profile-avatar {
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border: 2px solid #19ef45;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #19ef45;
+  background: #030503;
+  font-weight: 900;
+}
+
+.feed-official-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feed-official-profile-card > div:nth-child(2) {
+  min-width: 0;
+}
+
+.feed-official-profile-card > div:nth-child(2) > span {
+  display: block;
+  margin-bottom: 3px;
+  color: #19ef45;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.feed-official-profile-card strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 17px;
+  text-transform: uppercase;
+}
+
+.feed-official-profile-card p {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: #aeb9b0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-official-profile-card > b {
+  min-width: max-content;
+  padding: 9px 12px;
+  border-radius: 11px;
+  color: #071009;
+  background: #19ef45;
+  font-size: 11px;
+}
+
+@media (max-width: 520px) {
+  .feed-official-profile-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .feed-official-profile-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+  }
+
+  .feed-official-profile-card > b {
+    display: none;
+  }
+}

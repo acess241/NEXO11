@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import { formatDisplayName } from '../lib/textFormat'
 import { supabase } from '../lib/supabase'
+import VerifiedBadge from '../components/VerifiedBadge'
 
 const RECENT_SEARCHES_KEY = 'nexo_recent_profile_searches'
 const RECENT_SEARCHES_LIMIT = 8
@@ -89,7 +90,8 @@ export default function SearchUsers() {
 
     let query = supabase
       .from('profiles')
-      .select('id, nome, username, foto_url, bio, is_private')
+      .select('id, nome, username, foto_url, bio, is_private, is_verified')
+      .order('is_verified', { ascending: false })
       .order('created_at', { ascending: false })
 
     if (term.trim()) {
@@ -138,6 +140,7 @@ export default function SearchUsers() {
       foto_url: user.foto_url || '',
       bio: user.bio || '',
       is_private: Boolean(user.is_private),
+      is_verified: Boolean(user.is_verified),
     }
 
     updateRecentSearches((currentItems) => [recentUser, ...currentItems.filter((item) => item.id !== user.id)])
@@ -228,7 +231,10 @@ export default function SearchUsers() {
                     </div>
 
                     <div className="search-profile-copy">
-                      <strong>@{user.username}</strong>
+                      <strong className="verified-handle-row">
+                        @{user.username}
+                        <VerifiedBadge verified={user.is_verified} />
+                      </strong>
                       <span>{formatDisplayName(user.nome) || 'Usuário Nexo'}</span>
                       {user.is_private ? <small className="connections-private-chip">Conta privada</small> : null}
                     </div>
@@ -293,7 +299,10 @@ export default function SearchUsers() {
                 </div>
 
                 <div className="search-profile-copy">
-                  <strong>@{user.username}</strong>
+                  <strong className="verified-handle-row">
+                    @{user.username}
+                    <VerifiedBadge verified={user.is_verified} />
+                  </strong>
                   <span>{formatDisplayName(user.nome) || 'Usuário Nexo'}</span>
                   {user.is_private ? <small className="connections-private-chip">Conta privada</small> : null}
                   {user.bio && <p>{user.bio}</p>}

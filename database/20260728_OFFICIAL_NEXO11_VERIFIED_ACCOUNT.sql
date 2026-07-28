@@ -77,6 +77,63 @@ from public.accounts a
 where a.id = p.account_id
   and lower(a.email) = 'nexo11@enova.educacao.ba.gov.br';
 
+-- Todos os perfis existentes seguem a conta oficial.
+insert into public.follows (
+  follower_profile_id,
+  following_profile_id
+)
+select
+  follower.id,
+  official.id
+from public.profiles follower
+cross join lateral (
+  select p.id
+  from public.profiles p
+  where p.is_verified = true
+    and lower(p.username) = 'nexo11'
+  limit 1
+) official
+where follower.id <> official.id
+on conflict (follower_profile_id, following_profile_id) do nothing;
+
+-- Todo novo perfil passa a seguir automaticamente o NEXO 11.
+create or replace function public.follow_official_nexo11_after_profile()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_official_id uuid;
+begin
+  select p.id
+  into v_official_id
+  from public.profiles p
+  where p.is_verified = true
+    and lower(p.username) = 'nexo11'
+  limit 1;
+
+  if v_official_id is not null and new.id <> v_official_id then
+    insert into public.follows (
+      follower_profile_id,
+      following_profile_id
+    )
+    values (new.id, v_official_id)
+    on conflict (follower_profile_id, following_profile_id) do nothing;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists follow_official_nexo11_after_profile
+  on public.profiles;
+
+create trigger follow_official_nexo11_after_profile
+after insert on public.profiles
+for each row
+execute function public.follow_official_nexo11_after_profile();
+
 select
   p.id,
   p.nome,
