@@ -5,6 +5,7 @@ import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
 import { supabase } from '../lib/supabase'
+import { garantirConversaDireta, dispararAtualizacaoChat } from '../lib/chat'
 import logoNexo from '/logo-novo.png'
 
 function IconeEstrela({ preenchida }) {
@@ -532,6 +533,11 @@ export default function Feed() {
             .select('*')
             .eq('profile_id', perfil.id)
 
+          const { data: likes } = await supabase
+            .from('story_likes')
+            .select('story_id, profile_id')
+            .in('story_id', storiesValidosBase.map((story) => story.id))
+
           const perfisStoriesMap = criarMapaPorId(perfisStories || [])
           const storiesFiltrados = storiesValidosBase.filter(
             (story) =>
@@ -543,6 +549,10 @@ export default function Feed() {
             ...story,
             perfil: perfisStoriesMap.get(story.profile_id),
             visto: (views || []).some((view) => view.story_id === story.id),
+            euCurti: (likes || []).some(
+              (like) => like.story_id === story.id && like.profile_id === perfil.id
+            ),
+            totalCurtidas: (likes || []).filter((like) => like.story_id === story.id).length,
           }))
 
           setStories(storiesFinal)
@@ -618,6 +628,70 @@ export default function Feed() {
       setErro('Não foi possível apagar o story agora.')
       return false
     }
+  }
+
+  async function alternarCurtidaStory(story) {
+    if (!story?.id || !meuPerfil?.id) return
+    if (story.euCurti) {
+      const { error } = await supabase.from('story_likes').delete()
+        .eq('story_id', story.id).eq('profile_id', meuPerfil.id)
+      if (error) throw error
+    } else {
+      const { error } = await supabase.from('story_likes').insert({
+        story_id: story.id,
+        profile_id: meuPerfil.id,
+      })
+      if (error && error.code !== '23505') throw error
+    }
+    setStories((prev) => prev.map((item) => item.id === story.id ? {
+      ...item,
+      euCurti: !item.euCurti,
+      totalCurtidas: Math.max(0, (item.totalCurtidas || 0) + (item.euCurti ? -1 : 1)),
+    } : item))
+  }
+
+  async function responderStory(story, mensagem) {
+    if (!story?.profile_id || !meuPerfil?.id || !mensagem.trim()) return
+    if (story.profile_id === meuPerfil.id) throw new Error('Você não pode responder ao próprio story.')
+    const conversa = await garantirConversaDireta(meuPerfil.id, story.profile_id)
+    const { error } = await supabase.from('chat_messages').insert({
+      conversation_id: conversa.id,
+      sender_profile_id: meuPerfil.id,
+      content: `Respondeu ao story: ${mensagem.trim()}`,
+      media_url: story.media_url || null,
+      media_kind: story.media_kind === 'video' ? 'video' : 'image',
+    })
+    if (error) throw error
+    dispararAtualizacaoChat({ conversationId: conversa.id })
+  }
+
+  async function carregarVisualizadoresStory(story) {
+    if (story?.profile_id !== meuPerfil?.id) return []
+    const { data: views, error } = await supabase.from('story_views')
+      .select('profile_id, created_at')
+      .eq('story_id', story.id)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    const ids = [...new Set((views || []).map((view) => view.profile_id))]
+    if (!ids.length) return []
+    const { data: perfis, error: perfisError } = await supabase.from('profiles')
+      .select('id,nome,username,foto_url,is_verified')
+      .in('id', ids)
+    if (perfisError) throw perfisError
+    const mapa = criarMapaPorId(perfis || [])
+    return (views || []).map((view) => ({ ...view, perfil: mapa.get(view.profile_id) })).filter((item) => item.perfil)
+  }
+
+  async function compartilharStory(story) {
+    const url = story?.media_url
+    if (!url) return
+    const texto = `Veja o story de @${story.perfil?.username || 'usuario'} no NEXO`
+    if (navigator.share) {
+      await navigator.share({ title: 'Story no NEXO', text: texto, url })
+      return
+    }
+    await navigator.clipboard.writeText(`${texto}\n${url}`)
+    window.alert('Link do story copiado.')
   }
 
   async function sair() {
@@ -1099,6 +1173,10 @@ export default function Feed() {
           onOpenCreateStory={() => navigate('/novo-story')}
           onOpenProfile={abrirPerfilPorUsername}
           onDeleteStory={apagarStory}
+          onToggleLike={alternarCurtidaStory}
+          onReply={responderStory}
+          onShare={compartilharStory}
+          onLoadViewers={carregarVisualizadoresStory}
         />
 
         {posts.length === 0 ? (

@@ -25,10 +25,18 @@ function StoryViewer({
   onStoryViewed,
   onOpenProfile,
   onDeleteStory,
+  onToggleLike,
+  onReply,
+  onShare,
+  onLoadViewers,
 }) {
   const [indiceAtual, setIndiceAtual] = useState(0)
   const [apagando, setApagando] = useState(false)
   const [musicaAtiva, setMusicaAtiva] = useState(true)
+  const [resposta, setResposta] = useState('')
+  const [enviandoResposta, setEnviandoResposta] = useState(false)
+  const [visualizadores, setVisualizadores] = useState(null)
+  const [carregandoVisualizadores, setCarregandoVisualizadores] = useState(false)
 
   const storyAtual = grupo?.stories?.[indiceAtual]
   const ehVideo = storyEhVideo(storyAtual)
@@ -45,6 +53,8 @@ function StoryViewer({
 
   useEffect(() => {
     setMusicaAtiva(true)
+    setResposta('')
+    setVisualizadores(null)
   }, [storyAtual?.id])
 
   useEffect(() => {
@@ -106,6 +116,33 @@ function StoryViewer({
       await onDeleteStory(storyAtual)
     } finally {
       setApagando(false)
+    }
+  }
+
+  async function enviarResposta(event) {
+    event.preventDefault()
+    if (!resposta.trim() || !onReply || enviandoResposta) return
+    setEnviandoResposta(true)
+    try {
+      await onReply(storyAtual, resposta)
+      setResposta('')
+      window.alert('Mensagem enviada.')
+    } catch (error) {
+      window.alert(error?.message || 'Não foi possível enviar a mensagem.')
+    } finally {
+      setEnviandoResposta(false)
+    }
+  }
+
+  async function abrirVisualizadores() {
+    if (!ehMeuStory || !onLoadViewers) return
+    setCarregandoVisualizadores(true)
+    try {
+      setVisualizadores(await onLoadViewers(storyAtual))
+    } catch {
+      setVisualizadores([])
+    } finally {
+      setCarregandoVisualizadores(false)
     }
   }
 
@@ -239,7 +276,41 @@ function StoryViewer({
           {storyAtual.caption ? (
             <p className="story-caption">{storyAtual.caption}</p>
           ) : null}
+          <div className="story-social-actions">
+            {ehMeuStory ? (
+              <button type="button" className="story-viewers-button" onClick={abrirVisualizadores} disabled={carregandoVisualizadores}>
+                ◉ <span>{carregandoVisualizadores ? 'Carregando...' : 'Ver visualizações'}</span>
+              </button>
+            ) : (
+              <form className="story-reply-form" onSubmit={enviarResposta}>
+                <input value={resposta} onChange={(event) => setResposta(event.target.value)} placeholder={`Responder a @${grupo.perfil?.username || 'story'}...`} maxLength={500} />
+                <button type="submit" disabled={!resposta.trim() || enviandoResposta}>{enviandoResposta ? '...' : 'Enviar'}</button>
+              </form>
+            )}
+            <button type="button" className={`story-like-button ${storyAtual.euCurti ? 'liked' : ''}`} onClick={() => onToggleLike?.(storyAtual)} aria-label="Curtir story">
+              {storyAtual.euCurti ? '♥' : '♡'} <small>{storyAtual.totalCurtidas || ''}</small>
+            </button>
+            {!ehMeuStory ? (
+              <button type="button" className="story-share-button" onClick={() => onShare?.(storyAtual)} aria-label="Compartilhar story">⌁</button>
+            ) : null}
+          </div>
         </div>
+        {visualizadores ? (
+          <div className="story-viewers-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setVisualizadores(null)}>
+            <section className="story-viewers-sheet">
+              <header><div><strong>Visualizações</strong><small>{visualizadores.length} pessoa{visualizadores.length === 1 ? '' : 's'}</small></div><button type="button" onClick={() => setVisualizadores(null)}>×</button></header>
+              <div>
+                {visualizadores.map((item) => (
+                  <button type="button" key={item.profile_id} onClick={() => { setVisualizadores(null); onOpenProfile?.(item.perfil.username) }}>
+                    {item.perfil.foto_url ? <img src={item.perfil.foto_url} alt="" /> : <span>{item.perfil.nome?.charAt(0)?.toUpperCase()}</span>}
+                    <span><strong>{item.perfil.nome}</strong><small>@{item.perfil.username}</small></span>
+                  </button>
+                ))}
+                {!visualizadores.length ? <p>Ninguém visualizou este story ainda.</p> : null}
+              </div>
+            </section>
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -252,6 +323,10 @@ export default function StoryBar({
   onOpenCreateStory,
   onOpenProfile,
   onDeleteStory,
+  onToggleLike,
+  onReply,
+  onShare,
+  onLoadViewers,
 }) {
   const [grupoAbertoIndex, setGrupoAbertoIndex] = useState(null)
 
@@ -378,6 +453,10 @@ export default function StoryBar({
           onStoryViewed={onStoryViewed}
           onOpenProfile={onOpenProfile}
           onDeleteStory={onDeleteStory}
+          onToggleLike={onToggleLike}
+          onReply={onReply}
+          onShare={onShare}
+          onLoadViewers={onLoadViewers}
         />
       )}
     </>
