@@ -6,6 +6,7 @@ import { aplicarTema, obterTemaSalvo } from './lib/theme'
 import ProtectedRoute from './components/ProtectedRoute'
 import PullToRefresh from './components/PullToRefresh'
 import SocialLoader from './components/SocialLoader'
+import NotificationBridge from './components/NotificationBridge'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -148,6 +149,7 @@ export default function App() {
   return (
     <>
       <PullToRefresh />
+      <NotificationBridge session={session} />
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
