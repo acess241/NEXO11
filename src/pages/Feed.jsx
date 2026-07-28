@@ -366,15 +366,11 @@ export default function Feed() {
       const usuarioNovo = idsSeguindo.length === 0
       setFeedEmDescoberta(usuarioNovo)
 
-      let postsQuery = supabase
+      const postsQuery = supabase
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(220)
-
-      if (!usuarioNovo) {
-        postsQuery = postsQuery.in('profile_id', [perfil.id, ...idsSeguindo])
-      }
 
       const postsBase = await safeSelect('FEED_POSTS_LOAD', postsQuery, [])
       const idsPosts = postsBase.map((post) => post.id)
@@ -422,10 +418,10 @@ export default function Feed() {
       const postsVisiveis = (postsBase || []).filter((post) => {
         if (post.profile_id === perfil.id) return true
 
-        if (!usuarioNovo) return true
-
         const autorPost = perfisPostsMap.get(post.profile_id)
-        return !autorPost?.is_private
+        if (!autorPost?.is_private) return true
+
+        return seguindoSet.has(post.profile_id)
       })
 
       const idsAutoresComentarios = [
