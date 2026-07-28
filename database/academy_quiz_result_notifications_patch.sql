@@ -159,20 +159,20 @@ begin
   end if;
 
   v_score := round((v_correct::numeric / v_total::numeric) * 100, 2);
-  v_passed := v_score >= coalesce(v_attempt.pass_score_percent, 70.00);
+  v_passed := v_score >= coalesce(v_attempt.pass_score_percent, 60.00);
   v_failed := greatest(v_total - v_correct, 0);
 
   if v_passed then
     v_reason := format(
       'Meta de %s%% atingida (%s/%s acertos).',
-      coalesce(v_attempt.pass_score_percent, 70.00),
+      coalesce(v_attempt.pass_score_percent, 60.00),
       v_correct,
       v_total
     );
   else
     v_reason := format(
       'Meta de %s%% nao atingida. Voce perdeu %s questao(oes).',
-      coalesce(v_attempt.pass_score_percent, 70.00),
+      coalesce(v_attempt.pass_score_percent, 60.00),
       v_failed
     );
   end if;
@@ -204,7 +204,7 @@ begin
       'total_questions', v_total,
       'failed_questions', v_failed,
       'score_percent', v_score,
-      'pass_score_percent', coalesce(v_attempt.pass_score_percent, 70.00),
+      'pass_score_percent', coalesce(v_attempt.pass_score_percent, 60.00),
       'reason', v_reason,
       'attempt_id', v_attempt.id,
       'challenge_date', v_attempt.challenge_date

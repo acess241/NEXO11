@@ -34,7 +34,7 @@ create table if not exists public.chat_pet_quiz_attempts (
   total_questions integer not null default 5 check (total_questions > 0),
   correct_count integer,
   score_percent numeric(5,2),
-  pass_score_percent numeric(5,2) not null default 70.00,
+  pass_score_percent numeric(5,2) not null default 60.00,
   passed boolean,
   started_at timestamptz not null default timezone('utc', now()),
   submitted_at timestamptz
@@ -318,7 +318,7 @@ begin
     p_challenge_date,
     v_subject,
     v_needed,
-    70.00
+    60.00
   )
   returning id into v_attempt_id;
 
@@ -429,7 +429,7 @@ begin
     v_state.task_id,
     initcap(v_subject),
     cardinality(v_question_ids),
-    70.00::numeric,
+    60.00::numeric,
     coalesce(v_questions, '[]'::jsonb);
 end;
 $academy_get_pet_daily_quiz$;
@@ -548,7 +548,7 @@ begin
   end if;
 
   v_score := round((v_correct::numeric / v_total::numeric) * 100, 2);
-  v_passed := v_score >= coalesce(v_attempt.pass_score_percent, 70.00);
+  v_passed := v_score >= coalesce(v_attempt.pass_score_percent, 60.00);
 
   update public.chat_pet_quiz_attempts a
   set
