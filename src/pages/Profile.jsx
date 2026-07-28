@@ -572,6 +572,10 @@ export default function Profile() {
           </div>
 
           <div className="profile-buttons-modern">
+            <button className="profile-primary-btn" onClick={() => navigate('/editar-perfil')}>
+              Editar perfil
+            </button>
+
             <button className="profile-secondary-btn" onClick={() => navigate('/oxente')}>
               Atividades
             </button>

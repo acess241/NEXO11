@@ -175,11 +175,6 @@ export default function EditProfile() {
       return
     }
 
-    if (!matriculaLimpa) {
-      setErro('Informe sua matricula.')
-      return
-    }
-
     setSalvando(true)
 
     try {
@@ -205,7 +200,7 @@ export default function EditProfile() {
         course_area: curso,
         institution_id: instituicaoSelecionada?.id || DEFAULT_INSTITUTION_ID,
         institution_name: instituicaoNomeFinal,
-        enrollment_number: matriculaLimpa,
+        enrollment_number: matriculaLimpa || null,
       }
 
       let { error } = await supabase
