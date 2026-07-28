@@ -104,7 +104,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
   const [tipoConta, setTipoConta] = useState('student')
   const [nome, setNome] = useState('')
   const [username, setUsername] = useState('')
-  const [cpfCadastro, setCpfCadastro] = useState('')
   const [cidadeEscola, setCidadeEscola] = useState('')
   const [escolaProfessor, setEscolaProfessor] = useState('')
   const [materiaProfessor, setMateriaProfessor] = useState('')
@@ -170,36 +169,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
     return `${nome.slice(0, 71)}...`
   }
 
-  function normalizarCpf(valor) {
-    return `${valor || ''}`.replace(/\D/g, '').slice(0, 11)
-  }
-
-  function formatarCpf(valor) {
-    const cpf = normalizarCpf(valor)
-    if (cpf.length <= 3) return cpf
-    if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`
-    if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`
-    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`
-  }
-
-  function cpfValido(valor) {
-    const cpf = normalizarCpf(valor)
-    if (cpf.length !== 11) return false
-    if (/^(\d)\1{10}$/.test(cpf)) return false
-
-    let soma = 0
-    for (let i = 0; i < 9; i += 1) soma += Number(cpf[i]) * (10 - i)
-    let digito = (soma * 10) % 11
-    if (digito === 10) digito = 0
-    if (digito !== Number(cpf[9])) return false
-
-    soma = 0
-    for (let i = 0; i < 10; i += 1) soma += Number(cpf[i]) * (11 - i)
-    digito = (soma * 10) % 11
-    if (digito === 10) digito = 0
-    return digito === Number(cpf[10])
-  }
-
   function validarNomeDeUsuario(valor) {
     if (valor.includes(' ')) return 'Não é permitido usar espaço no nome de usuário.'
     if (valor.length > 30) return 'O nome de usuário pode ter no máximo 30 caracteres.'
@@ -220,14 +189,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
     if (texto.includes('invalid login credentials')) {
       return 'Email ou senha incorretos. Se acabou de cadastrar, confirme o email antes de entrar.'
-    }
-
-    if (
-      (code === '23505' && texto.includes('cpf')) ||
-      (texto.includes('duplicate key') && texto.includes('cpf')) ||
-      texto.includes('profiles_cpf')
-    ) {
-      return 'Este CPF já está cadastrado.'
     }
 
     if (texto.includes('email signups are disabled')) return 'O cadastro por email esta desativado.'
@@ -281,7 +242,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
     if (erroBusca) throw erroBusca
     const roleFinal = normalizarRoleConta(extra.role)
-    const cpfFinal = normalizarCpf(extra.cpf)
     const teacherSubjectFinal = `${extra.teacherSubject || ''}`.trim() || null
     const teacherSchoolFinal = `${extra.teacherSchool || ''}`.trim() || null
     const teacherRegistrationFinal = `${extra.teacherRegistration || ''}`.trim() || null
@@ -339,19 +299,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         }
       }
 
-      if (cpfFinal) {
-        const { error: erroCpf } = await supabase
-          .from('profiles')
-          .update({ cpf: cpfFinal })
-          .eq('id', perfilExistente.id)
-
-        if (
-          erroCpf &&
-          !/(schema cache|column\s+.*cpf|cpf.*does not exist)/i.test(erroCpf.message || '')
-        ) {
-          throw erroCpf
-        }
-      }
       return true
     }
 
@@ -404,20 +351,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
     }
 
     if (erroCriacao) throw erroCriacao
-
-    if (cpfFinal) {
-      const { error: erroCpf } = await supabase
-        .from('profiles')
-        .update({ cpf: cpfFinal })
-        .eq('account_id', userId)
-
-      if (
-        erroCpf &&
-        !/(schema cache|column\s+.*cpf|cpf.*does not exist)/i.test(erroCpf.message || '')
-      ) {
-        throw erroCpf
-      }
-    }
 
     return true
   }
@@ -524,7 +457,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
     if (!isLogin) {
       const erroUsername = validarNomeDeUsuario(username)
-      const cpfNormalizado = normalizarCpf(cpfCadastro)
       const materiaProfessorLimpa = materiaProfessor.trim()
       const escolaProfessorLimpa = escolaProfessor.trim()
       const cidadeSelecionada = cidadeEscola.trim()
@@ -546,11 +478,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
       if (!isSchoolInCity(escolaProfessorLimpa, cidadeSelecionada)) {
         setErro('Selecione uma escola da lista para continuar.')
-        return
-      }
-
-      if (!cpfValido(cpfNormalizado)) {
-        setErro('Informe um CPF válido para continuar.')
         return
       }
 
@@ -588,7 +515,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
             institutionId: user.user_metadata?.institution_id,
             institutionName: user.user_metadata?.institution_name,
             enrollmentNumber: user.user_metadata?.enrollment_number,
-            cpf: user.user_metadata?.cpf,
             role: user.user_metadata?.role,
             teacherSubject: user.user_metadata?.teacher_subject,
             teacherSchool: user.user_metadata?.teacher_school,
@@ -608,7 +534,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         setSucesso('Login feito com sucesso!')
       } else {
         const professorEh = tipoConta === 'teacher'
-        const cpfNormalizado = normalizarCpf(cpfCadastro)
         const escolaProfessorLimpa = escolaProfessor.trim()
         const materiaProfessorLimpa = materiaProfessor.trim()
         const nomeEscolaFinal = escolaProfessorLimpa || DEFAULT_INSTITUTION_NAME
@@ -623,7 +548,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
               role: professorEh ? 'teacher' : 'student',
               institution_id: DEFAULT_INSTITUTION_ID,
               institution_name: nomeEscolaFinal,
-              cpf: cpfNormalizado,
               enrollment_number: null,
               teacher_subject: professorEh ? materiaProfessorLimpa : null,
               teacher_school: professorEh ? nomeEscolaFinal : null,
@@ -643,7 +567,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
           institutionId: DEFAULT_INSTITUTION_ID,
           institutionName: nomeEscolaFinal,
           enrollmentNumber: null,
-          cpf: cpfNormalizado,
           role: professorEh ? 'teacher' : 'student',
           teacherSubject: professorEh ? materiaProfessorLimpa : null,
           teacherSchool: professorEh ? nomeEscolaFinal : null,
@@ -662,7 +585,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         )
         setIsLogin(true)
         setMostrarSenha(false)
-        setCpfCadastro('')
         setMateriaProfessor('')
         setCidadeEscola('')
         setEscolaProfessor('')
@@ -870,16 +792,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                       required
                     />
 
-                    <input
-                      className="input"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="CPF"
-                      value={formatarCpf(cpfCadastro)}
-                      onChange={(e) => setCpfCadastro(normalizarCpf(e.target.value))}
-                      required
-                    />
-
                     <select
                       className="input"
                       value={cidadeEscola}
@@ -983,7 +895,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                     setSenha('')
                     if (isLogin) {
                       setTipoConta('student')
-                      setCpfCadastro('')
                       setMateriaProfessor('')
                       setCidadeEscola('')
                       setEscolaProfessor('')
