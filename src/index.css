@@ -14281,7 +14281,8 @@ body[data-theme='verde'] .card {
 .verified-handle-row {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.32em;
+  line-height: 1.15;
 }
 
 .official-username-display,
@@ -14296,14 +14297,15 @@ body[data-theme='verde'] .card {
 }
 
 .verified-badge {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 1em;
   display: inline-grid;
   place-items: center;
   color: #19ef45;
   filter: drop-shadow(0 0 7px rgba(25, 239, 69, 0.48));
-  vertical-align: middle;
+  vertical-align: -0.08em;
+  transform: translateY(0.01em);
 }
 
 .verified-badge svg {
@@ -14325,9 +14327,9 @@ body[data-theme='verde'] .card {
 }
 
 .post-username .verified-badge {
-  width: 15px;
-  height: 15px;
-  flex-basis: 15px;
+  width: 1em;
+  height: 1em;
+  flex-basis: 1em;
 }
 
 .feed-official-profile-card {
