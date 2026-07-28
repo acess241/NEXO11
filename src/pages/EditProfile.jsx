@@ -7,7 +7,6 @@ import { COURSE_OPTIONS, normalizarCurso } from '../lib/academy'
 import {
   DEFAULT_INSTITUTION_ID,
   DEFAULT_INSTITUTION_NAME,
-  normalizarMatricula,
 } from '../lib/education'
 
 export default function EditProfile() {
@@ -21,7 +20,6 @@ export default function EditProfile() {
     { id: DEFAULT_INSTITUTION_ID, official_name: DEFAULT_INSTITUTION_NAME },
   ])
   const [instituicaoId, setInstituicaoId] = useState(DEFAULT_INSTITUTION_ID)
-  const [matricula, setMatricula] = useState('')
   const [fotoArquivo, setFotoArquivo] = useState(null)
   const [previewFoto, setPreviewFoto] = useState('')
   const [carregando, setCarregando] = useState(true)
@@ -37,15 +35,15 @@ export default function EditProfile() {
   }, [])
 
   function validarUsername(valor) {
-    if (valor.includes(' ')) return 'NÃ£o e permitido usar espaco.'
-    if (valor.length > 30) return 'Maximo 30 caracteres.'
-    if (valor.startsWith('.')) return 'NÃ£o pode comeÃ§ar com "."'
-    if (valor.endsWith('.')) return 'NÃ£o pode terminar com "."'
-    if (valor.includes('..')) return 'NÃ£o pode usar ".."'
+    if (valor.includes(' ')) return 'Não é permitido usar espaço.'
+    if (valor.length > 30) return 'Máximo de 30 caracteres.'
+    if (valor.startsWith('.')) return 'Não pode começar com ".".'
+    if (valor.endsWith('.')) return 'Não pode terminar com ".".'
+    if (valor.includes('..')) return 'Não pode usar "..".'
 
     const regex = /^[a-z0-9._]+$/
     if (!regex.test(valor)) {
-      return 'Use apenas letras, numeros, "." ou "_"'
+      return 'Use apenas letras, números, "." ou "_".'
     }
 
     return null
@@ -99,7 +97,7 @@ export default function EditProfile() {
       const data = perfilResp.data
 
       if (!data) {
-        setErro('Perfil nÃ£o encontrado.')
+        setErro('Perfil não encontrado.')
         return
       }
 
@@ -120,7 +118,6 @@ export default function EditProfile() {
       setContaPrivada(Boolean(data.is_private))
       setCurso(normalizarCurso(data.course_area))
       setInstituicaoId(instituicaoIdFinal)
-      setMatricula(data.enrollment_number || '')
       setPreviewFoto(data.foto_url || '')
     } catch {
       setErro('Erro ao carregar perfil.')
@@ -165,7 +162,6 @@ export default function EditProfile() {
 
     const usernameLimpo = username.toLowerCase().trim()
     const erroUsername = validarUsername(usernameLimpo)
-    const matriculaLimpa = normalizarMatricula(matricula)
     const instituicaoSelecionada = instituicoes.find((item) => item.id === instituicaoId)
     const instituicaoNomeFinal =
       instituicaoSelecionada?.official_name || perfil?.institution_name || DEFAULT_INSTITUTION_NAME
@@ -200,7 +196,6 @@ export default function EditProfile() {
         course_area: curso,
         institution_id: instituicaoSelecionada?.id || DEFAULT_INSTITUTION_ID,
         institution_name: instituicaoNomeFinal,
-        enrollment_number: matriculaLimpa || null,
       }
 
       let { error } = await supabase
@@ -230,7 +225,7 @@ export default function EditProfile() {
         if (fallbackError) throw fallbackError
 
         setSucesso(
-          'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e matricula/instituicao.'
+          'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e instituição.'
         )
         setFotoArquivo(null)
         return
@@ -245,8 +240,6 @@ export default function EditProfile() {
 
       if (/duplicate key|profiles_username_key/i.test(mensagem)) {
         setErro('Username ja em uso.')
-      } else if (/enrollment|matricula/i.test(mensagem)) {
-        setErro('Matrícula em uso ou inválida.')
       } else if (/storage|bucket/i.test(mensagem)) {
         setErro('Erro no upload da foto. Tente novamente em instantes.')
       } else if (mensagem) {
@@ -347,7 +340,7 @@ export default function EditProfile() {
             </div>
 
             <div className="edit-field">
-              <label htmlFor="edit-institution">Instituicao</label>
+              <label htmlFor="edit-institution">Instituição</label>
               <select
                 id="edit-institution"
                 className="story-duration-select"
@@ -363,23 +356,11 @@ export default function EditProfile() {
             </div>
 
             <div className="edit-field">
-              <label htmlFor="edit-matricula">Matrícula</label>
-              <input
-                id="edit-matricula"
-                className="edit-input"
-                type="text"
-                placeholder="Numero da matricula"
-                value={matricula}
-                onChange={(event) => setMatricula(normalizarMatricula(event.target.value))}
-              />
-            </div>
-
-            <div className="edit-field">
               <label htmlFor="edit-bio">Bio</label>
               <textarea
                 id="edit-bio"
                 className="edit-input edit-textarea"
-                placeholder="Fale um pouco sobre vocÃª..."
+                placeholder="Fale um pouco sobre você..."
                 value={bio}
                 onChange={(event) => setBio(event.target.value)}
               />

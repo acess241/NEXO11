@@ -4,7 +4,7 @@ import BottomNav from '../components/BottomNav'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
 import { nomeCurso } from '../lib/academy'
-import { mascararMatricula, nomeInstituicaoCurto } from '../lib/education'
+import { nomeInstituicaoCurto } from '../lib/education'
 import { listarContasSalvas, removerContaSalva, salvarContaDaSessao } from '../lib/savedAccounts'
 import { formatDisplayName } from '../lib/textFormat'
 import { THEME_OPTIONS, aplicarTema, obterTemaSalvo } from '../lib/theme'
@@ -541,8 +541,7 @@ export default function Profile() {
                 Nível {perfil.level || 1} - {perfil.xp_total || 0} XP - {nomeCurso(perfil.course_area)}
               </p>
               <p className="profile-school-chip">
-                {nomeInstituicaoCurto(perfil.institution_name)}{' '}
-                {perfil.enrollment_number ? `| Matrícula ${mascararMatricula(perfil.enrollment_number)}` : ''}
+                {nomeInstituicaoCurto(perfil.institution_name)}
               </p>
               <p className="profile-bio-modern">{perfil.bio || 'Seu perfil ainda não tem bio. Conte um pouco sobre você.'}</p>
             </div>

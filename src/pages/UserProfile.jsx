@@ -6,7 +6,7 @@ import SocialLoader from '../components/SocialLoader'
 import { bloquearPerfil, desbloquearPerfil, estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { nomeCurso } from '../lib/academy'
-import { mascararMatricula, nomeInstituicaoCurto } from '../lib/education'
+import { nomeInstituicaoCurto } from '../lib/education'
 import { formatDisplayName } from '../lib/textFormat'
 import { supabase } from '../lib/supabase'
 
@@ -382,8 +382,7 @@ export default function UserProfile() {
                 Nível {perfil.level || 1} - {perfil.xp_total || 0} XP - {nomeCurso(perfil.course_area)}
               </p>
               <p className="profile-school-chip">
-                {nomeInstituicaoCurto(perfil.institution_name)}{' '}
-                {perfil.enrollment_number ? `| Matrícula ${mascararMatricula(perfil.enrollment_number)}` : ''}
+                {nomeInstituicaoCurto(perfil.institution_name)}
               </p>
               <p className="profile-bio-modern">{perfil.bio || 'Este perfil ainda não adicionou uma bio.'}</p>
             </div>
