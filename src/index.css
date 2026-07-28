@@ -14275,3 +14275,46 @@ body[data-theme='verde'] .card {
 .xpc-field-error{color:#ff929d!important;font-size:11px!important;font-weight:700}.xpc-modal label>small{color:#87938a;font-size:11px;font-weight:500}
 .xpc-xp-value-panel{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px;border:1px solid #376541;border-radius:17px;background:linear-gradient(135deg,rgba(48,226,82,.12),#101712)}.xpc-xp-value-panel>div{min-width:0}.xpc-xp-value-panel span{color:#4cef69;font-size:10px;font-weight:900;letter-spacing:.12em}.xpc-xp-value-panel h3{margin:5px 0;font-size:18px}.xpc-xp-value-panel p{margin:0;color:#98a29a;font-size:12px;line-height:1.45}.xpc-xp-value-panel label{position:relative;width:150px;flex:0 0 150px}.xpc-xp-value-panel input{padding-right:42px!important;color:#54ef70!important;font-size:23px!important;font-weight:900}.xpc-xp-value-panel label strong{position:absolute;right:13px;bottom:14px;color:#53ef6f;font-size:12px}
 @media(max-width:520px){.xpc-xp-value-panel{align-items:stretch;flex-direction:column}.xpc-xp-value-panel label{width:100%;flex-basis:auto}}
+
+/* SELO DE CONTA OFICIAL */
+.verified-name-row,
+.verified-handle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.verified-badge {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  display: inline-grid;
+  place-items: center;
+  color: #31f65a;
+  filter: drop-shadow(0 0 7px rgba(49, 246, 90, 0.4));
+  vertical-align: middle;
+}
+
+.verified-badge svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.verified-badge svg > path:first-child {
+  fill: currentColor;
+}
+
+.verified-badge-check {
+  fill: none;
+  stroke: #061008;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.post-username .verified-badge {
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
+}

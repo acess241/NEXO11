@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { normalizarTipoPost, obterMediaKind, POST_TYPE_META } from '../lib/postTypes'
 import { formatDisplayName } from '../lib/textFormat'
+import VerifiedBadge from './VerifiedBadge'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -61,7 +62,10 @@ export default function PostCard({
 
         <div>
           <strong>{nomeAutor}</strong>
-          <p className="post-username">@{post.autor?.username || 'username'}</p>
+          <p className="post-username verified-handle-row">
+            @{post.autor?.username || 'username'}
+            <VerifiedBadge verified={post.autor?.is_verified} />
+          </p>
           <div className="post-meta-row">
             <p className="post-date">{formatarData(post.created_at)}</p>
             <span className={`post-type-chip ${tipo}`}>{POST_TYPE_META[tipo].label}</span>

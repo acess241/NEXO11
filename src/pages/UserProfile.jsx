@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
+import VerifiedBadge from '../components/VerifiedBadge'
 import { bloquearPerfil, desbloquearPerfil, estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { nomeCurso } from '../lib/academy'
@@ -376,8 +377,14 @@ export default function UserProfile() {
 
             <div className="profile-hero-copy">
               <p className="profile-kicker">Perfil</p>
-              <h1>{formatDisplayName(perfil.nome) || perfil.username}</h1>
-              <p className="profile-handle">@{perfil.username}</p>
+              <h1 className="verified-name-row">
+                {formatDisplayName(perfil.nome) || perfil.username}
+                <VerifiedBadge verified={perfil.is_verified} />
+              </h1>
+              <p className="profile-handle verified-handle-row">
+                @{perfil.username}
+                <VerifiedBadge verified={perfil.is_verified} />
+              </p>
               <p className="profile-academy-chip">
                 Nível {perfil.level || 1} - {perfil.xp_total || 0} XP - {nomeCurso(perfil.course_area)}
               </p>

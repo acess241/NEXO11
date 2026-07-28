@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
+import VerifiedBadge from '../components/VerifiedBadge'
 import { nomeCurso } from '../lib/academy'
 import { nomeInstituicaoCurto } from '../lib/education'
 import { listarContasSalvas, removerContaSalva, salvarContaDaSessao } from '../lib/savedAccounts'
@@ -575,8 +576,14 @@ export default function Profile() {
 
             <div className="profile-hero-copy">
               <p className="profile-kicker">Seu espaço</p>
-              <h1>{formatDisplayName(perfil.nome)}</h1>
-              <p className="profile-handle">@{perfil.username}</p>
+              <h1 className="verified-name-row">
+                {formatDisplayName(perfil.nome)}
+                <VerifiedBadge verified={perfil.is_verified} />
+              </h1>
+              <p className="profile-handle verified-handle-row">
+                @{perfil.username}
+                <VerifiedBadge verified={perfil.is_verified} />
+              </p>
               <p className="profile-academy-chip">
                 Nível {perfil.level || 1} - {perfil.xp_total || 0} XP - {nomeCurso(perfil.course_area)}
               </p>
