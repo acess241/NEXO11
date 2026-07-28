@@ -253,7 +253,7 @@ function ChatAudioPlayer({ src, ariaLabel = 'Mensagem de audio' }) {
 
   return (
     <div className="chat-audio-player" aria-label={ariaLabel}>
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio ref={audioRef} src={src} preload="auto" playsInline />
 
       <button
         type="button"
@@ -1000,7 +1000,11 @@ export default function ChatRoom() {
 
     const { error: uploadError } = await supabase.storage
       .from('stories')
-      .upload(nomeArquivo, file, { upsert: false })
+      .upload(nomeArquivo, file, {
+        upsert: false,
+        cacheControl: '86400',
+        contentType: file.type || undefined,
+      })
 
     if (uploadError) throw uploadError
 
@@ -2934,7 +2938,7 @@ export default function ChatRoom() {
 
               <button
                 type="button"
-                className="btn chat-attach-btn chat-attach-camera-btn"
+                className="chat-attach-btn chat-attach-camera-btn"
                 onClick={abrirCameraChat}
                 aria-label="Abrir camera para foto"
                 disabled={gravandoAudio || processandoAudio}
@@ -2944,7 +2948,7 @@ export default function ChatRoom() {
 
               <button
                 type="button"
-                className="btn chat-attach-btn"
+                className="chat-attach-btn chat-attach-media-btn"
                 onClick={() => inputMidiaRef.current?.click()}
                 aria-label="Enviar foto ou video"
                 disabled={gravandoAudio || processandoAudio}
@@ -2954,7 +2958,7 @@ export default function ChatRoom() {
 
               <button
                 type="button"
-                className={`btn chat-attach-btn chat-attach-audio-btn ${
+                className={`chat-attach-btn chat-attach-audio-btn ${
                   gravandoAudio ? 'is-recording' : ''
                 }`}
                 onClick={() => {
