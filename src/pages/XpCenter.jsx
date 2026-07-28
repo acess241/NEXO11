@@ -112,7 +112,7 @@ export default function XpCenter() {
 
   const tabs = [
     ['dashboard', 'Visão geral'], ['activities', isStaff ? 'Atividades e correções' : 'Atividades'],
-    ['rewards', 'Recompensas'], ['requests', 'Solicitações'], ['history', 'Histórico'],
+    ['rewards', 'Troca de XP'], ['requests', 'Solicitações'], ['history', 'Histórico'],
     ...(isStaff ? [['manage', 'Gestão']] : []),
   ]
 
@@ -143,7 +143,13 @@ export default function XpCenter() {
         {tab === 'activities' && (isStaff
           ? <StaffActivities staff={staff} canCreate={isTeacher} busy={busy} setModal={setModal} run={run} />
           : <StudentActivities activities={activities} busy={busy} run={run} />)}
-        {tab === 'rewards' && <Rewards data={data} isAdmin={isAdmin} busy={busy} setModal={setModal} run={run} />}
+        {tab === 'rewards' && (
+          <DevelopmentArea
+            title="Oops! Esta área ainda está em desenvolvimento."
+            text="Logo, logo você poderá trocar seu XP por recompensas!"
+            onBack={() => setTab('dashboard')}
+          />
+        )}
         {tab === 'requests' && <Requests data={data} staff={staff} isStaff={isStaff} busy={busy} setModal={setModal} run={run} />}
         {tab === 'history' && <History rows={filteredTransactions} filter={filter} setFilter={setFilter} query={query} setQuery={setQuery} />}
         {tab === 'manage' && isStaff && <Management staff={staff} isAdmin={isAdmin} setModal={setModal} />}
@@ -181,6 +187,18 @@ function Dashboard({ data, profile, setTab }) {
     <div className="xpc-actions"><article><i><Icon name="book"/></i><strong>Ver atividades</strong><span>Entregue trabalhos e ganhe XP.</span><button onClick={() => setTab('activities')}>Explorar atividades</button></article>
       <article><i><Icon name="gift"/></i><strong>Explorar recompensas</strong><span>Veja o que o seu saldo já pode liberar.</span><button onClick={() => setTab('rewards')}>Ver recompensas</button></article>
       <article><i><Icon name="clock"/></i><strong>Acompanhar pedidos</strong><span>Consulte o status e o histórico das suas solicitações.</span><button onClick={() => setTab('requests')}>Minhas solicitações</button></article></div></>
+}
+
+function DevelopmentArea({ title, text, onBack }) {
+  return <div className="nexo-development-card xpc-development-card">
+    <div className="nexo-development-icon" aria-hidden="true">
+      <Icon name="gift" size={34}/>
+    </div>
+    <span>EM CONSTRUÇÃO</span>
+    <h2>{title}</h2>
+    <p>{text}</p>
+    <button type="button" onClick={onBack}>Voltar para a visão geral</button>
+  </div>
 }
 
 function StudentActivities({ activities, busy, run }) {

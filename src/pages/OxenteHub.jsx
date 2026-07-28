@@ -3643,52 +3643,17 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
         ) : null}
         {tab === 'biblioteca' ? (
           <section className="oxente-section">
-            <article className="oxente-card">
-              <h3>Biblioteca inteligente</h3>
-              <input
-                className="edit-input"
-                type="text"
-                placeholder="Buscar por matéria, nome ou arquivo..."
-                value={filtroBiblioteca}
-                onChange={(event) => setFiltroBiblioteca(event.target.value)}
-              />
+            <article className="nexo-development-card">
+              <div className="nexo-development-icon" aria-hidden="true">
+                {renderLaboratorioIcon('biblioteca')}
+              </div>
+              <span>EM CONSTRUÇÃO</span>
+              <h3>Oops! Esta área ainda está em desenvolvimento.</h3>
+              <p>Logo, logo você poderá acessar seus livros!</p>
+              <button type="button" onClick={() => setTab('')}>
+                Voltar para Atividades
+              </button>
             </article>
-
-            {itensBiblioteca.length === 0 ? (
-              <article className="oxente-card">
-                <h3>Nenhum resultado</h3>
-                <p>Ajuste o termo de busca para encontrar material.</p>
-              </article>
-            ) : (
-              itensBiblioteca.map((series) => (
-                <article key={series.series} className="oxente-card">
-                  <h3>{series.series}</h3>
-
-                  {series.subjects.map((subject) => (
-                    <div key={`${series.series}-${subject.name}`} className="oxente-library-block">
-                      <p className="oxente-library-subject">{subject.name}</p>
-
-                      {subject.books.map((book) => (
-                        <div key={book.href} className="oxente-library-book">
-                          <div>
-                            <strong>{book.title}</strong>
-                            <span>{book.fileName}</span>
-                          </div>
-                          <div className="oxente-library-actions">
-                            <a href={book.href} target="_blank" rel="noreferrer">
-                              Abrir
-                            </a>
-                            <a href={book.href} download>
-                              Baixar
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </article>
-              ))
-            )}
           </section>
         ) : null}
 
