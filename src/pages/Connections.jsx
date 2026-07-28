@@ -23,6 +23,7 @@ function traduzirErroConexoes(error, fallback) {
 
 export default function Connections() {
   const [meuPerfil, setMeuPerfil] = useState(null)
+  const [perfilExibido, setPerfilExibido] = useState(null)
   const [seguidoresPerfis, setSeguidoresPerfis] = useState([])
   const [seguindoPerfis, setSeguindoPerfis] = useState([])
   const [descobrirPerfis, setDescobrirPerfis] = useState([])
@@ -78,7 +79,23 @@ export default function Connections() {
       if (perfilError) throw perfilError
 
       setMeuPerfil(perfilData)
-      await carregarListas(perfilData.id)
+
+      let alvo = perfilData
+      const usernameAlvo = `${location.state?.username || ''}`.trim().toLowerCase()
+
+      if (usernameAlvo && usernameAlvo !== perfilData.username?.toLowerCase()) {
+        const { data: perfilAlvo, error: alvoError } = await supabase
+          .from('profiles')
+          .select('id, nome, username')
+          .eq('username', usernameAlvo)
+          .maybeSingle()
+
+        if (alvoError) throw alvoError
+        if (perfilAlvo) alvo = perfilAlvo
+      }
+
+      setPerfilExibido(alvo)
+      await carregarListas(alvo.id, perfilData.id)
     } catch (error) {
       setErro(traduzirErroConexoes(error, 'Não foi possível carregar suas conexões agora.'))
     } finally {
@@ -86,25 +103,28 @@ export default function Connections() {
     }
   }
 
-  async function carregarListas(profileId) {
-    const [seguidoresResp, seguindoResp, solicitacoesResp, perfisResp] = await Promise.all([
+  async function carregarListas(profileId, meuProfileId = meuPerfil?.id || profileId) {
+    const [seguidoresResp, seguindoResp, meusFollowsResp, solicitacoesResp, perfisResp] = await Promise.all([
       supabase.from('follows').select('follower_profile_id').eq('following_profile_id', profileId),
       supabase.from('follows').select('following_profile_id').eq('follower_profile_id', profileId),
+      supabase.from('follows').select('following_profile_id').eq('follower_profile_id', meuProfileId),
       supabase
         .from('follow_requests')
         .select('receiver_profile_id')
-        .eq('requester_profile_id', profileId)
+        .eq('requester_profile_id', meuProfileId)
         .eq('status', 'pending'),
       supabase.from('profiles').select('id, nome, username, foto_url, bio, is_private').order('created_at', { ascending: false }).limit(300),
     ])
 
     if (seguidoresResp.error) throw seguidoresResp.error
     if (seguindoResp.error) throw seguindoResp.error
+    if (meusFollowsResp.error) throw meusFollowsResp.error
     if (solicitacoesResp.error) throw solicitacoesResp.error
     if (perfisResp.error) throw perfisResp.error
 
     const seguidoresIdsList = (seguidoresResp.data || []).map((item) => item.follower_profile_id).filter(Boolean)
     const seguindoIdsList = (seguindoResp.data || []).map((item) => item.following_profile_id).filter(Boolean)
+    const meusSeguindoIdsList = (meusFollowsResp.data || []).map((item) => item.following_profile_id).filter(Boolean)
     const pendentesIdsList = (solicitacoesResp.data || []).map((item) => item.receiver_profile_id).filter(Boolean)
 
     const seguidoresSet = new Set(seguidoresIdsList)
@@ -112,11 +132,15 @@ export default function Connections() {
 
     const todosPerfis = (perfisResp.data || []).filter((item) => item.id !== profileId)
 
-    setSeguindoIds(seguindoIdsList)
+    setSeguindoIds(meusSeguindoIdsList)
     setSolicitacoesPendentesIds(pendentesIdsList)
     setSeguidoresPerfis(todosPerfis.filter((item) => seguidoresSet.has(item.id)))
     setSeguindoPerfis(todosPerfis.filter((item) => seguindoSet.has(item.id)))
-    setDescobrirPerfis(todosPerfis.filter((item) => !seguindoSet.has(item.id)))
+    setDescobrirPerfis(
+      profileId === meuProfileId
+        ? todosPerfis.filter((item) => !new Set(meusSeguindoIdsList).has(item.id))
+        : []
+    )
   }
 
   async function alternarSeguir(perfilAlvo) {
@@ -189,7 +213,7 @@ export default function Connections() {
         }
       }
 
-      await carregarListas(meuPerfil.id)
+      await carregarListas(perfilExibido?.id || meuPerfil.id, meuPerfil.id)
     } catch (error) {
       setErro(traduzirErroConexoes(error, 'Não foi possível atualizar este follow agora.'))
     } finally {
@@ -231,18 +255,30 @@ export default function Connections() {
   return (
     <div className="container">
       <div className="topbar connections-topbar">
-        <button type="button" className="edit-back-btn" onClick={() => navigate('/perfil')}>
+        <button
+          type="button"
+          className="edit-back-btn"
+          onClick={() =>
+            perfilExibido?.id && perfilExibido.id !== meuPerfil?.id
+              ? navigate(`/usuario/${perfilExibido.username}`)
+              : navigate('/perfil')
+          }
+        >
           Voltar
         </button>
 
-        <h1>Conexões</h1>
+        <h1>
+          {perfilExibido?.id !== meuPerfil?.id
+            ? `Conexões de @${perfilExibido?.username || ''}`
+            : 'Conexões'}
+        </h1>
 
         <button
           type="button"
           className="edit-save-link"
           onClick={() => {
-            if (meuPerfil?.id) {
-              void carregarListas(meuPerfil.id)
+            if (meuPerfil?.id && perfilExibido?.id) {
+              void carregarListas(perfilExibido.id, meuPerfil.id)
             }
           }}
           disabled={!meuPerfil?.id || Boolean(processandoPerfilId)}
@@ -274,7 +310,11 @@ export default function Connections() {
 
           {seguidoresPerfis.length === 0 ? (
             <div className="empty-state">
-              <p>Você ainda não tem seguidores.</p>
+              <p>
+                {perfilExibido?.id === meuPerfil?.id
+                  ? 'Você ainda não tem seguidores.'
+                  : 'Este perfil ainda não tem seguidores.'}
+              </p>
             </div>
           ) : (
             <div className="connections-list">
@@ -321,7 +361,11 @@ export default function Connections() {
 
           {seguindoPerfis.length === 0 ? (
             <div className="empty-state">
-              <p>Você ainda não segue ninguém.</p>
+              <p>
+                {perfilExibido?.id === meuPerfil?.id
+                  ? 'Você ainda não segue ninguém.'
+                  : 'Este perfil ainda não segue ninguém.'}
+              </p>
             </div>
           ) : (
             <div className="connections-list">
@@ -360,7 +404,7 @@ export default function Connections() {
           )}
         </section>
 
-        <section className="connections-section">
+        {perfilExibido?.id === meuPerfil?.id ? <section className="connections-section">
           <div className="connections-section-head">
             <h3>Perfis para descobrir</h3>
             <span>{descobrirPerfis.length}</span>
@@ -406,7 +450,7 @@ export default function Connections() {
               ))}
             </div>
           )}
-        </section>
+        </section> : null}
       </div>
 
       <BottomNav />

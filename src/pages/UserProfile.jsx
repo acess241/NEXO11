@@ -402,14 +402,22 @@ export default function UserProfile() {
               <strong>{postsCount}</strong>
               <span>posts</span>
             </div>
-            <div className="profile-stat-card">
+            <button
+              type="button"
+              className="profile-stat-card profile-stat-action"
+              onClick={() => navigate('/conexoes', { state: { focus: 'seguidores', username: perfil.username } })}
+            >
               <strong>{seguidores}</strong>
               <span>seguidores</span>
-            </div>
-            <div className="profile-stat-card">
+            </button>
+            <button
+              type="button"
+              className="profile-stat-card profile-stat-action"
+              onClick={() => navigate('/conexoes', { state: { focus: 'seguindo', username: perfil.username } })}
+            >
               <strong>{seguindoCount}</strong>
               <span>seguindo</span>
-            </div>
+            </button>
           </div>
 
           {!ehMeuPerfil && (
