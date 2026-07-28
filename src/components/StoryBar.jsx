@@ -28,6 +28,7 @@ function StoryViewer({
 }) {
   const [indiceAtual, setIndiceAtual] = useState(0)
   const [apagando, setApagando] = useState(false)
+  const [musicaAtiva, setMusicaAtiva] = useState(true)
 
   const storyAtual = grupo?.stories?.[indiceAtual]
   const ehVideo = storyEhVideo(storyAtual)
@@ -41,6 +42,10 @@ function StoryViewer({
     setIndiceAtual(0)
     setApagando(false)
   }, [grupo?.perfil?.id])
+
+  useEffect(() => {
+    setMusicaAtiva(true)
+  }, [storyAtual?.id])
 
   useEffect(() => {
     if (!storyAtual || !perfilAtual || apagando) return
@@ -206,12 +211,31 @@ function StoryViewer({
             className="story-click-zone right"
             onClick={avancar}
           />
+          {storyAtual.music_url ? (
+            <audio
+              key={`music-${storyAtual.id}`}
+              src={storyAtual.music_url}
+              autoPlay
+              loop
+              muted={!musicaAtiva}
+              preload="auto"
+              onLoadedMetadata={(event) => {
+                const inicio = Number(storyAtual.music_start_seconds || 0)
+                if (inicio > 0 && inicio < event.currentTarget.duration) event.currentTarget.currentTime = inicio
+                event.currentTarget.volume = Math.min(1, Math.max(0, Number(storyAtual.music_volume ?? 0.75)))
+              }}
+            />
+          ) : null}
+          {storyAtual.music_url ? (
+            <button type="button" className="story-viewer-music" onClick={() => setMusicaAtiva((valor) => !valor)}>
+              <span>♫</span>
+              <span><strong>{storyAtual.music_title || 'Áudio original'}</strong><small>{storyAtual.music_artist || grupo.perfil?.nome}</small></span>
+              <span>{musicaAtiva ? '🔊' : '🔇'}</span>
+            </button>
+          ) : null}
         </div>
 
-        <div className="story-viewer-footer">
-          <p className="story-duration-text">
-            Duração: {storyAtual.duration_seconds || 15}s
-          </p>
+        <div className="story-viewer-footer instagram-style">
           {storyAtual.caption ? (
             <p className="story-caption">{storyAtual.caption}</p>
           ) : null}

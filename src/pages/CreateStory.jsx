@@ -16,6 +16,10 @@ function IconeTexto() {
   return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M4 7V4h16v3" /><path d="M9 20h6" /><path d="M12 4v16" /></svg>
 }
 
+function IconeMusica() {
+  return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg>
+}
+
 const DURACAO_PADRAO = 15
 const DURACAO_MAXIMA_VIDEO = 60
 const TAMANHO_MAXIMO_VIDEO = 100 * 1024 * 1024
@@ -50,7 +54,17 @@ export default function CreateStory() {
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [musicas, setMusicas] = useState([])
+  const [musica, setMusica] = useState(null)
+  const [musicaArquivo, setMusicaArquivo] = useState(null)
+  const [musicaInicio, setMusicaInicio] = useState(0)
+  const [musicaVolume, setMusicaVolume] = useState(0.75)
+  const [buscaMusica, setBuscaMusica] = useState('')
+  const [seletorMusicaAberto, setSeletorMusicaAberto] = useState(false)
+  const [musicaTocandoId, setMusicaTocandoId] = useState(null)
   const inputFileRef = useRef(null)
+  const inputMusicaRef = useRef(null)
+  const audioPreviewRef = useRef(null)
   const abriuCameraRef = useRef(false)
   const navigate = useNavigate()
 
@@ -62,6 +76,12 @@ export default function CreateStory() {
         const { data, error } = await supabase.from('profiles').select('*').eq('account_id', user.id).single()
         if (error) throw error
         setPerfil(data)
+        const { data: faixas } = await supabase
+          .from('story_music_library')
+          .select('id,title,artist,audio_url,duration_seconds,cover_url')
+          .eq('is_active', true)
+          .order('title')
+        setMusicas(faixas || [])
       } catch {
         setErro('Erro ao carregar perfil.')
       } finally {
@@ -70,6 +90,56 @@ export default function CreateStory() {
     }
     void carregar()
   }, [navigate])
+
+  useEffect(() => () => {
+    if (musica?.localUrl?.startsWith('blob:')) URL.revokeObjectURL(musica.localUrl)
+  }, [musica])
+
+  function pararPreviaMusica() {
+    const audio = audioPreviewRef.current
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+    setMusicaTocandoId(null)
+  }
+
+  function ouvirMusica(faixa) {
+    if (musicaTocandoId === faixa.id) return pararPreviaMusica()
+    pararPreviaMusica()
+    const audio = new Audio(faixa.audio_url || faixa.localUrl)
+    audio.volume = musicaVolume
+    audio.currentTime = 0
+    audio.onended = () => setMusicaTocandoId(null)
+    audioPreviewRef.current = audio
+    setMusicaTocandoId(faixa.id)
+    void audio.play().catch(() => setMusicaTocandoId(null))
+  }
+
+  function selecionarMusica(faixa) {
+    pararPreviaMusica()
+    setMusica(faixa)
+    setMusicaArquivo(faixa.file || null)
+    setMusicaInicio(0)
+    setSeletorMusicaAberto(false)
+  }
+
+  function escolherMusicaPropria(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('audio/')) return setErro('Escolha um arquivo de áudio válido.')
+    if (file.size > 20 * 1024 * 1024) return setErro('A música deve ter no máximo 20 MB.')
+    const titulo = file.name.replace(/\.[^.]+$/, '')
+    selecionarMusica({
+      id: `local-${Date.now()}`,
+      title: titulo,
+      artist: 'Áudio original',
+      localUrl: URL.createObjectURL(file),
+      file,
+      duration_seconds: 0,
+    })
+  }
 
   useEffect(() => () => {
     if (preview.startsWith('blob:')) URL.revokeObjectURL(preview)
@@ -133,12 +203,29 @@ export default function CreateStory() {
       })
       if (uploadError) throw uploadError
       const { data } = supabase.storage.from('stories').getPublicUrl(nomeArquivo)
+      let musicaUrl = musica?.audio_url || null
+      if (musicaArquivo) {
+        const extensaoMusica = musicaArquivo.name.split('.').pop() || 'mp3'
+        const nomeMusica = `music/${perfil.id}-${Date.now()}.${extensaoMusica}`
+        const { error: musicaUploadError } = await supabase.storage.from('stories').upload(nomeMusica, musicaArquivo, {
+          upsert: false,
+          contentType: musicaArquivo.type || undefined,
+          cacheControl: '86400',
+        })
+        if (musicaUploadError) throw musicaUploadError
+        musicaUrl = supabase.storage.from('stories').getPublicUrl(nomeMusica).data.publicUrl
+      }
       const { error: insertError } = await supabase.from('stories').insert({
         profile_id: perfil.id,
         media_url: data.publicUrl,
         media_kind: mediaKind,
         caption: caption.trim(),
         duration_seconds: duracaoStory,
+        music_url: musicaUrl,
+        music_title: musica?.title || null,
+        music_artist: musica?.artist || null,
+        music_start_seconds: musica ? musicaInicio : null,
+        music_volume: musica ? musicaVolume : null,
       })
       if (insertError) throw insertError
       setSucesso('Story publicado!')
@@ -187,6 +274,7 @@ export default function CreateStory() {
           {preview ? (
             <aside className="story-editor-tools">
               <button type="button" onClick={() => document.getElementById('story-overlay-text')?.focus()}><IconeTexto /><span>Texto</span></button>
+              <button type="button" onClick={() => setSeletorMusicaAberto(true)}><IconeMusica /><span>Música</span></button>
               <button type="button" onClick={() => setCameraAberta(true)}><IconeCamera /><span>Câmera</span></button>
               <button type="button" onClick={() => inputFileRef.current?.click()}><IconeGaleria /><span>Galeria</span></button>
             </aside>
@@ -195,11 +283,20 @@ export default function CreateStory() {
         </section>
 
         {preview ? (
-          <section className="story-editor-compose">
-            <label htmlFor="story-overlay-text">Aa</label>
-            <textarea id="story-overlay-text" placeholder="Adicione um texto..." value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 220))} rows={1} maxLength={220} />
-            <span>{caption.length}/220</span>
-          </section>
+          <>
+            {musica ? (
+              <button type="button" className="story-selected-music" onClick={() => setSeletorMusicaAberto(true)}>
+                <IconeMusica />
+                <span><strong>{musica.title}</strong><small>{musica.artist}</small></span>
+                <span>Alterar</span>
+              </button>
+            ) : null}
+            <section className="story-editor-compose">
+              <label htmlFor="story-overlay-text">Aa</label>
+              <textarea id="story-overlay-text" placeholder="Adicione um texto..." value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 220))} rows={1} maxLength={220} />
+              <span>{caption.length}/220</span>
+            </section>
+          </>
         ) : null}
       </main>
 
@@ -225,6 +322,51 @@ export default function CreateStory() {
         title="Adicionar ao story"
         subtitle="Capture uma foto ou escolha da galeria"
       />
+
+      {seletorMusicaAberto ? (
+        <div className="story-music-backdrop" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) {
+            pararPreviaMusica()
+            setSeletorMusicaAberto(false)
+          }
+        }}>
+          <section className="story-music-sheet" role="dialog" aria-modal="true" aria-label="Adicionar música">
+            <header>
+              <button type="button" onClick={() => { pararPreviaMusica(); setSeletorMusicaAberto(false) }}>×</button>
+              <div><h2>Adicionar música</h2><p>Escolha uma faixa autorizada para o seu story.</p></div>
+              {musica ? <button type="button" className="remove" onClick={() => { setMusica(null); setMusicaArquivo(null); setSeletorMusicaAberto(false) }}>Remover</button> : <span />}
+            </header>
+            <div className="story-music-search">
+              <span>⌕</span>
+              <input value={buscaMusica} onChange={(event) => setBuscaMusica(event.target.value)} placeholder="Pesquisar música ou artista" autoFocus />
+            </div>
+            <button type="button" className="story-own-music" onClick={() => inputMusicaRef.current?.click()}>
+              <span><IconeMusica /></span>
+              <div><strong>Usar áudio próprio</strong><small>Envie uma faixa que você tem autorização para usar</small></div>
+              <b>+</b>
+            </button>
+            <input ref={inputMusicaRef} type="file" accept="audio/*" onChange={escolherMusicaPropria} hidden />
+            <div className="story-music-list">
+              {musicas.filter((faixa) => `${faixa.title} ${faixa.artist}`.toLowerCase().includes(buscaMusica.toLowerCase())).map((faixa) => (
+                <article key={faixa.id} className={musica?.id === faixa.id ? 'selected' : ''}>
+                  <button type="button" className="play" onClick={() => ouvirMusica(faixa)}>{musicaTocandoId === faixa.id ? 'Ⅱ' : '▶'}</button>
+                  <button type="button" className="info" onClick={() => selecionarMusica(faixa)}>
+                    <strong>{faixa.title}</strong><small>{faixa.artist}</small>
+                  </button>
+                  <button type="button" className="use" onClick={() => selecionarMusica(faixa)}>Usar</button>
+                </article>
+              ))}
+              {!musicas.length ? <p className="story-music-empty">A biblioteca ainda não possui faixas. Você já pode usar um áudio próprio autorizado.</p> : null}
+            </div>
+            {musica ? (
+              <div className="story-music-controls">
+                <label>Começar em <strong>{musicaInicio}s</strong><input type="range" min="0" max={Math.max(0, Math.floor((musica.duration_seconds || 30) - duracaoStory))} value={musicaInicio} onChange={(event) => setMusicaInicio(Number(event.target.value))} /></label>
+                <label>Volume <strong>{Math.round(musicaVolume * 100)}%</strong><input type="range" min="0" max="1" step="0.05" value={musicaVolume} onChange={(event) => setMusicaVolume(Number(event.target.value))} /></label>
+              </div>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
     </div>
   )
 }
