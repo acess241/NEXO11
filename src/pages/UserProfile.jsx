@@ -344,7 +344,6 @@ export default function UserProfile() {
       <div className="profile-topbar">
         <h2 className={perfil.is_verified ? 'official-username-display' : ''}>
           @{perfil.username}
-          <VerifiedBadge verified={perfil.is_verified} />
         </h2>
       </div>
 
@@ -380,10 +379,7 @@ export default function UserProfile() {
 
             <div className="profile-hero-copy">
               <p className="profile-kicker">Perfil</p>
-              <h1 className="verified-name-row">
-                {formatDisplayName(perfil.nome) || perfil.username}
-                <VerifiedBadge verified={perfil.is_verified} />
-              </h1>
+              <h1>{formatDisplayName(perfil.nome) || perfil.username}</h1>
               <p className="profile-handle verified-handle-row">
                 @{perfil.username}
                 <VerifiedBadge verified={perfil.is_verified} />

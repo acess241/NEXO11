@@ -365,7 +365,6 @@ export default function Profile() {
 
         <h2 className={perfil.is_verified ? 'official-username-display' : ''}>
           @{perfil.username}
-          <VerifiedBadge verified={perfil.is_verified} />
         </h2>
 
         <button
@@ -579,10 +578,7 @@ export default function Profile() {
 
             <div className="profile-hero-copy">
               <p className="profile-kicker">Seu espaço</p>
-              <h1 className="verified-name-row">
-                {formatDisplayName(perfil.nome)}
-                <VerifiedBadge verified={perfil.is_verified} />
-              </h1>
+              <h1>{formatDisplayName(perfil.nome)}</h1>
               <p className="profile-handle verified-handle-row">
                 @{perfil.username}
                 <VerifiedBadge verified={perfil.is_verified} />
