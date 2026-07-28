@@ -14290,8 +14290,8 @@ body[data-theme='verde'] .card {
   flex: 0 0 19px;
   display: inline-grid;
   place-items: center;
-  color: #31f65a;
-  filter: drop-shadow(0 0 7px rgba(49, 246, 90, 0.4));
+  color: #19ef45;
+  filter: drop-shadow(0 0 7px rgba(25, 239, 69, 0.48));
   vertical-align: middle;
 }
 
