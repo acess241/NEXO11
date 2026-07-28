@@ -32,6 +32,9 @@ const OxenteHub = lazy(() => import('./pages/OxenteHub'))
 const BlockedProfiles = lazy(() => import('./pages/BlockedProfiles'))
 const LikedPosts = lazy(() => import('./pages/LikedPosts'))
 const CommentedPosts = lazy(() => import('./pages/CommentedPosts'))
+const PrivacyCenter = lazy(() => import('./pages/PrivacyCenter'))
+const PrivacyPolicy = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.PrivacyPolicy })))
+const TermsOfUse = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.TermsOfUse })))
 
 function PageLoader() {
   return <SocialLoader variant="feed" />
@@ -160,6 +163,8 @@ export default function App() {
 
           <Route path="/reset-senha" element={<Auth forceRecoveryMode />} />
           <Route path="/adicionar-conta" element={<Auth allowAddAccount />} />
+          <Route path="/privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termos" element={<TermsOfUse />} />
 
           <Route
             path="/"
@@ -361,6 +366,15 @@ export default function App() {
             element={
               <ProtectedRoute session={session}>
                 <EditProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/central-de-privacidade"
+            element={
+              <ProtectedRoute session={session}>
+                <PrivacyCenter />
               </ProtectedRoute>
             }
           />

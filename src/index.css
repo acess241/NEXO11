@@ -1951,6 +1951,228 @@ body[data-theme='claro'] .mention-suggestion {
   }
 }
 
+.auth-minor-warning {
+  margin: 2px 0 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 184, 0, 0.38);
+  border-radius: 13px;
+  background: rgba(255, 184, 0, 0.08);
+  color: #ffd36b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.auth-legal-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 15px;
+  color: #b6bdb7;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.auth-legal-consent input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-top: 1px;
+  accent-color: #2dff33;
+}
+
+.auth-legal-consent button {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2dff33;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.legal-page {
+  min-height: 100dvh;
+  padding-bottom: 48px;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(45, 255, 51, 0.08), transparent 32%),
+    #050605;
+  color: #f4f7f4;
+}
+
+.legal-topbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 0 clamp(16px, 4vw, 42px);
+  border-bottom: 1px solid #1c251e;
+  background: rgba(5, 6, 5, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.legal-topbar button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid #2a352c;
+  border-radius: 11px;
+  background: #101311;
+  color: #fff;
+  cursor: pointer;
+}
+
+.legal-topbar span {
+  color: #2dff33;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.legal-document {
+  width: min(900px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(38px, 8vw, 78px) 0;
+}
+
+.legal-kicker {
+  margin: 0 0 10px;
+  color: #2dff33;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.legal-document h1 {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 64px);
+  line-height: 1;
+}
+
+.legal-lead {
+  max-width: 720px;
+  margin: 18px 0 8px;
+  color: #bbc3bc;
+  font-size: clamp(16px, 2.5vw, 20px);
+  line-height: 1.55;
+}
+
+.legal-version {
+  color: #7e8980;
+  font-size: 12px;
+}
+
+.legal-document section {
+  margin-top: 24px;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid #1c281f;
+  border-radius: 20px;
+  background: #0c100d;
+}
+
+.legal-document h2 {
+  margin: 0 0 12px;
+  color: #f5fff6;
+  font-size: clamp(19px, 3vw, 24px);
+}
+
+.legal-document section p,
+.legal-document li {
+  color: #b6beb7;
+  line-height: 1.68;
+}
+
+.legal-document ul {
+  padding-left: 22px;
+}
+
+.privacy-center-page {
+  width: min(1040px, 100%);
+  margin-inline: auto;
+}
+
+.privacy-hero {
+  padding: clamp(25px, 5vw, 46px);
+  border: 1px solid rgba(45, 255, 51, 0.2);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0c150e, #080b09);
+}
+
+.privacy-hero p {
+  margin: 0 0 8px;
+  color: #2dff33;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.privacy-hero h2 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 6vw, 48px);
+}
+
+.privacy-hero span {
+  color: #aeb7af;
+}
+
+.privacy-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.privacy-action-grid button {
+  min-width: 0;
+  min-height: 124px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 21px;
+  border: 1px solid #202a22;
+  border-radius: 19px;
+  background: #0d110e;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.privacy-action-grid button:hover {
+  border-color: rgba(45, 255, 51, 0.45);
+  background: #101811;
+}
+
+.privacy-action-grid button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.privacy-action-grid strong {
+  font-size: 16px;
+}
+
+.privacy-action-grid span {
+  color: #98a199;
+  line-height: 1.45;
+}
+
+@media (max-width: 767px) {
+  .privacy-center-topbar h1 {
+    max-width: 190px;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .privacy-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-action-grid button {
+    min-height: 105px;
+  }
+}
+
 .edit-submit-btn {
   margin: 18px;
   width: calc(100% - 36px);

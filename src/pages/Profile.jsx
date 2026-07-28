@@ -504,6 +504,14 @@ export default function Profile() {
                 <button
                   type="button"
                   className="profile-sidepanel-item"
+                  onClick={() => irPara('/central-de-privacidade')}
+                >
+                  Central de Privacidade
+                </button>
+
+                <button
+                  type="button"
+                  className="profile-sidepanel-item"
                   onClick={alternarPrivacidadePerfil}
                   disabled={salvandoPrivacidade}
                 >

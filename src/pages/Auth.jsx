@@ -110,6 +110,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [confirmarSenha, setConfirmarSenha] = useState('')
+  const [faixaEtaria, setFaixaEtaria] = useState('')
+  const [aceitouDocumentos, setAceitouDocumentos] = useState(false)
   const [mostrarSenha, setMostrarSenha] = useState(false)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
@@ -466,6 +468,21 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         return
       }
 
+      if (!faixaEtaria) {
+        setErro('Informe sua faixa etária para continuar.')
+        return
+      }
+
+      if (faixaEtaria === 'under_13') {
+        setErro('O cadastro público não está disponível para menores de 13 anos. Procure sua escola ou responsável.')
+        return
+      }
+
+      if (!aceitouDocumentos) {
+        setErro('Leia e aceite a Política de Privacidade e os Termos de Uso para continuar.')
+        return
+      }
+
       if (!cidadeSelecionada) {
         setErro('Selecione o município da escola.')
         return
@@ -553,6 +570,10 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
               teacher_school: professorEh ? nomeEscolaFinal : null,
               teacher_registration: null,
               teacher_department: null,
+              age_range: faixaEtaria,
+              privacy_policy_version: '1.0',
+              terms_version: '1.0',
+              legal_accepted_at: new Date().toISOString(),
             },
           },
         })
@@ -588,6 +609,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         setMateriaProfessor('')
         setCidadeEscola('')
         setEscolaProfessor('')
+        setFaixaEtaria('')
+        setAceitouDocumentos(false)
       }
     } catch (err) {
       setErro(traduzirErro(err))
@@ -837,6 +860,38 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                         required
                       />
                     ) : null}
+
+                    <select
+                      className="input"
+                      value={faixaEtaria}
+                      onChange={(event) => setFaixaEtaria(event.target.value)}
+                      required
+                    >
+                      <option value="">Selecione sua faixa etária</option>
+                      <option value="under_13">Menos de 13 anos</option>
+                      <option value="13_15">13 a 15 anos</option>
+                      <option value="16_17">16 a 17 anos</option>
+                      <option value="18_plus">18 anos ou mais</option>
+                    </select>
+
+                    {faixaEtaria === 'under_13' ? (
+                      <div className="auth-minor-warning">
+                        O cadastro público não é permitido para menores de 13 anos. Peça ajuda à sua escola ou responsável.
+                      </div>
+                    ) : null}
+
+                    <label className="auth-legal-consent">
+                      <input
+                        type="checkbox"
+                        checked={aceitouDocumentos}
+                        onChange={(event) => setAceitouDocumentos(event.target.checked)}
+                        required
+                      />
+                      <span>
+                        Li e aceito a <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}privacidade`, '_blank')}>Política de Privacidade</button>
+                        {' '}e os <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}termos`, '_blank')}>Termos de Uso</button>.
+                      </span>
+                    </label>
                   </>
                 ) : null}
 
@@ -898,6 +953,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                       setMateriaProfessor('')
                       setCidadeEscola('')
                       setEscolaProfessor('')
+                      setFaixaEtaria('')
+                      setAceitouDocumentos(false)
                     }
                   }}
                 >
