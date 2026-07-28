@@ -60,6 +60,7 @@ export default function CreateStory() {
   const [musicaInicio, setMusicaInicio] = useState(0)
   const [musicaVolume, setMusicaVolume] = useState(0.75)
   const [buscaMusica, setBuscaMusica] = useState('')
+  const [filtroMusica, setFiltroMusica] = useState('para_voce')
   const [seletorMusicaAberto, setSeletorMusicaAberto] = useState(false)
   const [musicaTocandoId, setMusicaTocandoId] = useState(null)
   const inputFileRef = useRef(null)
@@ -78,7 +79,7 @@ export default function CreateStory() {
         setPerfil(data)
         const { data: faixas } = await supabase
           .from('story_music_library')
-          .select('id,title,artist,audio_url,duration_seconds,cover_url')
+          .select('id,title,artist,audio_url,duration_seconds,cover_url,genre,mood,is_featured')
           .eq('is_active', true)
           .order('title')
         setMusicas(faixas || [])
@@ -140,6 +141,15 @@ export default function CreateStory() {
       duration_seconds: 0,
     })
   }
+
+  const musicasFiltradas = musicas.filter((faixa) => {
+    const busca = buscaMusica.trim().toLowerCase()
+    if (busca && !`${faixa.title} ${faixa.artist} ${faixa.genre || ''} ${faixa.mood || ''}`.toLowerCase().includes(busca)) return false
+    if (busca || filtroMusica === 'para_voce') return true
+    if (filtroMusica === 'em_alta') return faixa.is_featured
+    if (filtroMusica === 'instrumental') return `${faixa.genre || ''}`.toLowerCase().includes('instrumental')
+    return `${faixa.mood || ''}`.toLowerCase() === filtroMusica
+  }).sort((a, b) => Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)))
 
   useEffect(() => () => {
     if (preview.startsWith('blob:')) URL.revokeObjectURL(preview)
@@ -340,6 +350,20 @@ export default function CreateStory() {
               <span>⌕</span>
               <input value={buscaMusica} onChange={(event) => setBuscaMusica(event.target.value)} placeholder="Pesquisar música ou artista" autoFocus />
             </div>
+            <div className="story-music-suggestions" aria-label="Sugestões de música">
+              {[
+                ['para_voce', 'Para você'],
+                ['em_alta', 'Em alta'],
+                ['animada', 'Animadas'],
+                ['calma', 'Calmas'],
+                ['foco', 'Foco'],
+                ['instrumental', 'Instrumentais'],
+              ].map(([valor, rotulo]) => (
+                <button type="button" key={valor} className={filtroMusica === valor ? 'active' : ''} onClick={() => { setFiltroMusica(valor); setBuscaMusica('') }}>
+                  {rotulo}
+                </button>
+              ))}
+            </div>
             <button type="button" className="story-own-music" onClick={() => inputMusicaRef.current?.click()}>
               <span><IconeMusica /></span>
               <div><strong>Usar áudio próprio</strong><small>Envie uma faixa que você tem autorização para usar</small></div>
@@ -347,7 +371,11 @@ export default function CreateStory() {
             </button>
             <input ref={inputMusicaRef} type="file" accept="audio/*" onChange={escolherMusicaPropria} hidden />
             <div className="story-music-list">
-              {musicas.filter((faixa) => `${faixa.title} ${faixa.artist}`.toLowerCase().includes(buscaMusica.toLowerCase())).map((faixa) => (
+              <div className="story-music-list-heading">
+                <div><strong>{buscaMusica ? 'Resultados' : filtroMusica === 'para_voce' ? 'Sugestões para você' : 'Faixas sugeridas'}</strong><small>{musicasFiltradas.length} músicas</small></div>
+                <span>♫</span>
+              </div>
+              {musicasFiltradas.map((faixa) => (
                 <article key={faixa.id} className={musica?.id === faixa.id ? 'selected' : ''}>
                   <button type="button" className="play" onClick={() => ouvirMusica(faixa)}>{musicaTocandoId === faixa.id ? 'Ⅱ' : '▶'}</button>
                   <button type="button" className="info" onClick={() => selecionarMusica(faixa)}>
@@ -356,7 +384,8 @@ export default function CreateStory() {
                   <button type="button" className="use" onClick={() => selecionarMusica(faixa)}>Usar</button>
                 </article>
               ))}
-              {!musicas.length ? <p className="story-music-empty">A biblioteca ainda não possui faixas. Você já pode usar um áudio próprio autorizado.</p> : null}
+              {!musicas.length ? <p className="story-music-empty">As sugestões aparecerão aqui quando as primeiras faixas forem adicionadas. Você já pode usar um áudio próprio autorizado.</p> : null}
+              {musicas.length > 0 && !musicasFiltradas.length ? <p className="story-music-empty">Nenhuma música encontrada nesta categoria.</p> : null}
             </div>
             {musica ? (
               <div className="story-music-controls">

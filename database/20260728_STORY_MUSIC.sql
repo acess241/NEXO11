@@ -10,10 +10,18 @@ create table if not exists public.story_music_library (
   audio_url text not null,
   cover_url text,
   duration_seconds integer not null check (duration_seconds between 1 and 900),
+  genre text,
+  mood text check (mood is null or mood in ('animada', 'calma', 'foco')),
+  is_featured boolean not null default false,
   rights_source text not null default 'authorized',
   is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+alter table public.story_music_library
+  add column if not exists genre text,
+  add column if not exists mood text,
+  add column if not exists is_featured boolean not null default false;
 
 alter table public.stories
   add column if not exists music_url text,
@@ -70,6 +78,6 @@ commit;
 -- 2. Substitua os valores abaixo e execute apenas este INSERT.
 --
 -- insert into public.story_music_library
---   (title, artist, audio_url, duration_seconds, rights_source)
+--   (title, artist, audio_url, duration_seconds, genre, mood, is_featured, rights_source)
 -- values
---   ('Nome da música', 'Nome do artista', 'URL pública do arquivo', 180, 'Licença ou autorização');
+--   ('Nome da música', 'Nome do artista', 'URL pública do arquivo', 180, 'Instrumental', 'foco', true, 'Licença ou autorização');

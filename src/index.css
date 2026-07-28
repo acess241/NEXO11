@@ -2578,6 +2578,36 @@ body[data-theme='claro'] .mention-suggestion {
   cursor: pointer;
 }
 
+.story-music-suggestions {
+  padding: 2px 18px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  display: flex;
+  gap: 8px;
+}
+
+.story-music-suggestions::-webkit-scrollbar {
+  display: none;
+}
+
+.story-music-suggestions button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #2a322c;
+  border-radius: 999px;
+  background: #141815;
+  color: #c4ccc6;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.story-music-suggestions button.active {
+  border-color: #1dff26;
+  background: #1dff26;
+  color: #031004;
+}
+
 .story-own-music > span:first-child {
   width: 42px;
   height: 42px;
@@ -2600,6 +2630,33 @@ body[data-theme='claro'] .mention-suggestion {
 
 .story-music-list {
   padding: 0 18px 12px;
+}
+
+.story-music-list-heading {
+  min-height: 52px;
+  padding: 4px 8px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.story-music-list-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.story-music-list-heading strong {
+  font-size: 16px;
+}
+
+.story-music-list-heading small {
+  color: #7f8a82;
+  font-size: 11px;
+}
+
+.story-music-list-heading > span {
+  color: #1dff26;
+  font-size: 20px;
 }
 
 .story-music-list article {
