@@ -19,7 +19,7 @@ insert into public.profiles (
 select
   u.id,
   'NEXO 11',
-  'NEXO11',
+  'nexo11',
   'Perfil oficial do NEXO 11. Conectando alunos, professores e escolas.',
   'https://acess241.github.io/NEXO11/logo-novo.png',
   'teacher'
@@ -68,7 +68,7 @@ execute function public.protect_profile_verification();
 update public.profiles p
 set
   nome = 'NEXO 11',
-  username = 'NEXO11',
+  username = 'nexo11',
   bio = 'Perfil oficial do NEXO 11. Conectando alunos, professores e escolas.',
   foto_url = 'https://acess241.github.io/NEXO11/logo-novo.png',
   role = 'teacher',

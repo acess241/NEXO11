@@ -342,7 +342,10 @@ export default function UserProfile() {
   return (
     <div className="container">
       <div className="profile-topbar">
-        <h2>@{perfil.username}</h2>
+        <h2 className={perfil.is_verified ? 'official-username-display' : ''}>
+          @{perfil.username}
+          <VerifiedBadge verified={perfil.is_verified} />
+        </h2>
       </div>
 
       <div className="page">

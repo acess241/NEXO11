@@ -14284,6 +14284,17 @@ body[data-theme='verde'] .card {
   gap: 7px;
 }
 
+.official-username-display,
+.verified-handle-row:has(.verified-badge) {
+  text-transform: uppercase;
+}
+
+.official-username-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .verified-badge {
   width: 19px;
   height: 19px;
