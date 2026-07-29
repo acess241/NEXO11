@@ -12181,29 +12181,65 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 
 .oxente-library-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 10px;
 }
 
 .oxente-library-grid .oxente-library-book {
   min-width: 0;
   margin: 0;
-  padding: 12px;
+  padding: 10px;
+  gap: 9px;
   align-items: stretch;
   justify-content: initial;
+  border-color: color-mix(in srgb, var(--book-accent, #1dff00) 26%, #223246);
+  background:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--book-accent, #1dff00) 10%, transparent), transparent 42%),
+    #08121e;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.oxente-library-grid .oxente-library-book:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--book-accent, #1dff00) 62%, #223246);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.oxente-library-book[data-subject='Português'] {
+  --book-accent: #ff5f8f;
+}
+
+.oxente-library-book[data-subject='Matemática'] {
+  --book-accent: #28a8ff;
+}
+
+.oxente-library-book[data-subject='Química'] {
+  --book-accent: #a879ff;
+}
+
+.oxente-library-book[data-subject='Biologia'] {
+  --book-accent: #36db7b;
+}
+
+.oxente-library-book[data-subject='História'] {
+  --book-accent: #ffad42;
+}
+
+.oxente-library-book[data-subject='Geografia'] {
+  --book-accent: #24d6c5;
 }
 
 .oxente-library-cover {
-  flex: 0 0 74px;
-  min-height: 108px;
-  padding: 10px 7px;
-  border: 1px solid rgba(29, 255, 0, 0.3);
-  border-radius: 10px;
+  flex: 0 0 58px;
+  min-height: 84px;
+  padding: 8px 5px;
+  border: 1px solid color-mix(in srgb, var(--book-accent, #1dff00) 42%, transparent);
+  border-radius: 9px;
   background:
-    linear-gradient(145deg, rgba(29, 255, 0, 0.2), rgba(0, 0, 0, 0.1)),
+    linear-gradient(145deg, color-mix(in srgb, var(--book-accent, #1dff00) 26%, transparent), rgba(0, 0, 0, 0.1)),
     #07110a;
-  color: #1dff00;
+  color: var(--book-accent, #1dff00);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12212,13 +12248,13 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 }
 
 .oxente-library-cover svg {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
 }
 
 .oxente-library-cover span {
   color: #d9ffd4;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -12229,20 +12265,31 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 }
 
 .oxente-library-book-copy strong {
-  font-size: 14px;
-  line-height: 1.25;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.22;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .oxente-library-book-copy > span {
   display: block;
-  margin-top: 5px;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .oxente-library-book-copy p {
-  margin: 8px 0;
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 6px 0;
   color: #b8c7bb;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .oxente-library-book-copy small {
@@ -12253,14 +12300,15 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 .oxente-library-grid .oxente-library-actions {
   flex: 0 0 100%;
   align-self: end;
+  margin-top: 0;
 }
 
 .oxente-library-actions button,
 .oxente-library-reader-header > a,
 .oxente-library-reader-fallback a {
   display: inline-flex;
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 11px;
   border: 1px solid #1dff00;
   border-radius: 10px;
   background: #1dff00;
@@ -12272,6 +12320,29 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
   font-weight: 900;
   text-decoration: none;
   cursor: pointer;
+}
+
+.oxente-library-grid .oxente-library-actions button {
+  flex: 1 1 auto;
+  border-color: var(--book-accent, #1dff00);
+  background: var(--book-accent, #1dff00);
+}
+
+.oxente-library-grid .oxente-library-actions a {
+  min-height: 34px;
+  padding-inline: 9px;
+}
+
+@media (min-width: 1440px) {
+  .oxente-library-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .oxente-library-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .oxente-library-empty {
@@ -12358,6 +12429,15 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 
   .oxente-library-grid {
     grid-template-columns: 1fr;
+  }
+
+  .oxente-library-grid .oxente-library-book {
+    padding: 9px;
+  }
+
+  .oxente-library-cover {
+    flex-basis: 54px;
+    min-height: 78px;
   }
 
   .oxente-library-reader {

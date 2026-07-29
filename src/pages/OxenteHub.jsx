@@ -3713,7 +3713,11 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                           <h4 className="oxente-library-subject">{subject.name}</h4>
                           <div className="oxente-library-grid">
                             {subject.books.map((book) => (
-                              <article className="oxente-library-book" key={`${series.series}-${book.id}`}>
+                              <article
+                                className="oxente-library-book"
+                                data-subject={book.subject}
+                                key={`${series.series}-${book.id}`}
+                              >
                                 <div className="oxente-library-cover" aria-hidden="true">
                                   {renderLaboratorioIcon('biblioteca')}
                                   <span>{book.subject}</span>
