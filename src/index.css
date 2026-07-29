@@ -12567,20 +12567,26 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 
   .oxente-library-grid .oxente-library-actions {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto auto;
     gap: 4px;
+    justify-content: start;
   }
 
   .oxente-library-grid .oxente-library-actions button,
   .oxente-library-grid .oxente-library-actions a {
-    min-height: 32px;
-    padding-inline: 7px;
-    border-radius: 8px;
-    font-size: 10px;
+    min-height: 27px;
+    padding-inline: 6px;
+    border-radius: 7px;
+    font-size: 8px;
+    line-height: 1;
+  }
+
+  .oxente-library-grid .oxente-library-actions button {
+    flex: 0 0 auto;
   }
 
   .oxente-library-grid .oxente-library-actions a {
-    min-width: 42px;
+    min-width: 34px;
   }
 
   .oxente-library-reader {
