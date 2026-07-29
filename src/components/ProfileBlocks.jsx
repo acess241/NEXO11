@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { POST_TYPE_META, normalizarTipoPost, obterMediaKind } from '../lib/postTypes'
+import { supabase } from '../lib/supabase'
 
 function IconeNotas() {
   return (
@@ -196,6 +197,12 @@ export default function ProfileBlocks({
 }) {
   const [blocoAtivo, setBlocoAtivo] = useState('foto')
   const [postAbertoId, setPostAbertoId] = useState(null)
+  const [meuPerfil, setMeuPerfil] = useState(null)
+  const [interacoes, setInteracoes] = useState({})
+  const [comentario, setComentario] = useState('')
+  const [carregandoInteracoes, setCarregandoInteracoes] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [aviso, setAviso] = useState('')
 
   const contagens = useMemo(() => {
     return (posts || []).reduce(
@@ -235,16 +242,190 @@ export default function ProfileBlocks({
     }
   }, [postsFiltrados, postAbertoId])
 
+  const postAberto = useMemo(
+    () => postsFiltrados.find((post) => post.id === postAbertoId) || null,
+    [postAbertoId, postsFiltrados]
+  )
+
   useEffect(() => {
     if (!postAbertoId) return
+    let ativo = true
 
-    const timer = window.setTimeout(() => {
-      const alvo = document.getElementById(`profile-feed-item-${postAbertoId}`)
-      alvo?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }, 80)
+    async function carregarInteracoes() {
+      setCarregandoInteracoes(true)
+      setAviso('')
+      try {
+        const { data: authData } = await supabase.auth.getUser()
+        const userId = authData?.user?.id
+        let perfilAtual = null
+        if (userId) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('id, nome, username, avatar_url, is_verified')
+            .eq('account_id', userId)
+            .maybeSingle()
+          perfilAtual = data || null
+        }
 
-    return () => window.clearTimeout(timer)
+        const [curtidasResp, repostsResp, comentariosResp] = await Promise.all([
+          supabase.from('post_likes').select('profile_id').eq('post_id', postAbertoId),
+          supabase.from('reposts').select('profile_id').eq('post_id', postAbertoId),
+          supabase
+            .from('comments')
+            .select('id, content, created_at, profile_id')
+            .eq('post_id', postAbertoId)
+            .is('parent_comment_id', null)
+            .order('created_at', { ascending: true }),
+        ])
+
+        if (curtidasResp.error) throw curtidasResp.error
+        if (repostsResp.error) throw repostsResp.error
+        if (comentariosResp.error) throw comentariosResp.error
+
+        const comentariosBase = comentariosResp.data || []
+        const idsPerfis = [...new Set(comentariosBase.map((item) => item.profile_id).filter(Boolean))]
+        let perfis = []
+        if (idsPerfis.length) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, nome, username, avatar_url, is_verified')
+            .in('id', idsPerfis)
+          if (error) throw error
+          perfis = data || []
+        }
+        const mapaPerfis = new Map(perfis.map((perfil) => [perfil.id, perfil]))
+
+        if (!ativo) return
+        setMeuPerfil(perfilAtual)
+        setInteracoes((estado) => ({
+          ...estado,
+          [postAbertoId]: {
+            curtidas: curtidasResp.data?.length || 0,
+            reposts: repostsResp.data?.length || 0,
+            euCurti: Boolean(perfilAtual && curtidasResp.data?.some((item) => item.profile_id === perfilAtual.id)),
+            euRepostei: Boolean(perfilAtual && repostsResp.data?.some((item) => item.profile_id === perfilAtual.id)),
+            comentarios: comentariosBase.map((item) => ({
+              ...item,
+              autor: mapaPerfis.get(item.profile_id) || null,
+            })),
+          },
+        }))
+      } catch (error) {
+        if (ativo) setAviso(error?.message || 'Não foi possível carregar as interações.')
+      } finally {
+        if (ativo) setCarregandoInteracoes(false)
+      }
+    }
+
+    carregarInteracoes()
+    return () => {
+      ativo = false
+    }
   }, [postAbertoId])
+
+  useEffect(() => {
+    if (!postAbertoId) return undefined
+    const anterior = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = anterior
+    }
+  }, [postAbertoId])
+
+  async function alternarCurtida() {
+    if (!meuPerfil || !postAbertoId || enviando) return
+    const atual = interacoes[postAbertoId]
+    setEnviando(true)
+    setAviso('')
+    try {
+      const consulta = atual?.euCurti
+        ? supabase.from('post_likes').delete().eq('post_id', postAbertoId).eq('profile_id', meuPerfil.id)
+        : supabase.from('post_likes').insert({ post_id: postAbertoId, profile_id: meuPerfil.id })
+      const { error } = await consulta
+      if (error) throw error
+      setInteracoes((estado) => ({
+        ...estado,
+        [postAbertoId]: {
+          ...estado[postAbertoId],
+          euCurti: !atual?.euCurti,
+          curtidas: Math.max(0, Number(atual?.curtidas || 0) + (atual?.euCurti ? -1 : 1)),
+        },
+      }))
+    } catch (error) {
+      setAviso(error?.message || 'Não foi possível atualizar a curtida.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function alternarRepublicacao() {
+    if (!meuPerfil || !postAbertoId || enviando) return
+    const atual = interacoes[postAbertoId]
+    setEnviando(true)
+    setAviso('')
+    try {
+      const consulta = atual?.euRepostei
+        ? supabase.from('reposts').delete().eq('post_id', postAbertoId).eq('profile_id', meuPerfil.id)
+        : supabase.from('reposts').insert({ post_id: postAbertoId, profile_id: meuPerfil.id })
+      const { error } = await consulta
+      if (error) throw error
+      setInteracoes((estado) => ({
+        ...estado,
+        [postAbertoId]: {
+          ...estado[postAbertoId],
+          euRepostei: !atual?.euRepostei,
+          reposts: Math.max(0, Number(atual?.reposts || 0) + (atual?.euRepostei ? -1 : 1)),
+        },
+      }))
+    } catch (error) {
+      setAviso(error?.message || 'Não foi possível republicar.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function enviarComentario(event) {
+    event.preventDefault()
+    const texto = comentario.trim()
+    if (!texto || !meuPerfil || !postAbertoId || enviando) return
+    setEnviando(true)
+    setAviso('')
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .insert({ post_id: postAbertoId, profile_id: meuPerfil.id, content: texto, parent_comment_id: null })
+        .select('id, content, created_at, profile_id')
+        .single()
+      if (error) throw error
+      setInteracoes((estado) => ({
+        ...estado,
+        [postAbertoId]: {
+          ...estado[postAbertoId],
+          comentarios: [...(estado[postAbertoId]?.comentarios || []), { ...data, autor: meuPerfil }],
+        },
+      }))
+      setComentario('')
+    } catch (error) {
+      setAviso(error?.message || 'Não foi possível publicar o comentário.')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function compartilhar() {
+    if (!postAberto) return
+    const url = `${window.location.origin}${window.location.pathname}#post-${postAberto.id}`
+    const dados = { title: 'Publicação no NEXO', text: postAberto.content || 'Veja esta publicação no NEXO', url }
+    try {
+      if (navigator.share) await navigator.share(dados)
+      else {
+        await navigator.clipboard.writeText(url)
+        setAviso('Link da publicação copiado.')
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') setAviso('Não foi possível compartilhar agora.')
+    }
+  }
 
   return (
     <>
@@ -297,24 +478,79 @@ export default function ProfileBlocks({
         </div>
       )}
 
-      {postAbertoId ? (
+      {postAberto ? (
         <div className="profile-ig-modal-overlay" onClick={() => setPostAbertoId(null)} role="dialog" aria-modal="true">
-          <article className="profile-ig-modal profile-ig-feed-modal" onClick={(event) => event.stopPropagation()}>
+          <article className="profile-ig-modal profile-ig-feed-modal profile-post-detail" onClick={(event) => event.stopPropagation()}>
             <div className="profile-ig-feed-head">
-              <strong>Feed do perfil</strong>
+              <strong>Publicação</strong>
               <button
                 type="button"
                 className="profile-ig-modal-close"
                 onClick={() => setPostAbertoId(null)}
                 aria-label="Fechar publicação"
               >
-                x
+                ×
               </button>
             </div>
 
-            <div className="profile-ig-feed-list">
-              {postsFiltrados.map((post) => renderPostFeedCard(post, blocoAtivo, formatarData, post.id === postAbertoId))}
+            {renderPostFeedCard(postAberto, blocoAtivo, formatarData, true)}
+
+            <div className="profile-post-actions" aria-label="Interações da publicação">
+              <button type="button" className={interacoes[postAbertoId]?.euCurti ? 'active' : ''} onClick={alternarCurtida} disabled={!meuPerfil || enviando}>
+                <span aria-hidden="true">♡</span>
+                <strong>{interacoes[postAbertoId]?.curtidas || 0}</strong>
+                <span>Curtidas</span>
+              </button>
+              <button type="button" onClick={() => document.getElementById('profile-post-comment-input')?.focus()}>
+                <span aria-hidden="true">◯</span>
+                <strong>{interacoes[postAbertoId]?.comentarios?.length || 0}</strong>
+                <span>Comentários</span>
+              </button>
+              <button type="button" onClick={compartilhar}>
+                <span aria-hidden="true">↗</span>
+                <strong>Enviar</strong>
+                <span>Compartilhar</span>
+              </button>
+              <button type="button" className={interacoes[postAbertoId]?.euRepostei ? 'active' : ''} onClick={alternarRepublicacao} disabled={!meuPerfil || enviando}>
+                <span aria-hidden="true">⇄</span>
+                <strong>{interacoes[postAbertoId]?.reposts || 0}</strong>
+                <span>{interacoes[postAbertoId]?.euRepostei ? 'Republicado' : 'Republicar'}</span>
+              </button>
             </div>
+
+            <section className="profile-post-comments">
+              <h4>Comentários</h4>
+              {carregandoInteracoes ? <p className="profile-post-comments-state">Carregando comentários...</p> : null}
+              {!carregandoInteracoes && !(interacoes[postAbertoId]?.comentarios?.length) ? (
+                <p className="profile-post-comments-state">Seja a primeira pessoa a comentar.</p>
+              ) : null}
+              {(interacoes[postAbertoId]?.comentarios || []).map((item) => (
+                <article className="profile-post-comment" key={item.id}>
+                  <div className="profile-post-comment-avatar">
+                    {item.autor?.avatar_url ? <img src={item.autor.avatar_url} alt="" /> : <span>{(item.autor?.nome || '?').charAt(0).toUpperCase()}</span>}
+                  </div>
+                  <div>
+                    <strong>{item.autor?.username ? `@${item.autor.username}` : item.autor?.nome || 'Usuário'}</strong>
+                    <p>{item.content}</p>
+                  </div>
+                </article>
+              ))}
+            </section>
+
+            <form className="profile-post-comment-form" onSubmit={enviarComentario}>
+              <input
+                id="profile-post-comment-input"
+                value={comentario}
+                onChange={(event) => setComentario(event.target.value)}
+                placeholder={meuPerfil ? 'Adicione um comentário...' : 'Entre na sua conta para comentar'}
+                maxLength={1000}
+                disabled={!meuPerfil || enviando}
+              />
+              <button type="submit" disabled={!comentario.trim() || !meuPerfil || enviando}>
+                {enviando ? 'Enviando...' : 'Publicar'}
+              </button>
+            </form>
+            {aviso ? <p className="profile-post-feedback" role="status">{aviso}</p> : null}
           </article>
         </div>
       ) : null}
