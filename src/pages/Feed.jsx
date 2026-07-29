@@ -218,11 +218,17 @@ export default function Feed() {
     if (!meuPerfil?.id) return undefined
     let ativo = true
     async function atualizarContagem() {
-      const [{ count: notificacoes }, { count: solicitacoes }] = await Promise.all([
-        supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).is('read_at', null),
-        supabase.from('follow_requests').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).eq('status', 'pending'),
-      ])
-      if (ativo) setNotificacoesNaoLidas(Number(notificacoes || 0) + Number(solicitacoes || 0))
+      try {
+        const resultados = await Promise.allSettled([
+          supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).is('read_at', null),
+          supabase.from('follow_requests').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).eq('status', 'pending'),
+        ])
+        const notificacoes = resultados[0].status === 'fulfilled' ? resultados[0].value?.count : 0
+        const solicitacoes = resultados[1].status === 'fulfilled' ? resultados[1].value?.count : 0
+        if (ativo) setNotificacoesNaoLidas(Number(notificacoes || 0) + Number(solicitacoes || 0))
+      } catch {
+        if (ativo) setNotificacoesNaoLidas(0)
+      }
     }
     void atualizarContagem()
     const canal = supabase.channel(`feed-top-notifications-${meuPerfil.id}`)
@@ -448,9 +454,11 @@ export default function Feed() {
       const repostsPorPost = agruparPorCampo(repostsData, 'post_id')
       const curtidasPorPost = agruparPorCampo(curtidasPostData, 'post_id')
       const postsVisiveis = (postsBase || []).filter((post) => {
+        if (!post?.id || !post?.profile_id) return false
+        const autorPost = perfisPostsMap.get(post.profile_id)
+        if (!autorPost?.id) return false
         if (post.profile_id === perfil.id) return true
 
-        const autorPost = perfisPostsMap.get(post.profile_id)
         if (!autorPost?.is_private) return true
 
         return seguindoSet.has(post.profile_id)
@@ -576,15 +584,17 @@ export default function Feed() {
               seguindoSet.has(story.profile_id)
           )
 
-          const storiesFinal = storiesFiltrados.map((story) => ({
-            ...story,
-            perfil: perfisStoriesMap.get(story.profile_id),
-            visto: (views || []).some((view) => view.story_id === story.id),
-            euCurti: (likes || []).some(
-              (like) => like.story_id === story.id && like.profile_id === perfil.id
-            ),
-            totalCurtidas: (likes || []).filter((like) => like.story_id === story.id).length,
-          }))
+          const storiesFinal = storiesFiltrados
+            .filter((story) => story?.id && story?.media_url && perfisStoriesMap.get(story.profile_id)?.id)
+            .map((story) => ({
+              ...story,
+              perfil: perfisStoriesMap.get(story.profile_id),
+              visto: (views || []).some((view) => view.story_id === story.id),
+              euCurti: (likes || []).some(
+                (like) => like.story_id === story.id && like.profile_id === perfil.id
+              ),
+              totalCurtidas: (likes || []).filter((like) => like.story_id === story.id).length,
+            }))
 
           setStories(storiesFinal)
         } else {

@@ -3,6 +3,7 @@ import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 
 function formatarTempoRelativo(dataIso) {
   const data = new Date(dataIso)
+  if (Number.isNaN(data.getTime())) return 'agora'
   const agora = new Date()
   const diff = Math.floor((agora - data) / 1000)
 

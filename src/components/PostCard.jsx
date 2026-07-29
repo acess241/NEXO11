@@ -7,6 +7,7 @@ import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
+  if (Number.isNaN(data.getTime())) return ''
 
   return data.toLocaleString('pt-BR', {
     day: '2-digit',
