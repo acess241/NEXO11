@@ -332,21 +332,30 @@ export default function ProfileBlocks({
     }
   }, [postAbertoId])
 
-  async function alternarCurtida() {
-    if (!meuPerfil || !postAbertoId || enviando) return
-    const atual = interacoes[postAbertoId]
+  useEffect(() => {
+    if (!postAbertoId) return
+    const timer = window.setTimeout(() => {
+      document.getElementById(`profile-feed-item-${postAbertoId}`)
+        ?.scrollIntoView({ block: 'start' })
+    }, 60)
+    return () => window.clearTimeout(timer)
+  }, [postAbertoId])
+
+  async function alternarCurtida(postId = postAbertoId) {
+    if (!meuPerfil || !postId || enviando) return
+    const atual = interacoes[postId]
     setEnviando(true)
     setAviso('')
     try {
       const consulta = atual?.euCurti
-        ? supabase.from('post_likes').delete().eq('post_id', postAbertoId).eq('profile_id', meuPerfil.id)
-        : supabase.from('post_likes').insert({ post_id: postAbertoId, profile_id: meuPerfil.id })
+        ? supabase.from('post_likes').delete().eq('post_id', postId).eq('profile_id', meuPerfil.id)
+        : supabase.from('post_likes').insert({ post_id: postId, profile_id: meuPerfil.id })
       const { error } = await consulta
       if (error) throw error
       setInteracoes((estado) => ({
         ...estado,
-        [postAbertoId]: {
-          ...estado[postAbertoId],
+        [postId]: {
+          ...estado[postId],
           euCurti: !atual?.euCurti,
           curtidas: Math.max(0, Number(atual?.curtidas || 0) + (atual?.euCurti ? -1 : 1)),
         },
@@ -358,21 +367,21 @@ export default function ProfileBlocks({
     }
   }
 
-  async function alternarRepublicacao() {
-    if (!meuPerfil || !postAbertoId || enviando) return
-    const atual = interacoes[postAbertoId]
+  async function alternarRepublicacao(postId = postAbertoId) {
+    if (!meuPerfil || !postId || enviando) return
+    const atual = interacoes[postId]
     setEnviando(true)
     setAviso('')
     try {
       const consulta = atual?.euRepostei
-        ? supabase.from('reposts').delete().eq('post_id', postAbertoId).eq('profile_id', meuPerfil.id)
-        : supabase.from('reposts').insert({ post_id: postAbertoId, profile_id: meuPerfil.id })
+        ? supabase.from('reposts').delete().eq('post_id', postId).eq('profile_id', meuPerfil.id)
+        : supabase.from('reposts').insert({ post_id: postId, profile_id: meuPerfil.id })
       const { error } = await consulta
       if (error) throw error
       setInteracoes((estado) => ({
         ...estado,
-        [postAbertoId]: {
-          ...estado[postAbertoId],
+        [postId]: {
+          ...estado[postId],
           euRepostei: !atual?.euRepostei,
           reposts: Math.max(0, Number(atual?.reposts || 0) + (atual?.euRepostei ? -1 : 1)),
         },
@@ -412,10 +421,10 @@ export default function ProfileBlocks({
     }
   }
 
-  async function compartilhar() {
-    if (!postAberto) return
-    const url = `${window.location.origin}${window.location.pathname}#post-${postAberto.id}`
-    const dados = { title: 'Publicação no NEXO', text: postAberto.content || 'Veja esta publicação no NEXO', url }
+  async function compartilhar(post = postAberto) {
+    if (!post) return
+    const url = `${window.location.origin}${window.location.pathname}#post-${post.id}`
+    const dados = { title: 'Publicação no NEXO', text: post.content || 'Veja esta publicação no NEXO', url }
     try {
       if (navigator.share) await navigator.share(dados)
       else {
@@ -482,7 +491,7 @@ export default function ProfileBlocks({
         <div className="profile-ig-modal-overlay" onClick={() => setPostAbertoId(null)} role="dialog" aria-modal="true">
           <article className="profile-ig-modal profile-ig-feed-modal profile-post-detail" onClick={(event) => event.stopPropagation()}>
             <div className="profile-ig-feed-head">
-              <strong>Publicação</strong>
+              <strong>Feed do perfil</strong>
               <button
                 type="button"
                 className="profile-ig-modal-close"
@@ -493,63 +502,80 @@ export default function ProfileBlocks({
               </button>
             </div>
 
-            {renderPostFeedCard(postAberto, blocoAtivo, formatarData, true)}
+            <div className="profile-personal-feed">
+              {postsFiltrados.map((post) => {
+                const ativo = post.id === postAbertoId
+                return (
+                  <section className={`profile-personal-feed-entry ${ativo ? 'active' : ''}`} key={`feed-${post.id}`}>
+                    {renderPostFeedCard(post, blocoAtivo, formatarData, ativo)}
 
-            <div className="profile-post-actions" aria-label="Interações da publicação">
-              <button type="button" className={interacoes[postAbertoId]?.euCurti ? 'active' : ''} onClick={alternarCurtida} disabled={!meuPerfil || enviando}>
-                <span aria-hidden="true">♡</span>
-                <strong>{interacoes[postAbertoId]?.curtidas || 0}</strong>
-                <span>Curtidas</span>
-              </button>
-              <button type="button" onClick={() => document.getElementById('profile-post-comment-input')?.focus()}>
-                <span aria-hidden="true">◯</span>
-                <strong>{interacoes[postAbertoId]?.comentarios?.length || 0}</strong>
-                <span>Comentários</span>
-              </button>
-              <button type="button" onClick={compartilhar}>
-                <span aria-hidden="true">↗</span>
-                <strong>Enviar</strong>
-                <span>Compartilhar</span>
-              </button>
-              <button type="button" className={interacoes[postAbertoId]?.euRepostei ? 'active' : ''} onClick={alternarRepublicacao} disabled={!meuPerfil || enviando}>
-                <span aria-hidden="true">⇄</span>
-                <strong>{interacoes[postAbertoId]?.reposts || 0}</strong>
-                <span>{interacoes[postAbertoId]?.euRepostei ? 'Republicado' : 'Republicar'}</span>
-              </button>
+                    {ativo ? (
+                      <>
+                        <div className="profile-post-actions" aria-label="Interações da publicação">
+                          <button type="button" className={interacoes[post.id]?.euCurti ? 'active' : ''} onClick={() => alternarCurtida(post.id)} disabled={!meuPerfil || enviando}>
+                            <span aria-hidden="true">♡</span>
+                            <strong>{interacoes[post.id]?.curtidas || 0}</strong>
+                            <span>Curtidas</span>
+                          </button>
+                          <button type="button" onClick={() => document.getElementById('profile-post-comment-input')?.focus()}>
+                            <span aria-hidden="true">◯</span>
+                            <strong>{interacoes[post.id]?.comentarios?.length || 0}</strong>
+                            <span>Comentários</span>
+                          </button>
+                          <button type="button" onClick={() => compartilhar(post)}>
+                            <span aria-hidden="true">↗</span>
+                            <strong>Enviar</strong>
+                            <span>Compartilhar</span>
+                          </button>
+                          <button type="button" className={interacoes[post.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(post.id)} disabled={!meuPerfil || enviando}>
+                            <span aria-hidden="true">⇄</span>
+                            <strong>{interacoes[post.id]?.reposts || 0}</strong>
+                            <span>{interacoes[post.id]?.euRepostei ? 'Republicado' : 'Republicar'}</span>
+                          </button>
+                        </div>
+
+                        <section className="profile-post-comments">
+                          <h4>Comentários</h4>
+                          {carregandoInteracoes ? <p className="profile-post-comments-state">Carregando comentários...</p> : null}
+                          {!carregandoInteracoes && !(interacoes[post.id]?.comentarios?.length) ? (
+                            <p className="profile-post-comments-state">Seja a primeira pessoa a comentar.</p>
+                          ) : null}
+                          {(interacoes[post.id]?.comentarios || []).map((item) => (
+                            <article className="profile-post-comment" key={item.id}>
+                              <div className="profile-post-comment-avatar">
+                                {item.autor?.avatar_url ? <img src={item.autor.avatar_url} alt="" /> : <span>{(item.autor?.nome || '?').charAt(0).toUpperCase()}</span>}
+                              </div>
+                              <div>
+                                <strong>{item.autor?.username ? `@${item.autor.username}` : item.autor?.nome || 'Usuário'}</strong>
+                                <p>{item.content}</p>
+                              </div>
+                            </article>
+                          ))}
+                        </section>
+
+                        <form className="profile-post-comment-form" onSubmit={enviarComentario}>
+                          <input
+                            id="profile-post-comment-input"
+                            value={comentario}
+                            onChange={(event) => setComentario(event.target.value)}
+                            placeholder={meuPerfil ? 'Adicione um comentário...' : 'Entre na sua conta para comentar'}
+                            maxLength={1000}
+                            disabled={!meuPerfil || enviando}
+                          />
+                          <button type="submit" disabled={!comentario.trim() || !meuPerfil || enviando}>
+                            {enviando ? 'Enviando...' : 'Publicar'}
+                          </button>
+                        </form>
+                      </>
+                    ) : (
+                      <button type="button" className="profile-personal-feed-open" onClick={() => setPostAbertoId(post.id)}>
+                        Ver curtidas e comentários
+                      </button>
+                    )}
+                  </section>
+                )
+              })}
             </div>
-
-            <section className="profile-post-comments">
-              <h4>Comentários</h4>
-              {carregandoInteracoes ? <p className="profile-post-comments-state">Carregando comentários...</p> : null}
-              {!carregandoInteracoes && !(interacoes[postAbertoId]?.comentarios?.length) ? (
-                <p className="profile-post-comments-state">Seja a primeira pessoa a comentar.</p>
-              ) : null}
-              {(interacoes[postAbertoId]?.comentarios || []).map((item) => (
-                <article className="profile-post-comment" key={item.id}>
-                  <div className="profile-post-comment-avatar">
-                    {item.autor?.avatar_url ? <img src={item.autor.avatar_url} alt="" /> : <span>{(item.autor?.nome || '?').charAt(0).toUpperCase()}</span>}
-                  </div>
-                  <div>
-                    <strong>{item.autor?.username ? `@${item.autor.username}` : item.autor?.nome || 'Usuário'}</strong>
-                    <p>{item.content}</p>
-                  </div>
-                </article>
-              ))}
-            </section>
-
-            <form className="profile-post-comment-form" onSubmit={enviarComentario}>
-              <input
-                id="profile-post-comment-input"
-                value={comentario}
-                onChange={(event) => setComentario(event.target.value)}
-                placeholder={meuPerfil ? 'Adicione um comentário...' : 'Entre na sua conta para comentar'}
-                maxLength={1000}
-                disabled={!meuPerfil || enviando}
-              />
-              <button type="submit" disabled={!comentario.trim() || !meuPerfil || enviando}>
-                {enviando ? 'Enviando...' : 'Publicar'}
-              </button>
-            </form>
             {aviso ? <p className="profile-post-feedback" role="status">{aviso}</p> : null}
           </article>
         </div>

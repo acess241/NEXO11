@@ -824,7 +824,10 @@ function ProgressStepper({ etapaAtual }) {
 export default function OxenteHub() {
   const [perfil, setPerfil] = useState(null)
   const [carregando, setCarregando] = useState(true)
-  const [tab, setTab] = useState('')
+  const [tab, setTab] = useState(() => {
+    const tabSolicitada = new URLSearchParams(window.location.search).get('tab')
+    return TABS.some((item) => item.id === tabSolicitada) ? tabSolicitada : ''
+  })
   const [etapa, setEtapa] = useState(1)
   const [laboratorioView, setLaboratorioView] = useState('inicio')
   const [rotinaView, setRotinaView] = useState('hoje')

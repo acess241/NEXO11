@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PullToRefresh from './components/PullToRefresh'
 import SocialLoader from './components/SocialLoader'
 import NotificationBridge from './components/NotificationBridge'
+import UpdateAnnouncement from './components/UpdateAnnouncement'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -36,6 +37,7 @@ const CommentedPosts = lazy(() => import('./pages/CommentedPosts'))
 const PrivacyCenter = lazy(() => import('./pages/PrivacyCenter'))
 const PrivacyPolicy = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.PrivacyPolicy })))
 const TermsOfUse = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.TermsOfUse })))
+const SafetyResponsibilityTerms = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.SafetyResponsibilityTerms })))
 
 function PageLoader() {
   return <SocialLoader variant="feed" />
@@ -154,6 +156,7 @@ export default function App() {
     <>
       <PullToRefresh />
       <NotificationBridge session={session} />
+      <UpdateAnnouncement session={session} />
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -166,6 +169,7 @@ export default function App() {
           <Route path="/adicionar-conta" element={<Auth allowAddAccount />} />
           <Route path="/privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos" element={<TermsOfUse />} />
+          <Route path="/seguranca-responsabilidade" element={<SafetyResponsibilityTerms />} />
 
           <Route
             path="/"

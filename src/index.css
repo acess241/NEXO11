@@ -10573,6 +10573,49 @@ body[data-theme='claro'] .settings-list-copy small {
   overscroll-behavior: contain;
 }
 
+.profile-personal-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: 10px;
+}
+
+.profile-personal-feed-entry {
+  scroll-margin-top: 62px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  padding-bottom: 18px;
+}
+
+.profile-personal-feed-entry:last-child {
+  border-bottom: 0;
+}
+
+.profile-personal-feed-entry .profile-ig-feed-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.profile-personal-feed-open {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d2d8d3;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.profile-personal-feed-open:hover {
+  border-color: rgba(0, 239, 114, 0.45);
+  color: #00ef72;
+}
+
 .profile-post-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -10707,6 +10750,94 @@ body[data-theme='claro'] .settings-list-copy small {
 .profile-post-actions button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.update-notice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+}
+
+.update-notice-card {
+  width: min(480px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(29, 255, 0, 0.36);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(29, 255, 0, 0.13), transparent 42%),
+    #0b0f0c;
+  color: #fff;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.update-notice-kicker {
+  color: #1dff00;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.update-notice-icon {
+  width: 54px;
+  height: 54px;
+  margin: 18px 0 14px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: #1dff00;
+  color: #041005;
+  font-size: 28px;
+  font-weight: 1000;
+}
+
+.update-notice-card h2 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 6vw, 34px);
+}
+
+.update-notice-card p {
+  margin: 0;
+  color: #bec8c0;
+  line-height: 1.6;
+}
+
+.update-notice-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.update-notice-actions button {
+  min-height: 48px;
+  border-radius: 13px;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.update-notice-actions .primary {
+  border: 0;
+  background: #1dff00;
+  color: #041005;
+}
+
+.update-notice-actions .secondary {
+  border: 1px solid #344039;
+  background: transparent;
+  color: #fff;
+}
+
+.update-notice-card small {
+  display: block;
+  margin-top: 14px;
+  color: #78847b;
+  text-align: center;
 }
 
 @media (max-width: 560px) {

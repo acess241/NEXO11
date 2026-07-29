@@ -97,6 +97,10 @@ export default function PrivacyCenter() {
             <strong>Termos de Uso</strong>
             <span>Consulte as regras da comunidade.</span>
           </button>
+          <button type="button" onClick={() => navigate('/seguranca-responsabilidade')}>
+            <strong>Segurança e Responsabilidade</strong>
+            <span>Proteção de menores, convivência, conteúdo e segurança da conta.</span>
+          </button>
           <button type="button" onClick={baixarMeusDados} disabled={exportando}>
             <strong>{exportando ? 'Preparando arquivo...' : 'Baixar meus dados'}</strong>
             <span>Receba uma cópia em formato JSON.</span>

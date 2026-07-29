@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 
-const POLICY_VERSION = '1.0 — 28 de julho de 2026'
+const POLICY_VERSION = '1.1 — 29 de julho de 2026'
 
 function LegalShell({ title, subtitle, children }) {
   const navigate = useNavigate()
@@ -168,6 +168,91 @@ export function TermsOfUse() {
         <p>
           O usuário pode apagar a conta. O acesso poderá ser suspenso em caso de violação grave,
           preservando registros estritamente necessários para segurança e cumprimento legal.
+        </p>
+      </section>
+    </LegalShell>
+  )
+}
+
+export function SafetyResponsibilityTerms() {
+  return (
+    <LegalShell
+      title="Termo de Segurança e Responsabilidade"
+      subtitle="Compromissos para proteger estudantes, professores e toda a comunidade do NEXO 11."
+    >
+      <section>
+        <h2>1. Proteção de crianças e adolescentes</h2>
+        <p>
+          A segurança e o melhor interesse de crianças e adolescentes têm prioridade. É proibido
+          aliciar, explorar, sexualizar, ameaçar ou solicitar imagens íntimas de menores. Indícios
+          de risco podem resultar em preservação de registros, restrição imediata da conta e
+          encaminhamento às autoridades competentes, dentro da legislação aplicável.
+        </p>
+      </section>
+      <section>
+        <h2>2. Responsabilidade pelo conteúdo</h2>
+        <p>
+          Cada usuário responde pelo que publica, envia ou compartilha. Não publique dados
+          pessoais, imagens, trabalhos ou conversas de terceiros sem autorização. Antes de
+          compartilhar uma informação, verifique sua origem e considere os possíveis danos.
+        </p>
+      </section>
+      <section>
+        <h2>3. Convivência e integridade escolar</h2>
+        <ul>
+          <li>não pratique bullying, assédio, discriminação, perseguição ou humilhação;</li>
+          <li>não use o aplicativo para fraudar avaliações ou se passar por outra pessoa;</li>
+          <li>professores devem aplicar XP e correções com critérios pedagógicos transparentes;</li>
+          <li>alunos devem produzir e enviar atividades de forma honesta e respeitosa.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>4. Proteção da conta</h2>
+        <p>
+          Não compartilhe senhas ou códigos de acesso. Use somente dispositivos confiáveis,
+          encerre a sessão em aparelhos compartilhados e informe imediatamente qualquer acesso
+          suspeito. O NEXO 11 nunca solicitará sua senha por mensagem.
+        </p>
+      </section>
+      <section>
+        <h2>5. Mensagens, mídia e visualização única</h2>
+        <p>
+          Recursos de exclusão ou visualização única reduzem a exposição, mas não impedem
+          capturas externas. Envie apenas conteúdos adequados e autorizados. O usuário não deve
+          tentar contornar proteções, recuperar mídia expirada ou redistribuir conteúdo privado.
+        </p>
+      </section>
+      <section>
+        <h2>6. Livros, músicas e direitos autorais</h2>
+        <p>
+          Somente materiais com licença, autorização ou domínio público podem ser disponibilizados.
+          Links para acervos externos continuam sujeitos às condições da fonte. Usuários devem
+          publicar apenas obras próprias ou que tenham permissão para utilizar.
+        </p>
+      </section>
+      <section>
+        <h2>7. Denúncia, bloqueio e emergência</h2>
+        <p>
+          Use bloqueio e denúncia diante de abuso ou conteúdo inadequado. Para assuntos da
+          plataforma, procure o perfil oficial @NEXO11. Em situação de perigo imediato, procure
+          um responsável, a escola ou os serviços públicos competentes; o aplicativo não substitui
+          atendimento de emergência.
+        </p>
+      </section>
+      <section>
+        <h2>8. Moderação e medidas de proteção</h2>
+        <p>
+          Conteúdos podem ser removidos e contas podem ser limitadas ou suspensas quando houver
+          violação, fraude, risco à comunidade ou determinação legal. As medidas devem considerar
+          gravidade, reincidência, contexto e proteção dos envolvidos.
+        </p>
+      </section>
+      <section>
+        <h2>9. Limites e atualizações</h2>
+        <p>
+          Nenhuma tecnologia elimina todos os riscos. O NEXO 11 deve manter medidas proporcionais,
+          corrigir vulnerabilidades conhecidas e informar mudanças relevantes. O uso continuado
+          poderá exigir novo aceite quando este documento for alterado de forma substancial.
         </p>
       </section>
     </LegalShell>
