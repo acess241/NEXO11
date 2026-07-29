@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import SocialLoader from '../components/SocialLoader'
 import {
@@ -109,10 +109,15 @@ export default function CreatePost() {
 
   const inputArquivoRef = useRef(null)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     carregarPerfil()
   }, [])
+
+  useEffect(() => {
+    if (searchParams.get('tipo') === 'nexis') setTipo('nexis')
+  }, [searchParams])
 
   useEffect(() => {
     return () => {

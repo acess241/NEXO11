@@ -228,6 +228,50 @@ $$;
 
 grant execute on function public.nexo_reply_to_story(uuid, text) to authenticated;
 
+-- Visualizações únicas dos vídeos Nexis.
+create table if not exists public.nexis_views (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.posts(id) on delete cascade,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  viewed_at timestamptz not null default now(),
+  constraint nexis_views_unique_pair unique(post_id, profile_id)
+);
+
+alter table public.nexis_views enable row level security;
+
+drop policy if exists nexis_views_select_authenticated on public.nexis_views;
+create policy nexis_views_select_authenticated
+on public.nexis_views for select to authenticated
+using (true);
+
+drop policy if exists nexis_views_insert_own on public.nexis_views;
+create policy nexis_views_insert_own
+on public.nexis_views for insert to authenticated
+with check (
+  exists (
+    select 1 from public.profiles p
+    where p.id = nexis_views.profile_id and p.account_id = auth.uid()
+  )
+);
+
+drop policy if exists nexis_views_update_own on public.nexis_views;
+create policy nexis_views_update_own
+on public.nexis_views for update to authenticated
+using (
+  exists (
+    select 1 from public.profiles p
+    where p.id = nexis_views.profile_id and p.account_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1 from public.profiles p
+    where p.id = nexis_views.profile_id and p.account_id = auth.uid()
+  )
+);
+
+grant select, insert, update on public.nexis_views to authenticated;
+
 -- O mesmo bucket atende Stories e fotos dos posts.
 insert into storage.buckets(id, name, public, file_size_limit, allowed_mime_types)
 values (

@@ -3024,6 +3024,12 @@ body[data-theme='claro'] .mention-suggestion {
   pointer-events: auto;
 }
 
+.nexis-topbar > div {
+  display: flex;
+  gap: 7px;
+  pointer-events: auto;
+}
+
 .nexis-scroll {
   width: min(700px, 100%);
   height: 100dvh;
@@ -3101,6 +3107,62 @@ body[data-theme='claro'] .mention-suggestion {
 
 .nexis-author small {
   color: #d4d8d5;
+}
+
+.nexis-author > button {
+  min-height: 34px;
+  margin-left: 6px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 9px;
+  background: rgb(0 0 0 / 40%);
+  color: #fff;
+  font-weight: 850;
+}
+
+.nexis-video-progress {
+  position: absolute;
+  z-index: 7;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: rgb(255 255 255 / 20%);
+}
+
+.nexis-video-progress span {
+  display: block;
+  height: 100%;
+  background: #1dff26;
+  transition: width 120ms linear;
+}
+
+.nexis-paused,
+.nexis-heart-burst {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 5px 20px #000;
+  pointer-events: none;
+}
+
+.nexis-paused {
+  font-size: 64px;
+  opacity: 0.88;
+}
+
+.nexis-heart-burst {
+  color: #ff315c;
+  font-size: 100px;
+  animation: nexis-heart-pop 650ms ease both;
+}
+
+@keyframes nexis-heart-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(-12deg); }
+  45% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(6deg); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1) rotate(0); }
 }
 
 .nexis-caption {
@@ -3240,6 +3302,34 @@ body[data-theme='claro'] .mention-suggestion {
 .nexis-comments-sheet > div p {
   padding: 10px 0;
   border-bottom: 1px solid #1d231e;
+}
+
+.nexis-comment {
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.nexis-comment img,
+.nexis-comment > span {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1c2b1f;
+  display: grid;
+  place-items: center;
+}
+
+.nexis-comment p {
+  margin: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.nexis-comment strong {
+  font-size: 12px;
 }
 
 .nexis-comments-sheet form {
