@@ -12137,6 +12137,35 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
   margin: 16px 0;
 }
 
+.oxente-library-series-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+  padding: 5px;
+  border: 1px solid #26362c;
+  border-radius: 14px;
+  background: #080d09;
+}
+
+.oxente-library-series-picker button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #9eaba0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.oxente-library-series-picker button.active {
+  background: #1dff00;
+  color: #031003;
+  box-shadow: 0 5px 16px rgba(29, 255, 0, 0.18);
+}
+
 .oxente-library-search span {
   color: #cbd7cd;
   font-size: 12px;
@@ -12415,29 +12444,143 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 
 @media (max-width: 767px) {
   .oxente-library-hero {
-    align-items: stretch;
-    padding: 18px;
+    gap: 10px;
+    align-items: center;
+    padding: 13px;
   }
 
   .oxente-library-count {
-    min-width: 104px;
+    min-width: 76px;
+    padding: 10px 7px;
+    border-radius: 12px;
+  }
+
+  .oxente-library-count strong {
+    font-size: 23px;
+  }
+
+  .oxente-library-count span {
+    margin-top: 4px;
+    font-size: 8px;
+  }
+
+  .oxente-library-hero h2 {
+    margin-block: 3px;
+    font-size: 19px;
+  }
+
+  .oxente-library-hero p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .oxente-library-series-picker {
+    gap: 4px;
+    margin-top: 10px;
+    padding: 4px;
+    border-radius: 12px;
+  }
+
+  .oxente-library-series-picker button {
+    min-height: 36px;
+    font-size: 11px;
+  }
+
+  .oxente-library-search {
+    gap: 5px;
+    margin-block: 10px;
+  }
+
+  .oxente-library-search span {
+    font-size: 10px;
+  }
+
+  .oxente-library-search input {
+    min-height: 42px;
+    padding-inline: 12px;
+    border-radius: 11px;
   }
 
   .oxente-library-series {
-    padding: 14px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .oxente-library-series > header {
+    margin-bottom: 11px;
+  }
+
+  .oxente-library-series > header h3 {
+    margin-block: 2px;
+    font-size: 19px;
+  }
+
+  .oxente-library-block + .oxente-library-block {
+    margin-top: 16px;
+  }
+
+  .oxente-library-subject {
+    font-size: 10px;
   }
 
   .oxente-library-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin-top: 7px;
   }
 
   .oxente-library-grid .oxente-library-book {
-    padding: 9px;
+    display: flex;
+    padding: 7px;
+    gap: 6px;
+    border-radius: 11px;
+    flex-direction: column;
   }
 
   .oxente-library-cover {
-    flex-basis: 54px;
-    min-height: 78px;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 68px;
+    padding: 7px;
+  }
+
+  .oxente-library-cover svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .oxente-library-book-copy strong {
+    min-height: 30px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .oxente-library-book-copy > span,
+  .oxente-library-book-copy p,
+  .oxente-library-book-copy small {
+    display: none;
+  }
+
+  .oxente-library-grid .oxente-library-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px;
+  }
+
+  .oxente-library-grid .oxente-library-actions button,
+  .oxente-library-grid .oxente-library-actions a {
+    min-height: 32px;
+    padding-inline: 7px;
+    border-radius: 8px;
+    font-size: 10px;
+  }
+
+  .oxente-library-grid .oxente-library-actions a {
+    min-width: 42px;
   }
 
   .oxente-library-reader {

@@ -822,6 +822,7 @@ export default function OxenteHub() {
   const [laboratorioView, setLaboratorioView] = useState('inicio')
   const [rotinaView, setRotinaView] = useState('hoje')
   const [filtroBiblioteca, setFiltroBiblioteca] = useState('')
+  const [serieBiblioteca, setSerieBiblioteca] = useState('1º ano')
   const [livroAberto, setLivroAberto] = useState(null)
   const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
@@ -1131,9 +1132,12 @@ export default function OxenteHub() {
 
   const itensBiblioteca = useMemo(() => {
     const termo = filtroBiblioteca.trim().toLowerCase()
-    if (!termo) return LIBRARY_BY_SERIES
+    const seriesSelecionadas = LIBRARY_BY_SERIES.filter(
+      (series) => series.series === serieBiblioteca
+    )
+    if (!termo) return seriesSelecionadas
 
-    return LIBRARY_BY_SERIES.map((series) => ({
+    return seriesSelecionadas.map((series) => ({
       ...series,
       subjects: series.subjects
         .map((subject) => ({
@@ -1145,7 +1149,7 @@ export default function OxenteHub() {
         }))
         .filter((subject) => subject.books.length > 0),
     })).filter((series) => series.subjects.length > 0)
-  }, [filtroBiblioteca])
+  }, [filtroBiblioteca, serieBiblioteca])
 
   function persistirHistorico(novoHistorico) {
     setHistorico(novoHistorico)
@@ -3680,10 +3684,28 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                     </p>
                   </div>
                   <div className="oxente-library-count">
-                    <strong>{LIBRARY_BY_SERIES[0]?.subjects.reduce((total, subject) => total + subject.books.length, 0) || 0}</strong>
+                    <strong>
+                      {LIBRARY_BY_SERIES.find((item) => item.series === serieBiblioteca)
+                        ?.subjects.reduce((total, subject) => total + subject.books.length, 0) || 0}
+                    </strong>
                     <span>livros disponíveis</span>
                   </div>
                 </article>
+
+                <div className="oxente-library-series-picker" role="tablist" aria-label="Ano do Ensino Médio">
+                  {LIBRARY_BY_SERIES.map((item) => (
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={serieBiblioteca === item.series}
+                      className={serieBiblioteca === item.series ? 'active' : ''}
+                      key={item.series}
+                      onClick={() => setSerieBiblioteca(item.series)}
+                    >
+                      {item.series}
+                    </button>
+                  ))}
+                </div>
 
                 <label className="oxente-library-search">
                   <span>Pesquisar livro, matéria ou autor</span>
