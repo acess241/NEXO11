@@ -35,12 +35,9 @@ function hasScrollableParent(target) {
 function getPageEdge() {
   const scrollElement = document.scrollingElement || document.documentElement
   const scrollTop = window.scrollY || scrollElement.scrollTop || 0
-  const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-  const scrollHeight = Math.max(scrollElement.scrollHeight, document.body.scrollHeight)
 
   return {
     atTop: scrollTop <= 2,
-    atBottom: Math.ceil(scrollTop + viewportHeight) >= scrollHeight - 2,
   }
 }
 
@@ -74,7 +71,7 @@ export default function PullToRefresh() {
 
       const edge = getPageEdge()
 
-      if (!edge.atTop && !edge.atBottom) return
+      if (!edge.atTop) return
 
       const touch = event.touches[0]
       gestureRef.current = {
@@ -100,15 +97,19 @@ export default function PullToRefresh() {
         return
       }
 
-      const pullingDown = gesture.edge.atTop && deltaY > MIN_DRAG
-      const pullingUp = gesture.edge.atBottom && deltaY < -MIN_DRAG
+      // Atualização existe somente no topo, puxando para baixo.
+      // Um movimento para cima nunca deve armar ou disparar o reload.
+      if (deltaY < -MIN_DRAG) {
+        resetGesture()
+        return
+      }
 
-      if (!pullingDown && !pullingUp) return
+      const pullingDown = gesture.edge.atTop && deltaY > MIN_DRAG
+      if (!pullingDown) return
 
       event.preventDefault()
 
-      const direction = pullingUp ? 'up' : 'down'
-      gesture.direction = direction
+      gesture.direction = 'down'
 
       const distance = Math.min(Math.abs(deltaY), REFRESH_DISTANCE)
       const progress = distance / REFRESH_DISTANCE
@@ -117,7 +118,7 @@ export default function PullToRefresh() {
         active: true,
         ready: progress >= 1,
         refreshing: false,
-        direction,
+        direction: 'down',
         progress,
       })
     }
@@ -170,15 +171,13 @@ export default function PullToRefresh() {
     ? 'Atualizando'
     : state.ready
       ? 'Solte para atualizar'
-      : state.direction === 'up'
-        ? 'Arraste para atualizar'
-        : 'Puxe para atualizar'
+      : 'Puxe para atualizar'
 
   return (
     <div
       className={`pull-refresh ${state.active ? 'active' : ''} ${state.ready ? 'ready' : ''} ${
         state.refreshing ? 'refreshing' : ''
-      } ${state.direction === 'up' ? 'from-bottom' : 'from-top'}`}
+      } from-top`}
       style={{ '--pull-progress': state.progress }}
       aria-hidden="true"
     >
