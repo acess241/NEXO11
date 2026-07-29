@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 
 function formatarTempoRelativo(dataIso) {
   const data = new Date(dataIso)
@@ -37,6 +38,10 @@ function StoryViewer({
   const [enviandoResposta, setEnviandoResposta] = useState(false)
   const [visualizadores, setVisualizadores] = useState(null)
   const [carregandoVisualizadores, setCarregandoVisualizadores] = useState(false)
+  const [erroMidia, setErroMidia] = useState(false)
+  const [tentativaMidia, setTentativaMidia] = useState(0)
+  const [mediaSrc, setMediaSrc] = useState('')
+  const [tentouUrlAssinada, setTentouUrlAssinada] = useState(false)
 
   const storyAtual = grupo?.stories?.[indiceAtual]
   const ehVideo = storyEhVideo(storyAtual)
@@ -55,7 +60,23 @@ function StoryViewer({
     setMusicaAtiva(true)
     setResposta('')
     setVisualizadores(null)
+    setErroMidia(false)
+    setTentativaMidia(0)
+    setMediaSrc(storyAtual?.media_url || '')
+    setTentouUrlAssinada(false)
   }, [storyAtual?.id])
+
+  async function tratarErroMidia() {
+    if (!tentouUrlAssinada) {
+      setTentouUrlAssinada(true)
+      const assinada = await criarUrlAssinadaParaMidia(storyAtual?.media_url)
+      if (assinada) {
+        setMediaSrc(assinada)
+        return
+      }
+    }
+    setErroMidia(true)
+  }
 
   useEffect(() => {
     if (!storyAtual || !perfilAtual || apagando) return
@@ -227,22 +248,47 @@ function StoryViewer({
           />
           {ehVideo ? (
             <video
-              key={storyAtual.id}
-              src={storyAtual.media_url}
+              key={`${storyAtual.id}-${tentativaMidia}`}
+              src={mediaSrc || storyAtual.media_url}
               className="story-viewer-media story-viewer-video"
               autoPlay
               playsInline
               controls
               preload="auto"
               onEnded={avancar}
+              onError={tratarErroMidia}
             />
           ) : (
             <img
-              src={storyAtual.media_url}
+              key={`${storyAtual.id}-${tentativaMidia}`}
+              src={mediaSrc || storyAtual.media_url}
               alt="Story"
               className="story-viewer-media"
+              onError={tratarErroMidia}
             />
           )}
+          {erroMidia ? (
+            <div className="story-media-error">
+              <strong>Não foi possível carregar esta mídia</strong>
+              <button type="button" onClick={() => {
+                setErroMidia(false)
+                setTentouUrlAssinada(false)
+                setMediaSrc(storyAtual.media_url)
+                setTentativaMidia((valor) => valor + 1)
+              }}>Tentar novamente</button>
+            </div>
+          ) : null}
+          {storyAtual.caption ? (
+            <p
+              className="story-caption-overlay"
+              style={{
+                left: `${Number(storyAtual.caption_x ?? 50)}%`,
+                top: `${Number(storyAtual.caption_y ?? 72)}%`,
+              }}
+            >
+              {storyAtual.caption}
+            </p>
+          ) : null}
           <button
             type="button"
             className="story-click-zone right"
@@ -273,9 +319,6 @@ function StoryViewer({
         </div>
 
         <div className="story-viewer-footer instagram-style">
-          {storyAtual.caption ? (
-            <p className="story-caption">{storyAtual.caption}</p>
-          ) : null}
           <div className="story-social-actions">
             {ehMeuStory ? (
               <button type="button" className="story-viewers-button" onClick={abrirVisualizadores} disabled={carregandoVisualizadores}>
@@ -287,7 +330,13 @@ function StoryViewer({
                 <button type="submit" disabled={!resposta.trim() || enviandoResposta}>{enviandoResposta ? '...' : 'Enviar'}</button>
               </form>
             )}
-            <button type="button" className={`story-like-button ${storyAtual.euCurti ? 'liked' : ''}`} onClick={() => onToggleLike?.(storyAtual)} aria-label="Curtir story">
+            <button type="button" className={`story-like-button ${storyAtual.euCurti ? 'liked' : ''}`} onClick={async () => {
+              try {
+                await onToggleLike?.(storyAtual)
+              } catch (error) {
+                window.alert(error?.message || 'Não foi possível curtir este story.')
+              }
+            }} aria-label="Curtir story">
               {storyAtual.euCurti ? '♥' : '♡'} <small>{storyAtual.totalCurtidas || ''}</small>
             </button>
             {!ehMeuStory ? (

@@ -3,6 +3,7 @@ import { normalizarTipoPost, obterMediaKind, POST_TYPE_META } from '../lib/postT
 import { formatDisplayName } from '../lib/textFormat'
 import VerifiedBadge from './VerifiedBadge'
 import MentionText from './MentionText'
+import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -37,10 +38,26 @@ export default function PostCard({
   const usernameAutor = post.autor?.username
   const podeAbrirPerfilAutor = Boolean(abrirPerfil && usernameAutor)
   const [mediaComErro, setMediaComErro] = useState(false)
+  const [mediaSrc, setMediaSrc] = useState(post.media_url || '')
+  const [tentouUrlAssinada, setTentouUrlAssinada] = useState(false)
 
   useEffect(() => {
     setMediaComErro(false)
+    setMediaSrc(post.media_url || '')
+    setTentouUrlAssinada(false)
   }, [post.id, post.media_url])
+
+  async function recuperarMidia() {
+    if (!tentouUrlAssinada) {
+      setTentouUrlAssinada(true)
+      const assinada = await criarUrlAssinadaParaMidia(post.media_url)
+      if (assinada) {
+        setMediaSrc(assinada)
+        return
+      }
+    }
+    setMediaComErro(true)
+  }
 
   const nomeAutor = formatDisplayName(post.autor?.nome) || 'Usuário'
   const labelFallback = mediaKind === 'video' ? 'Vídeo indisponível' : 'Mídia indisponível'
@@ -86,18 +103,18 @@ export default function PostCard({
             mediaKind === 'video' ? (
               <video
                 className="post-media"
-                src={post.media_url}
+                src={mediaSrc}
                 controls
                 playsInline
                 preload="metadata"
-                onError={() => setMediaComErro(true)}
+                onError={recuperarMidia}
               />
             ) : (
               <img
                 className="post-media"
-                src={post.media_url}
+                src={mediaSrc}
                 alt={post.content || POST_TYPE_META[tipo].label}
-                onError={() => setMediaComErro(true)}
+                onError={recuperarMidia}
               />
             )
           ) : (

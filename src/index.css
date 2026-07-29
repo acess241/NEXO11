@@ -2283,7 +2283,7 @@ body[data-theme='claro'] .mention-suggestion {
   position: absolute;
   z-index: 5;
   left: 50%;
-  bottom: 18%;
+  top: 72%;
   max-width: 86%;
   padding: 9px 13px;
   border-radius: 10px;
@@ -2295,8 +2295,23 @@ body[data-theme='claro'] .mention-suggestion {
   text-align: center;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   text-shadow: 0 2px 12px #000;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.story-editor-text-overlay:active {
+  cursor: grabbing;
+}
+
+.story-editor-text-overlay small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .story-editor-empty {
@@ -3060,6 +3075,58 @@ body[data-theme='claro'] .mention-suggestion {
   display: flex;
   justify-content: center;
   pointer-events: none;
+}
+
+.story-viewer-footer.instagram-style .story-social-actions,
+.story-viewer-footer.instagram-style button,
+.story-viewer-footer.instagram-style form,
+.story-viewer-footer.instagram-style input {
+  pointer-events: auto;
+}
+
+.story-caption-overlay {
+  position: absolute;
+  z-index: 6;
+  max-width: 86%;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.58);
+  color: #fff;
+  font-size: clamp(15px, 2.5vw, 20px);
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 9px #000;
+  pointer-events: none;
+}
+
+.story-media-error {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: #090909;
+  color: #fff;
+  text-align: center;
+}
+
+.story-media-error button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #1dff26;
+  color: #031004;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .story-viewer-footer {

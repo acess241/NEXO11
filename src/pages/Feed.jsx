@@ -5,7 +5,7 @@ import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
 import { supabase } from '../lib/supabase'
-import { garantirConversaDireta, dispararAtualizacaoChat } from '../lib/chat'
+import { dispararAtualizacaoChat } from '../lib/chat'
 import logoNexo from '/logo-novo.png'
 
 function IconeEstrela({ preenchida }) {
@@ -632,37 +632,27 @@ export default function Feed() {
 
   async function alternarCurtidaStory(story) {
     if (!story?.id || !meuPerfil?.id) return
-    if (story.euCurti) {
-      const { error } = await supabase.from('story_likes').delete()
-        .eq('story_id', story.id).eq('profile_id', meuPerfil.id)
-      if (error) throw error
-    } else {
-      const { error } = await supabase.from('story_likes').insert({
-        story_id: story.id,
-        profile_id: meuPerfil.id,
-      })
-      if (error && error.code !== '23505') throw error
-    }
+    const { data, error } = await supabase.rpc('nexo_toggle_story_like', {
+      p_story_id: story.id,
+    })
+    if (error) throw new Error(`Não foi possível curtir: ${error.message}`)
+    const resultado = Array.isArray(data) ? data[0] : data
     setStories((prev) => prev.map((item) => item.id === story.id ? {
       ...item,
-      euCurti: !item.euCurti,
-      totalCurtidas: Math.max(0, (item.totalCurtidas || 0) + (item.euCurti ? -1 : 1)),
+      euCurti: Boolean(resultado?.liked),
+      totalCurtidas: Number(resultado?.total_likes ?? item.totalCurtidas ?? 0),
     } : item))
   }
 
   async function responderStory(story, mensagem) {
     if (!story?.profile_id || !meuPerfil?.id || !mensagem.trim()) return
     if (story.profile_id === meuPerfil.id) throw new Error('Você não pode responder ao próprio story.')
-    const conversa = await garantirConversaDireta(meuPerfil.id, story.profile_id)
-    const { error } = await supabase.from('chat_messages').insert({
-      conversation_id: conversa.id,
-      sender_profile_id: meuPerfil.id,
-      content: `Respondeu ao story: ${mensagem.trim()}`,
-      media_url: story.media_url || null,
-      media_kind: story.media_kind === 'video' ? 'video' : 'image',
+    const { data, error } = await supabase.rpc('nexo_reply_to_story', {
+      p_story_id: story.id,
+      p_message: mensagem.trim(),
     })
-    if (error) throw error
-    dispararAtualizacaoChat({ conversationId: conversa.id })
+    if (error) throw new Error(`Não foi possível responder: ${error.message}`)
+    dispararAtualizacaoChat({ conversationId: data })
   }
 
   async function carregarVisualizadoresStory(story) {

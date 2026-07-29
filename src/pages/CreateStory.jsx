@@ -49,6 +49,7 @@ export default function CreateStory() {
   const [mediaKind, setMediaKind] = useState('image')
   const [duracaoStory, setDuracaoStory] = useState(DURACAO_PADRAO)
   const [caption, setCaption] = useState('')
+  const [captionPosition, setCaptionPosition] = useState({ x: 50, y: 72 })
   const [cameraAberta, setCameraAberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [enviando, setEnviando] = useState(false)
@@ -66,6 +67,8 @@ export default function CreateStory() {
   const inputFileRef = useRef(null)
   const inputMusicaRef = useRef(null)
   const audioPreviewRef = useRef(null)
+  const canvasRef = useRef(null)
+  const arrastandoLegendaRef = useRef(false)
   const abriuCameraRef = useRef(false)
   const navigate = useNavigate()
 
@@ -193,6 +196,28 @@ export default function CreateStory() {
     event.target.value = ''
   }
 
+  function moverLegenda(event) {
+    if (!arrastandoLegendaRef.current || !canvasRef.current) return
+    const area = canvasRef.current.getBoundingClientRect()
+    const x = ((event.clientX - area.left) / area.width) * 100
+    const y = ((event.clientY - area.top) / area.height) * 100
+    setCaptionPosition({
+      x: Math.min(90, Math.max(10, x)),
+      y: Math.min(90, Math.max(10, y)),
+    })
+  }
+
+  function iniciarArrasteLegenda(event) {
+    arrastandoLegendaRef.current = true
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+    moverLegenda(event)
+  }
+
+  function encerrarArrasteLegenda(event) {
+    arrastandoLegendaRef.current = false
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+  }
+
   function fecharEditor() {
     if ((arquivo || caption.trim()) && !sucesso && !window.confirm('Descartar este story?')) return
     navigate('/')
@@ -230,6 +255,8 @@ export default function CreateStory() {
         media_url: data.publicUrl,
         media_kind: mediaKind,
         caption: caption.trim(),
+        caption_x: captionPosition.x,
+        caption_y: captionPosition.y,
         duration_seconds: duracaoStory,
         music_url: musicaUrl,
         music_title: musica?.title || null,
@@ -261,13 +288,28 @@ export default function CreateStory() {
       {sucesso ? <div className="story-editor-message success">{sucesso}</div> : null}
 
       <main className="story-editor-stage">
-        <section className={`story-editor-canvas ${preview ? 'has-media' : ''}`}>
+        <section ref={canvasRef} className={`story-editor-canvas ${preview ? 'has-media' : ''}`}>
           {preview ? (
             <>
               {mediaKind === 'video'
                 ? <video src={preview} className="story-editor-media" autoPlay loop muted playsInline />
                 : <img src={preview} alt="Prévia do story" className="story-editor-media" />}
-              {caption.trim() ? <div className="story-editor-text-overlay">{caption}</div> : null}
+              {caption.trim() ? (
+                <div
+                  className="story-editor-text-overlay"
+                  style={{ left: `${captionPosition.x}%`, top: `${captionPosition.y}%` }}
+                  onPointerDown={iniciarArrasteLegenda}
+                  onPointerMove={moverLegenda}
+                  onPointerUp={encerrarArrasteLegenda}
+                  onPointerCancel={encerrarArrasteLegenda}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Arraste para posicionar o texto"
+                >
+                  {caption}
+                  <small>Arraste para mover</small>
+                </div>
+              ) : null}
             </>
           ) : (
             <div className="story-editor-empty">
