@@ -101,6 +101,13 @@ begin
   end if;
 
   if exists (
+    select 1 from public.stories s
+    where s.id = p_story_id and s.profile_id = v_profile_id
+  ) then
+    raise exception 'Você não pode curtir o próprio Story';
+  end if;
+
+  if exists (
     select 1 from public.story_likes sl
     where sl.story_id = p_story_id and sl.profile_id = v_profile_id
   ) then

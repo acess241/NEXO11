@@ -38,6 +38,16 @@ function IconBell() {
   )
 }
 
+function IconNexis() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="16" rx="4" />
+      <path d="m10 9 5 3-5 3V9Z" />
+      <path d="M7 4 9 7M15 4l2 3" />
+    </svg>
+  )
+}
+
 function IconMessage() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -233,6 +243,10 @@ export default function BottomNav() {
             </span>
           )}
         </div>
+      </NavLink>
+
+      <NavLink to="/nexis" className={({ isActive }) => (isActive ? 'active' : '')} aria-label="Nexis">
+        <IconNexis />
       </NavLink>
 
       <NavLink

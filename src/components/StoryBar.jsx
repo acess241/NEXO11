@@ -330,15 +330,17 @@ function StoryViewer({
                 <button type="submit" disabled={!resposta.trim() || enviandoResposta}>{enviandoResposta ? '...' : 'Enviar'}</button>
               </form>
             )}
-            <button type="button" className={`story-like-button ${storyAtual.euCurti ? 'liked' : ''}`} onClick={async () => {
-              try {
-                await onToggleLike?.(storyAtual)
-              } catch (error) {
-                window.alert(error?.message || 'Não foi possível curtir este story.')
-              }
-            }} aria-label="Curtir story">
-              {storyAtual.euCurti ? '♥' : '♡'} <small>{storyAtual.totalCurtidas || ''}</small>
-            </button>
+            {!ehMeuStory ? (
+              <button type="button" className={`story-like-button ${storyAtual.euCurti ? 'liked' : ''}`} onClick={async () => {
+                try {
+                  await onToggleLike?.(storyAtual)
+                } catch (error) {
+                  window.alert(error?.message || 'Não foi possível curtir este story.')
+                }
+              }} aria-label="Curtir story">
+                {storyAtual.euCurti ? '♥' : '♡'} <small>{storyAtual.totalCurtidas || ''}</small>
+              </button>
+            ) : null}
             {!ehMeuStory ? (
               <button type="button" className="story-share-button" onClick={() => onShare?.(storyAtual)} aria-label="Compartilhar story">⌁</button>
             ) : null}

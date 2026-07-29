@@ -18,6 +18,7 @@ const NotificationSettings = lazy(() => import('./pages/NotificationSettings'))
 const EditProfile = lazy(() => import('./pages/EditProfile'))
 const CreatePost = lazy(() => import('./pages/CreatePost'))
 const CreateStory = lazy(() => import('./pages/CreateStory'))
+const NexisFeed = lazy(() => import('./pages/NexisFeed'))
 const MessagesInbox = lazy(() => import('./pages/MessagesInbox'))
 const ChatRoom = lazy(() => import('./pages/ChatRoom'))
 const NexinhoRoom = lazy(() => import('./pages/NexinhoRoom'))
@@ -180,6 +181,15 @@ export default function App() {
             element={
               <ProtectedRoute session={session}>
                 <SearchUsers />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/nexis"
+            element={
+              <ProtectedRoute session={session}>
+                <NexisFeed />
               </ProtectedRoute>
             }
           />
