@@ -12259,6 +12259,10 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
   --book-accent: #24d6c5;
 }
 
+.oxente-library-book[data-subject='Literatura Brasileira'] {
+  --book-accent: #ffcf45;
+}
+
 .oxente-library-cover {
   flex: 0 0 58px;
   min-height: 84px;

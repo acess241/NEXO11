@@ -3655,7 +3655,7 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                 </header>
 
                 <div className="oxente-library-license">
-                  Material disponibilizado pelo portal público eduCAPES · {livroAberto.license}
+                  Material disponibilizado por {livroAberto.provider || 'portal público eduCAPES'} · {livroAberto.license}
                 </div>
 
                 <object
