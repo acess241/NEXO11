@@ -33,7 +33,7 @@ import {
   saveAnalysisToHistory,
   scanActivityImage,
 } from '../lib/oxenteStudyPipeline'
-import { libraryBySeries } from '../data/libraryBooks'
+import { libraryBySeries, literatureByGenre } from '../data/libraryBooks'
 
 const TABS = [
   { id: 'sala', label: 'Salas', mobileLabel: 'Salas', icon: 'sala' },
@@ -102,6 +102,13 @@ const OXENTE_ROUTINE_KEY = 'oxente_hub_study_routine_v1'
 const OXENTE_CLASSROOM_CLEANUP_KEY = 'oxente_hub_classroom_cleanup_v3'
 
 const LIBRARY_BY_SERIES = libraryBySeries()
+const LITERATURE_BY_GENRE = literatureByGenre()
+
+function getEmbeddedBookUrl(book) {
+  if (!book?.pdfUrl) return ''
+  if (!/^https?:\/\//i.test(book.pdfUrl)) return book.pdfUrl
+  return `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(book.pdfUrl)}`
+}
 
 const ROTINA_TABS = [
   { id: 'hoje', label: 'Hoje', icon: 'inicio' },
@@ -822,6 +829,7 @@ export default function OxenteHub() {
   const [laboratorioView, setLaboratorioView] = useState('inicio')
   const [rotinaView, setRotinaView] = useState('hoje')
   const [filtroBiblioteca, setFiltroBiblioteca] = useState('')
+  const [setorBiblioteca, setSetorBiblioteca] = useState('didaticos')
   const [serieBiblioteca, setSerieBiblioteca] = useState('1º ano')
   const [livroAberto, setLivroAberto] = useState(null)
   const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
@@ -1132,6 +1140,23 @@ export default function OxenteHub() {
 
   const itensBiblioteca = useMemo(() => {
     const termo = filtroBiblioteca.trim().toLowerCase()
+    if (setorBiblioteca === 'literatura') {
+      const subjects = LITERATURE_BY_GENRE
+        .map((genre) => ({
+          name: genre.name,
+          books: genre.books.filter((book) => {
+            if (!termo) return true
+            const target = `${genre.name} ${book.title} ${book.author} ${book.description}`.toLowerCase()
+            return target.includes(termo)
+          }),
+        }))
+        .filter((genre) => genre.books.length > 0)
+
+      return subjects.length > 0
+        ? [{ series: 'Literatura brasileira', subjects }]
+        : []
+    }
+
     const seriesSelecionadas = LIBRARY_BY_SERIES.filter(
       (series) => series.series === serieBiblioteca
     )
@@ -1149,7 +1174,7 @@ export default function OxenteHub() {
         }))
         .filter((subject) => subject.books.length > 0),
     })).filter((series) => series.subjects.length > 0)
-  }, [filtroBiblioteca, serieBiblioteca])
+  }, [filtroBiblioteca, serieBiblioteca, setorBiblioteca])
 
   function persistirHistorico(novoHistorico) {
     setHistorico(novoHistorico)
@@ -3645,7 +3670,11 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                     Biblioteca
                   </button>
                   <div>
-                    <span>{livroAberto.subject} · {livroAberto.series.join(', ')}</span>
+                    <span>
+                      {livroAberto.collection === 'literatura'
+                        ? `Literatura brasileira · ${livroAberto.genre}`
+                        : `${livroAberto.subject} · ${livroAberto.series.join(', ')}`}
+                    </span>
                     <h2>{livroAberto.title}</h2>
                     <p>{livroAberto.author}</p>
                   </div>
@@ -3658,20 +3687,19 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                   Material disponibilizado por {livroAberto.provider || 'portal público eduCAPES'} · {livroAberto.license}
                 </div>
 
-                <object
+                <iframe
                   className="oxente-library-pdf"
-                  data={livroAberto.pdfUrl}
-                  type="application/pdf"
+                  src={getEmbeddedBookUrl(livroAberto)}
+                  title={`Leitor do livro ${livroAberto.title}`}
                   aria-label={`Leitor do livro ${livroAberto.title}`}
-                >
-                  <div className="oxente-library-reader-fallback">
-                    <h3>O navegador bloqueou o leitor incorporado.</h3>
-                    <p>Você ainda pode ler o livro pela página oficial da eduCAPES.</p>
-                    <a href={livroAberto.pdfUrl} target="_blank" rel="noreferrer">
-                      Abrir livro
-                    </a>
-                  </div>
-                </object>
+                  allow="fullscreen"
+                />
+                <div className="oxente-library-reader-fallback">
+                  <span>Se o leitor não carregar, abra o PDF diretamente.</span>
+                  <a href={livroAberto.pdfUrl} target="_blank" rel="noreferrer">
+                    Abrir PDF
+                  </a>
+                </div>
               </article>
             ) : (
               <>
@@ -3680,53 +3708,83 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                     <span>BIBLIOTECA ABERTA</span>
                     <h2>Leia sem sair do NEXO</h2>
                     <p>
-                      Livros educacionais de acesso legal, organizados para o Ensino Médio.
+                      Materiais didáticos e clássicos da literatura brasileira em setores separados.
                     </p>
                   </div>
                   <div className="oxente-library-count">
                     <strong>
-                      {LIBRARY_BY_SERIES.find((item) => item.series === serieBiblioteca)
-                        ?.subjects.reduce((total, subject) => total + subject.books.length, 0) || 0}
+                      {itensBiblioteca.reduce(
+                        (total, grupo) => total + grupo.subjects.reduce(
+                          (subtotal, subject) => subtotal + subject.books.length,
+                          0
+                        ),
+                        0
+                      )}
                     </strong>
                     <span>livros disponíveis</span>
                   </div>
                 </article>
 
-                <div className="oxente-library-series-picker" role="tablist" aria-label="Ano do Ensino Médio">
-                  {LIBRARY_BY_SERIES.map((item) => (
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={serieBiblioteca === item.series}
-                      className={serieBiblioteca === item.series ? 'active' : ''}
-                      key={item.series}
-                      onClick={() => setSerieBiblioteca(item.series)}
-                    >
-                      {item.series}
-                    </button>
-                  ))}
+                <div className="oxente-library-sector-picker" role="tablist" aria-label="Setor da biblioteca">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={setorBiblioteca === 'didaticos'}
+                    className={setorBiblioteca === 'didaticos' ? 'active' : ''}
+                    onClick={() => setSetorBiblioteca('didaticos')}
+                  >
+                    Livros didáticos
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={setorBiblioteca === 'literatura'}
+                    className={setorBiblioteca === 'literatura' ? 'active' : ''}
+                    onClick={() => setSetorBiblioteca('literatura')}
+                  >
+                    Literatura brasileira
+                  </button>
                 </div>
 
+                {setorBiblioteca === 'didaticos' ? (
+                  <div className="oxente-library-series-picker" role="tablist" aria-label="Ano do Ensino Médio">
+                    {LIBRARY_BY_SERIES.map((item) => (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={serieBiblioteca === item.series}
+                        className={serieBiblioteca === item.series ? 'active' : ''}
+                        key={item.series}
+                        onClick={() => setSerieBiblioteca(item.series)}
+                      >
+                        {item.series}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
                 <label className="oxente-library-search">
-                  <span>Pesquisar livro, matéria ou autor</span>
+                  <span>Pesquisar livro, matéria, movimento ou autor</span>
                   <input
                     type="search"
                     value={filtroBiblioteca}
                     onChange={(event) => setFiltroBiblioteca(event.target.value)}
-                    placeholder="Ex.: Química, História, UERJ..."
+                    placeholder={setorBiblioteca === 'literatura'
+                      ? 'Ex.: Machado de Assis, Realismo...'
+                      : 'Ex.: Química, História, UERJ...'}
                   />
                 </label>
 
                 {itensBiblioteca.length === 0 ? (
                   <article className="oxente-card oxente-library-empty">
                     <h3>Nenhum livro encontrado</h3>
-                    <p>Tente pesquisar por outra matéria, título ou autor.</p>
+                    <p>Tente pesquisar por outra matéria, título, movimento ou autor.</p>
                   </article>
                 ) : (
                   itensBiblioteca.map((series) => (
                     <article className="oxente-card oxente-library-series" key={series.series}>
                       <header>
-                        <span>ENSINO MÉDIO</span>
+                        <span>{setorBiblioteca === 'literatura' ? 'ACERVO LITERÁRIO' : 'ENSINO MÉDIO'}</span>
                         <h3>{series.series}</h3>
                       </header>
 
@@ -3742,7 +3800,7 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
                               >
                                 <div className="oxente-library-cover" aria-hidden="true">
                                   {renderLaboratorioIcon('biblioteca')}
-                                  <span>{book.subject}</span>
+                                  <span>{book.collection === 'literatura' ? book.genre : book.subject}</span>
                                 </div>
                                 <div className="oxente-library-book-copy">
                                   <strong>{book.title}</strong>

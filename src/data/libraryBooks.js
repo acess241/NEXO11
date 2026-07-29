@@ -147,6 +147,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-dom-casmurro',
+    collection: 'literatura',
+    genre: 'Realismo',
     title: 'Dom Casmurro',
     subject: 'Literatura Brasileira',
     series: ['2º ano', '3º ano'],
@@ -160,6 +162,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-memorias-postumas',
+    collection: 'literatura',
+    genre: 'Realismo',
     title: 'Memórias Póstumas de Brás Cubas',
     subject: 'Literatura Brasileira',
     series: ['2º ano', '3º ano'],
@@ -173,6 +177,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-cortico',
+    collection: 'literatura',
+    genre: 'Naturalismo',
     title: 'O Cortiço',
     subject: 'Literatura Brasileira',
     series: ['2º ano', '3º ano'],
@@ -186,6 +192,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-policarpo',
+    collection: 'literatura',
+    genre: 'Pré-Modernismo',
     title: 'Triste Fim de Policarpo Quaresma',
     subject: 'Literatura Brasileira',
     series: ['2º ano', '3º ano'],
@@ -199,6 +207,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-iracema',
+    collection: 'literatura',
+    genre: 'Romantismo',
     title: 'Iracema',
     subject: 'Literatura Brasileira',
     series: ['1º ano', '2º ano'],
@@ -212,6 +222,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-senhora',
+    collection: 'literatura',
+    genre: 'Romantismo',
     title: 'Senhora',
     subject: 'Literatura Brasileira',
     series: ['1º ano', '2º ano'],
@@ -225,6 +237,8 @@ export const LIBRARY_BOOKS = [
   },
   {
     id: 'literatura-ursula',
+    collection: 'literatura',
+    genre: 'Romantismo',
     title: 'Úrsula e outras obras',
     subject: 'Literatura Brasileira',
     series: ['1º ano', '2º ano', '3º ano'],
@@ -240,7 +254,9 @@ export const LIBRARY_BOOKS = [
 
 export function libraryBySeries() {
   return ['1º ano', '2º ano', '3º ano'].map((series) => {
-    const books = LIBRARY_BOOKS.filter((book) => book.series.includes(series))
+    const books = LIBRARY_BOOKS.filter(
+      (book) => book.collection !== 'literatura' && book.series.includes(series)
+    )
     const subjects = [...new Set(books.map((book) => book.subject))].map((name) => ({
       name,
       books: books.filter((book) => book.subject === name),
@@ -248,4 +264,12 @@ export function libraryBySeries() {
 
     return { series, subjects }
   })
+}
+
+export function literatureByGenre() {
+  const books = LIBRARY_BOOKS.filter((book) => book.collection === 'literatura')
+  return [...new Set(books.map((book) => book.genre))].map((name) => ({
+    name,
+    books: books.filter((book) => book.genre === name),
+  }))
 }
