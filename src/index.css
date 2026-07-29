@@ -452,6 +452,43 @@ img {
   transform: translateY(-2px);
 }
 
+.feed-top-notifications {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.feed-top-notifications:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.feed-top-notifications > span {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 2px solid #050705;
+  border-radius: 999px;
+  background: #ff334e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 16px;
+  text-align: center;
+}
+
 .post-header {
   display: flex;
   gap: 10px;

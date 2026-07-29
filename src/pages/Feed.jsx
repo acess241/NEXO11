@@ -64,6 +64,15 @@ function IconeRepost() {
   )
 }
 
+function IconeSino() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
+      <path d="M9 17a3 3 0 0 0 6 0" />
+    </svg>
+  )
+}
+
 function formatarData(dataIso) {
   const data = new Date(dataIso)
 
@@ -197,12 +206,34 @@ export default function Feed() {
   const [respostaComentario, setRespostaComentario] = useState({})
   const [comentarioRespondendo, setComentarioRespondendo] = useState({})
   const [postParaApagar, setPostParaApagar] = useState(null)
+  const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0)
 
   const navigate = useNavigate()
 
   useEffect(() => {
     carregarTudo()
   }, [])
+
+  useEffect(() => {
+    if (!meuPerfil?.id) return undefined
+    let ativo = true
+    async function atualizarContagem() {
+      const [{ count: notificacoes }, { count: solicitacoes }] = await Promise.all([
+        supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).is('read_at', null),
+        supabase.from('follow_requests').select('*', { count: 'exact', head: true }).eq('receiver_profile_id', meuPerfil.id).eq('status', 'pending'),
+      ])
+      if (ativo) setNotificacoesNaoLidas(Number(notificacoes || 0) + Number(solicitacoes || 0))
+    }
+    void atualizarContagem()
+    const canal = supabase.channel(`feed-top-notifications-${meuPerfil.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `receiver_profile_id=eq.${meuPerfil.id}` }, atualizarContagem)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'follow_requests', filter: `receiver_profile_id=eq.${meuPerfil.id}` }, atualizarContagem)
+      .subscribe()
+    return () => {
+      ativo = false
+      supabase.removeChannel(canal)
+    }
+  }, [meuPerfil?.id])
 
   async function garantirPerfilUsuario(user) {
     try {
@@ -1130,6 +1161,18 @@ export default function Feed() {
           </button>
 
           <button
+            type="button"
+            onClick={() => navigate('/notificacoes')}
+            className="feed-top-notifications"
+            aria-label={`Notificações${notificacoesNaoLidas ? `, ${notificacoesNaoLidas} não lidas` : ''}`}
+          >
+            <IconeSino />
+            {notificacoesNaoLidas > 0 ? (
+              <span>{notificacoesNaoLidas > 99 ? '99+' : notificacoesNaoLidas}</span>
+            ) : null}
+          </button>
+
+          <button
             onClick={() => navigate('/perfil')}
             className="feed-profile-btn"
           >
@@ -1228,7 +1271,7 @@ export default function Feed() {
         </div>
       )}
 
-      <BottomNav />
+      <BottomNav hideNotifications />
     </div>
   )
 }

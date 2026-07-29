@@ -67,7 +67,7 @@ function IconUser() {
   )
 }
 
-export default function BottomNav() {
+export default function BottomNav({ hideNotifications = false }) {
   const [quantidadeNaoLidas, setQuantidadeNaoLidas] = useState(0)
   const [quantidadeMensagens, setQuantidadeMensagens] = useState(0)
 
@@ -249,19 +249,21 @@ export default function BottomNav() {
         <IconNexis />
       </NavLink>
 
-      <NavLink
-        to="/notificacoes"
-        className={({ isActive }) => (isActive ? 'active' : '')}
-      >
-        <div className="nav-icon-wrapper">
-          <IconBell />
-          {quantidadeNaoLidas > 0 && (
-            <span className="nav-badge">
-              {quantidadeNaoLidas > 9 ? '9+' : quantidadeNaoLidas}
-            </span>
-          )}
-        </div>
-      </NavLink>
+      {!hideNotifications ? (
+        <NavLink
+          to="/notificacoes"
+          className={({ isActive }) => (isActive ? 'active' : '')}
+        >
+          <div className="nav-icon-wrapper">
+            <IconBell />
+            {quantidadeNaoLidas > 0 && (
+              <span className="nav-badge">
+                {quantidadeNaoLidas > 9 ? '9+' : quantidadeNaoLidas}
+              </span>
+            )}
+          </div>
+        </NavLink>
+      ) : null}
 
       <NavLink
         to="/perfil"
