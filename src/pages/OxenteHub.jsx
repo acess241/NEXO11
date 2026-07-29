@@ -33,6 +33,7 @@ import {
   saveAnalysisToHistory,
   scanActivityImage,
 } from '../lib/oxenteStudyPipeline'
+import { libraryBySeries } from '../data/libraryBooks'
 
 const TABS = [
   { id: 'sala', label: 'Salas', mobileLabel: 'Salas', icon: 'sala' },
@@ -100,23 +101,7 @@ const OXENTE_STATS_KEY = 'oxente_hub_stats_v4'
 const OXENTE_ROUTINE_KEY = 'oxente_hub_study_routine_v1'
 const OXENTE_CLASSROOM_CLEANUP_KEY = 'oxente_hub_classroom_cleanup_v3'
 
-const LIBRARY_BY_SERIES = [
-  {
-    series: '1 ano',
-    subjects: [
-      {
-        name: 'Matemática',
-        books: [
-          {
-            title: 'Matemática para compreender o mundo 1',
-            fileName: 'matematica-para-compreender-o-mundo-1.pdf',
-            href: '/books/1ano/matematica/matematica-para-compreender-o-mundo-1.pdf',
-          },
-        ],
-      },
-    ],
-  },
-]
+const LIBRARY_BY_SERIES = libraryBySeries()
 
 const ROTINA_TABS = [
   { id: 'hoje', label: 'Hoje', icon: 'inicio' },
@@ -837,6 +822,7 @@ export default function OxenteHub() {
   const [laboratorioView, setLaboratorioView] = useState('inicio')
   const [rotinaView, setRotinaView] = useState('hoje')
   const [filtroBiblioteca, setFiltroBiblioteca] = useState('')
+  const [livroAberto, setLivroAberto] = useState(null)
   const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
   const [textoDigitalizado, setTextoDigitalizado] = useState('')
@@ -1153,7 +1139,7 @@ export default function OxenteHub() {
         .map((subject) => ({
           ...subject,
           books: subject.books.filter((book) => {
-            const target = `${subject.name} ${book.title} ${book.fileName}`.toLowerCase()
+            const target = `${subject.name} ${book.title} ${book.author} ${book.description}`.toLowerCase()
             return target.includes(termo)
           }),
         }))
@@ -3642,18 +3628,120 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
           </section>
         ) : null}
         {tab === 'biblioteca' ? (
-          <section className="oxente-section">
-            <article className="nexo-development-card">
-              <div className="nexo-development-icon" aria-hidden="true">
-                {renderLaboratorioIcon('biblioteca')}
-              </div>
-              <span>EM CONSTRUÇÃO</span>
-              <h3>Oops! Esta área ainda está em desenvolvimento.</h3>
-              <p>Logo, logo você poderá acessar seus livros!</p>
-              <button type="button" onClick={() => setTab('')}>
-                Voltar para Atividades
-              </button>
-            </article>
+          <section className="oxente-section oxente-library">
+            {livroAberto ? (
+              <article className="oxente-library-reader">
+                <header className="oxente-library-reader-header">
+                  <button
+                    type="button"
+                    className="oxente-library-back"
+                    onClick={() => setLivroAberto(null)}
+                  >
+                    <IconArrowLeft />
+                    Biblioteca
+                  </button>
+                  <div>
+                    <span>{livroAberto.subject} · {livroAberto.series.join(', ')}</span>
+                    <h2>{livroAberto.title}</h2>
+                    <p>{livroAberto.author}</p>
+                  </div>
+                  <a href={livroAberto.sourceUrl} target="_blank" rel="noreferrer">
+                    Ver fonte oficial
+                  </a>
+                </header>
+
+                <div className="oxente-library-license">
+                  Material disponibilizado pelo portal público eduCAPES · {livroAberto.license}
+                </div>
+
+                <object
+                  className="oxente-library-pdf"
+                  data={livroAberto.pdfUrl}
+                  type="application/pdf"
+                  aria-label={`Leitor do livro ${livroAberto.title}`}
+                >
+                  <div className="oxente-library-reader-fallback">
+                    <h3>O navegador bloqueou o leitor incorporado.</h3>
+                    <p>Você ainda pode ler o livro pela página oficial da eduCAPES.</p>
+                    <a href={livroAberto.pdfUrl} target="_blank" rel="noreferrer">
+                      Abrir livro
+                    </a>
+                  </div>
+                </object>
+              </article>
+            ) : (
+              <>
+                <article className="oxente-card oxente-library-hero">
+                  <div>
+                    <span>BIBLIOTECA ABERTA</span>
+                    <h2>Leia sem sair do NEXO</h2>
+                    <p>
+                      Livros educacionais de acesso legal, organizados para o Ensino Médio.
+                    </p>
+                  </div>
+                  <div className="oxente-library-count">
+                    <strong>{LIBRARY_BY_SERIES[0]?.subjects.reduce((total, subject) => total + subject.books.length, 0) || 0}</strong>
+                    <span>livros disponíveis</span>
+                  </div>
+                </article>
+
+                <label className="oxente-library-search">
+                  <span>Pesquisar livro, matéria ou autor</span>
+                  <input
+                    type="search"
+                    value={filtroBiblioteca}
+                    onChange={(event) => setFiltroBiblioteca(event.target.value)}
+                    placeholder="Ex.: Química, História, UERJ..."
+                  />
+                </label>
+
+                {itensBiblioteca.length === 0 ? (
+                  <article className="oxente-card oxente-library-empty">
+                    <h3>Nenhum livro encontrado</h3>
+                    <p>Tente pesquisar por outra matéria, título ou autor.</p>
+                  </article>
+                ) : (
+                  itensBiblioteca.map((series) => (
+                    <article className="oxente-card oxente-library-series" key={series.series}>
+                      <header>
+                        <span>ENSINO MÉDIO</span>
+                        <h3>{series.series}</h3>
+                      </header>
+
+                      {series.subjects.map((subject) => (
+                        <div className="oxente-library-block" key={`${series.series}-${subject.name}`}>
+                          <h4 className="oxente-library-subject">{subject.name}</h4>
+                          <div className="oxente-library-grid">
+                            {subject.books.map((book) => (
+                              <article className="oxente-library-book" key={`${series.series}-${book.id}`}>
+                                <div className="oxente-library-cover" aria-hidden="true">
+                                  {renderLaboratorioIcon('biblioteca')}
+                                  <span>{book.subject}</span>
+                                </div>
+                                <div className="oxente-library-book-copy">
+                                  <strong>{book.title}</strong>
+                                  <span>{book.author} · {book.year}</span>
+                                  <p>{book.description}</p>
+                                  <small>{book.license}</small>
+                                </div>
+                                <div className="oxente-library-actions">
+                                  <button type="button" onClick={() => setLivroAberto(book)}>
+                                    Ler no NEXO
+                                  </button>
+                                  <a href={book.sourceUrl} target="_blank" rel="noreferrer">
+                                    Fonte
+                                  </a>
+                                </div>
+                              </article>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </article>
+                  ))
+                )}
+              </>
+            )}
           </section>
         ) : null}
 
