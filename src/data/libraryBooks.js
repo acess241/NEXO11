@@ -1,5 +1,6 @@
 const EDUCAPES = 'https://educapes.capes.gov.br'
 const LOCAL_LITERATURE = `${import.meta.env.BASE_URL}books/literatura`
+const LOCAL_DIDACTIC = `${import.meta.env.BASE_URL}books/didaticos`
 
 export const LIBRARY_BOOKS = [
   {
@@ -11,7 +12,7 @@ export const LIBRARY_BOOKS = [
     year: 2014,
     license: 'Creative Commons',
     description: 'Leitura, gêneros textuais e práticas de Língua Portuguesa.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/560839/2/Ens_LIng_Port%20I_PDF_Livro_B_WEB.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/portugues-ensino-1.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/560839`,
   },
   {
@@ -23,7 +24,7 @@ export const LIBRARY_BOOKS = [
     year: 2023,
     license: 'CC BY-NC-SA 3.0 BR',
     description: 'Língua Portuguesa, currículo, letramento e cultura digital.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/742737/2/Letramento%20e%20Cultura%20Digital.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/portugues-cultura-digital.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/742737`,
   },
   {
@@ -35,7 +36,7 @@ export const LIBRARY_BOOKS = [
     year: 2013,
     license: 'Acesso aberto eduCAPES',
     description: 'Conceitos e práticas de Matemática para o Ensino Médio.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/401687/1/Matem%C3%A1tica%20na%20Pr%C3%A1tica%20Mod2_F5_Conteudo_e_Pratica.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/matematica-pratica.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/401687`,
   },
   {
@@ -47,7 +48,7 @@ export const LIBRARY_BOOKS = [
     year: 2025,
     license: 'Creative Commons',
     description: 'Tendências, desafios e perspectivas para aprender Matemática.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/922102/2/Matem%C3%A1tica%20no%20s%C3%A9culo%20XXI.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/matematica-seculo-xxi.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/922102`,
   },
   {
@@ -59,7 +60,7 @@ export const LIBRARY_BOOKS = [
     year: 2022,
     license: 'CC BY-NC-SA 3.0 BR',
     description: 'Substâncias, fenômenos e Química presente no cotidiano.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/731005/2/LivroConectando.2022.VOLUME1.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/quimica-volume-1.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/731005`,
   },
   {
@@ -71,7 +72,7 @@ export const LIBRARY_BOOKS = [
     year: 2022,
     license: 'Creative Commons',
     description: 'Quantificação de fenômenos e aprofundamento em Química.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/730991/2/LivroConectando.2022.VOLUME2.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/quimica-volume-2.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/730991`,
   },
   {
@@ -83,7 +84,7 @@ export const LIBRARY_BOOKS = [
     year: 2017,
     license: 'CC BY-NC-SA 3.0 BR',
     description: 'Experimentos, investigação e relações entre ciência, tecnologia e ambiente.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/564249/2/MPECM_%20Produto%20Educacional_Guia%20Did%C3%A1tico%20de%20Ci%C3%AAncias%20n%C2%BA%2051_%20Sergo%20Martins%20dos%20Santos%20_%20Turma%202015-%20DS_%20V%20Final%20em%2019.04.2018.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/quimica-praticas.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/564249`,
   },
   {
@@ -95,7 +96,7 @@ export const LIBRARY_BOOKS = [
     year: 2024,
     license: 'Creative Commons — uso não comercial',
     description: 'Biologia celular, bioquímica, botânica e atividades práticas.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/921179/1/Pra%CC%81ticas%20de%20Biologia%20para%20o%20Ensino%20B%C3%A1sico.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/biologia-praticas.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/921179`,
   },
   {
@@ -107,7 +108,7 @@ export const LIBRARY_BOOKS = [
     year: 2022,
     license: 'CC BY-SA 3.0 BR',
     description: 'Historiografia, patrimônio, identidade e educação étnico-racial.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/704808/2/Ensino%20de%20Hist%C3%B3ria.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/historia-interfaces.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/704808`,
   },
   {
@@ -119,7 +120,7 @@ export const LIBRARY_BOOKS = [
     year: 2022,
     license: 'Creative Commons',
     description: 'Espaço geográfico, ensino e práticas contemporâneas.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/703777/1/Geografia%20e%20ensino%20Dimens%C3%B5es%20te%C3%B3ricas%20e%20pr%C3%A1ticas%202.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/geografia-dimensoes.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/703777`,
   },
   {
@@ -131,7 +132,7 @@ export const LIBRARY_BOOKS = [
     year: 2023,
     license: 'Creative Commons',
     description: 'Sociedade, natureza, sustentabilidade e território.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/721419/4/Sobre%20o%20Ensino%20de%20Geografia%20e%20Sustentabilidade%20Abordagens%20e%20Implica%C3%A7%C3%B5es.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/geografia-sustentabilidade.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/721419`,
   },
   {
@@ -143,7 +144,7 @@ export const LIBRARY_BOOKS = [
     year: 2022,
     license: 'Creative Commons',
     description: 'Paisagem, território, sociedade e relações socioambientais.',
-    pdfUrl: `${EDUCAPES}/bitstream/capes/721722/2/NovasDimensoesGeografia.pdf`,
+    pdfUrl: `${LOCAL_DIDACTIC}/geografia-novas-dimensoes.pdf`,
     sourceUrl: `${EDUCAPES}/handle/capes/721722`,
   },
   {
