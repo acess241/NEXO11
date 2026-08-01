@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-
-const POLICY_VERSION = '1.1 — 29 de julho de 2026'
+import { LEGAL_VERSION_LABEL } from '../lib/legal'
 
 function LegalShell({ title, subtitle, children }) {
   const navigate = useNavigate()
@@ -15,7 +14,7 @@ function LegalShell({ title, subtitle, children }) {
         <p className="legal-kicker">TRANSPARÊNCIA E PROTEÇÃO</p>
         <h1>{title}</h1>
         <p className="legal-lead">{subtitle}</p>
-        <p className="legal-version">Versão {POLICY_VERSION}</p>
+        <p className="legal-version">Versão {LEGAL_VERSION_LABEL}</p>
         {children}
       </article>
     </main>
@@ -259,4 +258,4 @@ export function SafetyResponsibilityTerms() {
   )
 }
 
-export { POLICY_VERSION }
+export { LEGAL_VERSION_LABEL as POLICY_VERSION }

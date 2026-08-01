@@ -8,6 +8,7 @@ import PullToRefresh from './components/PullToRefresh'
 import SocialLoader from './components/SocialLoader'
 import NotificationBridge from './components/NotificationBridge'
 import UpdateAnnouncement from './components/UpdateAnnouncement'
+import LegalAcceptanceGate from './components/LegalAcceptanceGate'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -156,6 +157,7 @@ export default function App() {
     <>
       <PullToRefresh />
       <NotificationBridge session={session} />
+      <LegalAcceptanceGate session={session} />
       <UpdateAnnouncement session={session} />
 
       <Suspense fallback={<PageLoader />}>
