@@ -116,7 +116,10 @@ export default function CreatePost() {
   }, [])
 
   useEffect(() => {
-    if (searchParams.get('tipo') === 'nexis') setTipo('nexis')
+    const tipoSolicitado = searchParams.get('tipo')
+    if (tipoSolicitado === 'nexis' || tipoSolicitado === 'foto') {
+      trocarTipo(tipoSolicitado)
+    }
   }, [searchParams])
 
   useEffect(() => {

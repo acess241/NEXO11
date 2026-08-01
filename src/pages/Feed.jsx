@@ -8,6 +8,13 @@ import { supabase } from '../lib/supabase'
 import { dispararAtualizacaoChat } from '../lib/chat'
 import logoNexo from '/logo-novo.png'
 
+const INCENTIVOS_CRIACAO = [
+  { titulo: 'Mostre o que você sabe fazer', texto: 'Uma ideia simples pode ensinar, inspirar ou divertir alguém hoje.' },
+  { titulo: 'Sua voz faz parte do NEXO', texto: 'Compartilhe um projeto, uma descoberta, uma opinião ou um momento da sua rotina.' },
+  { titulo: 'Tem algo interessante aí?', texto: 'Transforme sua ideia em foto, postagem ou vídeo curto e publique para a comunidade.' },
+  { titulo: 'Crie, conecte e inspire', texto: 'Não precisa ficar perfeito. Comece com o que você tem e conte sua história.' },
+]
+
 function IconeEstrela({ preenchida }) {
   return (
     <svg
@@ -209,6 +216,11 @@ export default function Feed() {
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0)
 
   const navigate = useNavigate()
+  const incentivoCriacao = useMemo(() => {
+    const hoje = new Date()
+    const indice = (hoje.getFullYear() * 372 + hoje.getMonth() * 31 + hoje.getDate()) % INCENTIVOS_CRIACAO.length
+    return INCENTIVOS_CRIACAO[indice]
+  }, [])
 
   useEffect(() => {
     carregarTudo()
@@ -1222,14 +1234,34 @@ export default function Feed() {
           onLoadViewers={carregarVisualizadoresStory}
         />
 
+        <section className="feed-creation-incentive" aria-labelledby="feed-creation-title">
+          <div className="feed-creation-heading">
+            <div className="feed-creation-avatar">
+              {meuPerfil?.foto_url ? <img src={meuPerfil.foto_url} alt="" /> : <span>{meuPerfil?.nome?.charAt(0)?.toUpperCase() || 'N'}</span>}
+            </div>
+            <div>
+              <span className="feed-creation-kicker">CRIE NO NEXO</span>
+              <h2 id="feed-creation-title">{incentivoCriacao.titulo}</h2>
+              <p>{incentivoCriacao.texto}</p>
+            </div>
+          </div>
+          <div className="feed-creation-actions">
+            <button type="button" onClick={() => navigate('/novo-post')}>✎ <span>Postagem</span></button>
+            <button type="button" onClick={() => navigate('/novo-post?tipo=foto')}>▣ <span>Foto</span></button>
+            <button type="button" onClick={() => navigate('/novo-post?tipo=nexis')} className="is-primary">▶ <span>Gravar Nexis</span></button>
+            <button type="button" onClick={() => navigate('/novo-story')}>＋ <span>Story</span></button>
+          </div>
+        </section>
+
         {posts.length === 0 ? (
           <div className="empty-state">
-            <h3 style={{ marginBottom: 10, color: 'white' }}>Nada por aqui ainda</h3>
+            <h3 style={{ marginBottom: 10, color: 'white' }}>Seja a primeira pessoa a publicar</h3>
             <p>
               {feedEmDescoberta
-                ? 'Enquanto você ainda não segue ninguém, o feed mostra apenas recomendações relevantes.'
-                : 'Siga perfis para montar seu feed com stories e postagens.'}
+                ? 'Crie uma postagem ou um vídeo e ajude a comunidade a ganhar vida.'
+                : 'Compartilhe algo com as pessoas que acompanham você.'}
             </p>
+            <button type="button" className="empty-state-create" onClick={() => navigate('/novo-post')}>Criar minha primeira publicação</button>
           </div>
         ) : (
           <div className="feed-list">

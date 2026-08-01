@@ -334,6 +334,75 @@ img {
   gap: 14px;
 }
 
+.feed-creation-incentive {
+  margin: 14px 0;
+  padding: 20px;
+  border: 1px solid rgb(43 255 26 / 22%);
+  border-radius: 22px;
+  background: radial-gradient(circle at 100% 0%, rgb(43 255 26 / 12%), transparent 40%), var(--surface-1);
+}
+
+.feed-creation-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.feed-creation-heading > div:last-child { min-width: 0; }
+
+.feed-creation-avatar {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #071006;
+  border: 2px solid #2bff1a;
+  border-radius: 50%;
+  background: #2bff1a;
+  font-weight: 950;
+}
+
+.feed-creation-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.feed-creation-kicker { color: #2bff1a; font-size: .68rem; font-weight: 900; letter-spacing: .14em; }
+.feed-creation-heading h2 { margin: 3px 0 5px; color: var(--text); font-size: 1.2rem; line-height: 1.15; }
+.feed-creation-heading p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.4; }
+
+.feed-creation-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.feed-creation-actions button,
+.empty-state-create {
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface-2);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feed-creation-actions button:hover { border-color: #2bff1a; }
+.feed-creation-actions .is-primary { color: #061105; border-color: #2bff1a; background: #2bff1a; }
+.empty-state-create { margin-top: 16px; color: #061105; border-color: #2bff1a; background: #2bff1a; }
+
+@media (max-width: 560px) {
+  .feed-creation-incentive { padding: 15px; border-radius: 18px; }
+  .feed-creation-avatar { flex-basis: 42px; width: 42px; height: 42px; }
+  .feed-creation-heading h2 { font-size: 1.05rem; }
+  .feed-creation-heading p { font-size: .82rem; }
+  .feed-creation-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .user-list {
   margin-top: 16px;
   display: flex;
