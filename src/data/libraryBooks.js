@@ -1,4 +1,5 @@
 const EDUCAPES = 'https://educapes.capes.gov.br'
+const LOCAL_LITERATURE = `${import.meta.env.BASE_URL}books/literatura`
 
 export const LIBRARY_BOOKS = [
   {
@@ -157,7 +158,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Um dos maiores romances do Realismo brasileiro, narrado por Bento Santiago.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/28739/dom_casmurro_assis.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/dom-casmurro.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/7c25d167-f9a8-4413-b948-276b84dcf53d',
   },
   {
@@ -172,7 +173,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Marco do Realismo brasileiro, narrado por um defunto autor.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/36759/memorias_postumas_bras_cubas.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/memorias-postumas.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/2428d60c-49e1-4dc6-bff9-1d91bd142bf3',
   },
   {
@@ -187,7 +188,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Clássico naturalista sobre desigualdade e relações sociais no Rio de Janeiro.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/39120/O%20Corti%C3%A7o_Azevedo.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/o-cortico.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/df801f46-f448-4c66-9b42-7d9f1ff518f6',
   },
   {
@@ -202,7 +203,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Romance pré-modernista que discute nacionalismo, política e identidade brasileira.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/33419/triste_fim_lima.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/policarpo-quaresma.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/20c5a207-f7a8-4005-8744-157f861587ee',
   },
   {
@@ -217,7 +218,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Romance indianista sobre a formação simbólica do povo brasileiro.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/11854/iracema_alencar_2ed.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/iracema.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/0fa8784c-a227-4793-b733-4d96cef73f79',
   },
   {
@@ -232,7 +233,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Romance urbano que critica relações sociais orientadas pelo dinheiro.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/39100/Senhora_Alencar.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/senhora.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/items/cd640b5c-d306-4c09-a400-c0c741560182',
   },
   {
@@ -247,7 +248,7 @@ export const LIBRARY_BOOKS = [
     license: 'Domínio público · Edições Câmara',
     provider: 'Biblioteca Digital da Câmara dos Deputados',
     description: 'Obra pioneira que aborda escravidão, racismo e a condição feminina no século XIX.',
-    pdfUrl: 'https://bd.camara.leg.br/bd/bitstream/handle/bdcamara/35999/ursula_obras_reis.pdf',
+    pdfUrl: `${LOCAL_LITERATURE}/ursula.pdf`,
     sourceUrl: 'https://bd.camara.leg.br/bd/handle/bdcamara/35999',
   },
 ]

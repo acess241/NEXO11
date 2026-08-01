@@ -106,6 +106,7 @@ const LITERATURE_BY_GENRE = literatureByGenre()
 
 function getEmbeddedBookUrl(book) {
   if (!book?.pdfUrl) return ''
+  if (book.collection === 'literatura') return book.pdfUrl
   if (!/^https?:\/\//i.test(book.pdfUrl)) return book.pdfUrl
   return `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(book.pdfUrl)}`
 }
