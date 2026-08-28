@@ -1869,7 +1869,7 @@ export function listClassroomJoinRequestsForTeacher(teacherId) {
 
 export function reviewClassroomJoinRequest({ requestId, teacherId, approve }) {
   if (!requestId || !teacherId) {
-    const error = new Error('RevisÃ£o invalida.')
+    const error = new Error('Revisão inválida.')
     error.code = 'request_invalid'
     throw error
   }

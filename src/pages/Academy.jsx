@@ -210,7 +210,7 @@ export default function Academy() {
         await carregarTrocasPendentesProfessor(true)
       }
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel carregar a Academia agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível carregar a Academia agora.'))
     } finally {
       setCarregando(false)
     }
@@ -231,7 +231,7 @@ export default function Academy() {
       if (error) throw error
       setProfTrocasPendentes(Array.isArray(data) ? data : [])
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel carregar trocas pendentes do professor.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível carregar trocas pendentes do professor.'))
     } finally {
       setProfCarregandoTrocas(false)
     }
@@ -343,7 +343,7 @@ export default function Academy() {
         }
       }
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel buscar professores agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível buscar professores agora.'))
     } finally {
       setBuscandoProfessoresMateria(false)
     }
@@ -381,7 +381,7 @@ export default function Academy() {
         setSucesso(`${lista.length} aluno(s) encontrado(s).`)
       }
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel buscar alunos agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível buscar alunos agora.'))
     } finally {
       setProfBuscandoAlunos(false)
     }
@@ -467,7 +467,7 @@ export default function Academy() {
         `XP enviado para @${resposta?.student_username || profAlunoSelecionado?.username || 'aluno'} com sucesso.`
       )
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel lancar XP agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível lançar XP agora.'))
     } finally {
       setProfProcessandoXp(false)
     }
@@ -500,7 +500,7 @@ export default function Academy() {
       setProfNotaTroca('')
       await carregarTrocasPendentesProfessor(true)
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel revisar essa troca agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível revisar essa troca agora.'))
     } finally {
       setProfRevisandoTrocaId('')
     }
@@ -596,7 +596,7 @@ export default function Academy() {
       setXpTroca(XP_TRADE_OPTIONS[0].xp)
       await carregarPainel(perfil.id)
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel solicitar a troca agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível solicitar a troca agora.'))
     } finally {
       setProcessandoTroca(false)
     }
@@ -628,7 +628,7 @@ export default function Academy() {
           : Boolean(data?.academy_admin_can_manage_quiz ?? data)
 
       if (!permitido) {
-        setErro('Seu perfil nÃ£o tem permissao para o painel admin de quiz.')
+      setErro('Seu perfil não tem permissão para o painel administrativo de quizzes.')
         return
       }
 
@@ -643,7 +643,7 @@ export default function Academy() {
       setSucesso('Painel admin de quiz liberado.')
       await carregarResumoAdminQuiz()
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel abrir o painel admin de quiz agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível abrir o painel administrativo de quizzes agora.'))
     } finally {
       setAdminQuizVerificando(false)
     }
@@ -686,7 +686,7 @@ export default function Academy() {
         by_subject: porMateria,
       })
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel atualizar o resumo de quizzes.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível atualizar o resumo de quizzes.'))
     }
   }
 
@@ -724,7 +724,7 @@ export default function Academy() {
     }
 
     if (scope === 'course' && !courseArea) {
-      setErro('Informe a area do curso para questÃµes de escopo course.')
+      setErro('Informe a área do curso para questões do escopo do curso.')
       return
     }
 
@@ -753,7 +753,7 @@ export default function Academy() {
       setAdminQuizForm(formularioQuizInicial())
       await carregarResumoAdminQuiz()
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel criar a questao de quiz agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível criar a questão do quiz agora.'))
     } finally {
       setAdminQuizCriando(false)
     }
@@ -792,7 +792,7 @@ export default function Academy() {
         setSucesso(`${lista.length} perfil(is) encontrado(s).`)
       }
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel buscar perfis agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível buscar perfis agora.'))
     } finally {
       setAdminBuscandoPerfis(false)
     }
@@ -821,7 +821,7 @@ export default function Academy() {
     }
 
     if (!motivo) {
-      setErro('Informe um motivo para registrar no histÃ³rico.')
+      setErro('Informe um motivo para registrar no histórico.')
       return
     }
 
@@ -853,7 +853,7 @@ export default function Academy() {
         `XP atualizado para @${resposta?.username || adminPerfilSelecionado.username}: ${resposta?.xp_total ?? '-'} XP.`
       )
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel ajustar XP agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível ajustar o XP agora.'))
     } finally {
       setAdminAjustandoXp(false)
     }
@@ -892,7 +892,7 @@ export default function Academy() {
       setAdminQuizStatusId('')
       await carregarResumoAdminQuiz()
     } catch (error) {
-      setErro(traduzirErroAcademia(error, 'NÃ£o foi possÃ­vel alterar o status desta questao agora.'))
+      setErro(traduzirErroAcademia(error, 'Não foi possível alterar o status desta questão agora.'))
     } finally {
       setAdminQuizMudandoStatus(false)
     }
@@ -959,7 +959,7 @@ export default function Academy() {
             <h2>{perfil?.nome || 'Aluno'}</h2>
             <p className="academy-course">
               {perfilEhProfessor
-                ? `Professor(a) de ${perfil?.teacher_subject || 'materia nÃ£o definida'}`
+      ? `Professor(a) de ${perfil?.teacher_subject || 'matéria não definida'}`
                 : nomeCurso(perfil?.course_area)}
             </p>
           </div>
@@ -1019,7 +1019,7 @@ export default function Academy() {
                         <strong>@{aluno?.username || 'aluno'}</strong>
                         <span>{aluno?.nome || 'Aluno'}</span>
                         <small>
-                          XP {aluno?.xp_total || 0} â€¢ Nivel {aluno?.level || 1}
+                  XP {aluno?.xp_total || 0} • Nível {aluno?.level || 1}
                         </small>
                       </button>
                     )
@@ -1036,7 +1036,7 @@ export default function Academy() {
                   <strong>@{profAlunoSelecionado?.username || 'aluno'}</strong>
                   <span>{profAlunoSelecionado?.nome || 'Aluno'}</span>
                   <small>
-                    XP atual: {profAlunoSelecionado?.xp_total || 0} â€¢ Nivel:{' '}
+                  XP atual: {profAlunoSelecionado?.xp_total || 0} • Nível:{' '}
                     {profAlunoSelecionado?.level || 1}
                   </small>
                 </div>
@@ -1096,7 +1096,7 @@ export default function Academy() {
                   >
                     <div className="academy-v2-card-head">
                       <strong className="academy-v2-title">
-                        @{troca.student_username || 'aluno'} â€¢ {troca.subject_name} â€¢ Escola:{' '}
+                          @{troca.student_username || 'aluno'} • {troca.subject_name} • Escola:{' '}
                         {troca.unit_code || '-'}
                       </strong>
                       <small className="academy-v2-time">{formatarDataHora(troca.created_at)}</small>
@@ -1418,7 +1418,7 @@ export default function Academy() {
                             <strong>@{item.username}</strong>
                             <span>{item.nome || 'Aluno'}</span>
                             <small>
-                              XP {item.xp_total || 0} â€¢ Nivel {item.level || 1}
+                              XP {item.xp_total || 0} • Nível {item.level || 1}
                             </small>
                           </button>
                         )
@@ -1435,7 +1435,7 @@ export default function Academy() {
                       <strong>@{adminPerfilSelecionado.username}</strong>
                       <span>{adminPerfilSelecionado.nome || 'Aluno'}</span>
                       <small>
-                        XP atual: {adminPerfilSelecionado.xp_total || 0} â€¢ Nivel:{' '}
+                    XP atual: {adminPerfilSelecionado.xp_total || 0} • Nível:{' '}
                         {adminPerfilSelecionado.level || 1}
                       </small>
                     </div>
@@ -1532,7 +1532,7 @@ export default function Academy() {
                 <div className="academy-list-row academy-v2-card" key={troca.id}>
                   <div className="academy-v2-card-head">
                     <strong className="academy-v2-title">
-                      {troca.subject_name} â€¢ Escola: {troca.unit_code || '-'}
+                              {troca.subject_name} • Escola: {troca.unit_code || '-'}
                     </strong>
                     <small className="academy-v2-time">{formatarDataHora(troca.created_at)}</small>
                   </div>

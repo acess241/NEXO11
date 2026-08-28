@@ -417,7 +417,7 @@ function extrairResumoResultadoQuiz(resultado, totalFallback = 0) {
   const meta = Number(resultado?.pass_score_percent || 70)
   const passou = Boolean(resultado?.passed)
   const motivoBanco = `${resultado?.result_reason || ''}`.trim()
-  const motivo = motivoBanco || (passou ? 'Meta de aproveitamento atingida.' : `Meta de ${meta}% nÃ£o atingida.`)
+    const motivo = motivoBanco || (passou ? 'Meta de aproveitamento atingida.' : `Meta de ${meta}% não atingida.`)
 
   return {
     total,
@@ -839,7 +839,7 @@ export default function ChatRoom() {
       !navigator.mediaDevices?.getUserMedia ||
       typeof MediaRecorder === 'undefined'
     ) {
-      setErro('Seu navegador nÃ£o suporta gravacao de audio ao vivo.')
+      setErro('Seu navegador não suporta gravação de áudio ao vivo.')
       return
     }
 
@@ -875,7 +875,7 @@ export default function ChatRoom() {
       }
 
       recorder.onerror = () => {
-        setErro('NÃ£o foi possÃ­vel gravar audio agora.')
+      setErro('Não foi possível gravar o áudio agora.')
         setGravandoAudio(false)
         setProcessandoAudio(false)
         encerrarCapturaAudio()
@@ -890,7 +890,7 @@ export default function ChatRoom() {
         const blob = new Blob(chunks, { type: mimeTypeFinal })
 
         if (!blob.size) {
-          setErro('NÃ£o foi possÃ­vel capturar o audio. Tente novamente.')
+      setErro('Não foi possível capturar o áudio. Tente novamente.')
           setGravandoAudio(false)
           setProcessandoAudio(false)
           mediaRecorderRef.current = null
@@ -929,7 +929,7 @@ export default function ChatRoom() {
         return
       }
 
-      setErro('NÃ£o foi possÃ­vel iniciar a gravacao de audio.')
+      setErro('Não foi possível iniciar a gravação de áudio.')
     }
   }
 
@@ -950,7 +950,7 @@ export default function ChatRoom() {
       setProcessandoAudio(false)
       setGravandoAudio(false)
       encerrarCapturaAudio()
-      setErro('NÃ£o foi possÃ­vel finalizar a gravacao agora.')
+      setErro('Não foi possível finalizar a gravação agora.')
     }
   }
 
@@ -1153,7 +1153,7 @@ export default function ChatRoom() {
       }
     } catch (error) {
       setErro(
-        montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel carregar o painel do pet em dupla.')
+        montarMensagemErroAcademia(error, 'Não foi possível carregar o painel do pet em dupla.')
       )
     } finally {
       if (!silencioso) {
@@ -1200,7 +1200,7 @@ export default function ChatRoom() {
       )
       await carregarPetDoDia(conversaAtiva.id, { silencioso: true })
     } catch (error) {
-      setErro(montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel enviar o convite do pet agora.'))
+      setErro(montarMensagemErroAcademia(error, 'Não foi possível enviar o convite do pet agora.'))
     } finally {
       setEnviandoConvitePet(false)
     }
@@ -1249,7 +1249,7 @@ export default function ChatRoom() {
         await carregarPetDoDia(conversa.id, { silencioso: true })
       }
     } catch (error) {
-      setErro(montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel responder o convite agora.'))
+      setErro(montarMensagemErroAcademia(error, 'Não foi possível responder ao convite agora.'))
     } finally {
       setRespondendoConvitePet(false)
     }
@@ -1341,7 +1341,7 @@ export default function ChatRoom() {
     if (pairResp.error) throw pairResp.error
 
     if (!pairResp.data?.id) {
-      setErro('Este chat ainda nÃ£o tem pet em dupla.')
+      setErro('Este chat ainda não tem um pet em dupla.')
       return false
     }
 
@@ -1378,7 +1378,7 @@ export default function ChatRoom() {
 
       const payload = Array.isArray(data) ? data[0] : data
       if (!payload?.restored) {
-        setErro(payload?.message || 'NÃ£o foi possÃ­vel restaurar o Nexinho agora.')
+      setErro(payload?.message || 'Não foi possível restaurar o Nexinho agora.')
         return
       }
 
@@ -1400,11 +1400,11 @@ export default function ChatRoom() {
           const restaurado = await restaurarPetLegado()
           if (restaurado) return
         } catch {}
-        setErro('NÃ£o foi possÃ­vel restaurar no modo legado. Rode o SQL de restauracao no Supabase.')
+        setErro('Não foi possível restaurar no modo legado. Rode o SQL de restauração no Supabase.')
         return
       }
 
-      setErro(montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel restaurar o Nexinho agora.'))
+      setErro(montarMensagemErroAcademia(error, 'Não foi possível restaurar o Nexinho agora.'))
     } finally {
       setRestaurandoPet(false)
     }
@@ -1422,7 +1422,7 @@ export default function ChatRoom() {
     if (pairResp.error) throw pairResp.error
 
     if (!pairResp.data?.id) {
-      setErro('Este chat ainda nÃ£o tem pet em dupla.')
+      setErro('Este chat ainda não tem um pet em dupla.')
       return false
     }
 
@@ -1478,7 +1478,7 @@ export default function ChatRoom() {
 
       const payload = Array.isArray(data) ? data[0] : data
       if (!payload?.recreated) {
-        setErro(payload?.message || 'NÃ£o foi possÃ­vel recriar o Nexinho agora.')
+      setErro(payload?.message || 'Não foi possível recriar o Nexinho agora.')
         return
       }
 
@@ -1497,11 +1497,11 @@ export default function ChatRoom() {
           if (recriado) return
         } catch {}
 
-        setErro('NÃ£o foi possÃ­vel recriar no modo legado. Rode o SQL de recriacao do Nexinho no Supabase.')
+        setErro('Não foi possível recriar no modo legado. Rode o SQL de recriação do Nexinho no Supabase.')
         return
       }
 
-      setErro(montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel recriar o Nexinho agora.'))
+      setErro(montarMensagemErroAcademia(error, 'Não foi possível recriar o Nexinho agora.'))
     } finally {
       setRecriandoPet(false)
     }
@@ -1571,7 +1571,7 @@ export default function ChatRoom() {
       const questoes = normalizarQuestoesQuiz(payload?.questions)
 
       if (!payload?.attempt_id || questoes.length === 0) {
-        throw new Error('NÃ£o foi possÃ­vel montar o quiz agora.')
+        throw new Error('Não foi possível montar o quiz agora.')
       }
 
       setQuizDados({
@@ -1584,7 +1584,7 @@ export default function ChatRoom() {
       })
     } catch (error) {
       setQuizErro(
-        montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel abrir o quiz do desafio agora.')
+        montarMensagemErroAcademia(error, 'Não foi possível abrir o quiz do desafio agora.')
       )
     } finally {
       setQuizCarregando(false)
@@ -1637,7 +1637,7 @@ export default function ChatRoom() {
 
       if (!resumoResultado.passou) {
         setQuizErro(
-          `VocÃª perdeu ${resumoResultado.erros} questao(oes). Motivo: ${resumoResultado.motivo}`
+          `Você errou ${resumoResultado.erros} questão(ões). Motivo: ${resumoResultado.motivo}`
         )
         return
       }
@@ -1651,7 +1651,7 @@ export default function ChatRoom() {
 
       await carregarPetDoDia(conversa.id, { silencioso: true })
     } catch (error) {
-      setQuizErro(montarMensagemErroAcademia(error, 'NÃ£o foi possÃ­vel corrigir o quiz agora.'))
+      setQuizErro(montarMensagemErroAcademia(error, 'Não foi possível corrigir o quiz agora.'))
     } finally {
       setConcluindoPet(false)
       setQuizSubmetendo(false)
@@ -1856,7 +1856,7 @@ export default function ChatRoom() {
           anterior ||
           montarMensagemErroBloqueioChat(
             error,
-            'NÃ£o foi possÃ­vel validar o bloqueio desta conversa agora.'
+        'Não foi possível validar o bloqueio desta conversa agora.'
           )
         )
       }
@@ -1977,7 +1977,7 @@ export default function ChatRoom() {
       setErro(
         montarMensagemErroBloqueioChat(
           error,
-          traduzirErroChat(error, 'NÃ£o foi possÃ­vel abrir este chat agora.')
+      traduzirErroChat(error, 'Não foi possível abrir este chat agora.')
         )
       )
     } finally {
@@ -2109,7 +2109,7 @@ export default function ChatRoom() {
         console.warn('Falha ao criar notificacao de mensagem:', resultadoNotificacao.error.message)
       }
     } catch (error) {
-      setErro(montarMensagemErroChat(error, 'NÃ£o foi possÃ­vel enviar a mensagem agora.'))
+      setErro(montarMensagemErroChat(error, 'Não foi possível enviar a mensagem agora.'))
     } finally {
       setEnviando(false)
     }
@@ -2433,7 +2433,7 @@ export default function ChatRoom() {
                 <p className="chat-pet-title">Crie um pet em dupla para este chat</p>
                 <p className="chat-pet-description">
                   {seguimentoMutuo === null
-                    ? 'NÃ£o consegui confirmar os follows agora, mas vocÃª pode tentar enviar o convite.'
+              ? 'Não consegui confirmar quem segue quem agora, mas você pode tentar enviar o convite.'
                     : seguimentoMutuo === false
                     ? 'Para liberar o pet em dupla, vocês precisam se seguir mutuamente.'
                     : 'Um de vocês envia convite e o outro aceita. Depois disso, o banco gera os desafios diários automaticamente.'}
@@ -2479,7 +2479,7 @@ export default function ChatRoom() {
             <p>
               {bloqueadoPorMim
                 ? 'Desbloqueie este perfil para liberar novas mensagens.'
-                : 'Este perfil bloqueou vocÃª. O envio e o recebimento foram pausados.'}
+                      : 'Este perfil bloqueou você. O envio e o recebimento foram pausados.'}
             </p>
           </div>
         ) : mensagens.length === 0 ? (
@@ -2890,7 +2890,7 @@ export default function ChatRoom() {
             <p>
               {bloqueadoPorMim
                 ? 'Desbloqueie este perfil para voltar a enviar e receber mensagens.'
-                : 'Este perfil bloqueou vocÃª. Mensagens e audio foram desativados.'}
+                : 'Este perfil bloqueou você. Mensagens e áudio foram desativados.'}
             </p>
           </div>
         ) : null}
