@@ -5,6 +5,7 @@ import BottomNav from '../components/BottomNav'
 import SocialLoader from '../components/SocialLoader'
 import { supabase } from '../lib/supabase'
 import { availableXp, exportCsv, formatXp, rewardProgress, rpc, XP_STATUS, xpError } from '../lib/xpCenter'
+import { nomeCurso } from '../lib/academy'
 
 const ICONS = { dashboard: 'dashboard', activities: 'book', rewards: 'gift', requests: 'clock', history: 'history', manage: 'settings' }
 const TYPES = { digital: 'Digital', physical: 'Física', event: 'Evento', school_benefit: 'Benefício escolar', custom: 'Personalizada' }
@@ -16,6 +17,7 @@ const ICON_PATHS = {
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
   history: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></>,
   settings: <><circle cx="12" cy="12" r="3"/><path d="M19 15a2 2 0 0 0 1 2l-3 3a2 2 0 0 0-2-1 2 2 0 0 0-1 2h-4a2 2 0 0 0-1-2 2 2 0 0 0-2 1l-3-3a2 2 0 0 0 1-2 2 2 0 0 0-2-1v-4a2 2 0 0 0 2-1 2 2 0 0 0-1-2l3-3a2 2 0 0 0 2 1 2 2 0 0 0 1-2h4a2 2 0 0 0 1 2 2 2 0 0 0 2-1l3 3a2 2 0 0 0-1 2 2 2 0 0 0 2 1v4a2 2 0 0 0-2 1Z"/></>,
+  trophy: <><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a4 4 0 0 0 4 4M17 6h3v2a4 4 0 0 1-4 4"/></>,
   menu: <path d="M4 7h16M4 12h16M4 17h16"/>,
   close: <path d="m6 6 12 12M18 6 6 18"/>,
   chevron: <path d="m15 18-6-6 6-6"/>,
@@ -34,6 +36,31 @@ function date(value) {
 
 function Empty({ icon = 'empty', title, text }) {
   return <div className="xpc-empty"><i><Icon name={ICON_PATHS[icon] ? icon : 'empty'} size={30}/></i><strong>{title}</strong><span>{text}</span></div>
+}
+
+function getStudentProgress(profile, data) {
+  const totalXp = Math.max(0, Number(profile?.xp_total || 0), Number(data?.wallet?.total || 0))
+  const calculatedLevel = Math.floor(totalXp / 250) + 1
+  const level = Math.max(1, Number(profile?.level || 1), calculatedLevel)
+  const levelStart = (level - 1) * 250
+  const nextLevelXp = level * 250
+  const earnedInLevel = Math.max(0, totalXp - levelStart)
+  const neededInLevel = Math.max(1, nextLevelXp - levelStart)
+  const percentage = Math.min(100, Math.round((earnedInLevel / neededInLevel) * 100))
+  return { totalXp, level, nextLevelXp, missing: Math.max(0, nextLevelXp - totalXp), percentage }
+}
+
+function getWeeklyStreak(transactions = []) {
+  const activeDates = new Set(transactions.filter((item) => Number(item.amount) > 0).map((item) => new Date(item.created_at).toLocaleDateString('en-CA')))
+  let streak = 0
+  const cursor = new Date()
+  for (let index = 0; index < 7; index += 1) {
+    const key = cursor.toLocaleDateString('en-CA')
+    if (activeDates.has(key)) streak += 1
+    else if (index > 0 || activeDates.size > 0) break
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return { streak, activeDays: [...activeDates].filter((key) => (Date.now() - new Date(`${key}T12:00:00`).getTime()) <= 7 * 86400000).length }
 }
 
 function Modal({ title, description, children, onClose, className = '' }) {
@@ -63,6 +90,7 @@ export default function XpCenter() {
   const [query, setQuery] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [ranking, setRanking] = useState([])
 
   const isStaff = ['teacher', 'professor', 'admin', 'school_admin', 'coordinator'].includes(profile?.role)
   const isTeacher = ['teacher', 'professor'].includes(profile?.role)
@@ -77,6 +105,19 @@ export default function XpCenter() {
       setProfile(current)
       const dashboard = await rpc('xp_dashboard')
       setData(dashboard)
+      if (!['teacher', 'professor', 'admin', 'school_admin', 'coordinator'].includes(current.role)) {
+        try {
+          let rankingQuery = supabase.from('profiles').select('id, nome, username, foto_url, xp_total, level, course_area').eq('role', 'student').eq('course_area', current.course_area || 'base_central').order('xp_total', { ascending: false }).limit(8)
+          if (current.institution_id) rankingQuery = rankingQuery.eq('institution_id', current.institution_id)
+          else if (current.institution_name) rankingQuery = rankingQuery.eq('institution_name', current.institution_name)
+          const { data: rankingRows, error: rankingError } = await rankingQuery
+          if (rankingError) throw rankingError
+          setRanking(rankingRows || [])
+        } catch (rankingError) {
+          console.warn('[XP_CLASS_RANKING]', rankingError?.message || rankingError)
+          setRanking([])
+        }
+      } else setRanking([])
       if (['teacher', 'professor', 'admin', 'school_admin', 'coordinator'].includes(current.role)) setStaff(await rpc('xp_staff_dashboard'))
     } catch (error) {
       setNotice({ error: true, text: xpError(error) })
@@ -139,7 +180,7 @@ export default function XpCenter() {
       <section className="xpc-content">
         {notice && <div className={`xpc-notice ${notice.error ? 'error' : ''}`}>{notice.text}<button onClick={() => setNotice(null)}>×</button></div>}
 
-        {tab === 'dashboard' && <Dashboard data={data} profile={profile} setTab={setTab} />}
+        {tab === 'dashboard' && <Dashboard data={data} profile={profile} ranking={ranking} isStaff={isStaff} setTab={setTab} />}
         {tab === 'activities' && (isStaff
           ? <StaffActivities staff={staff} canCreate={isTeacher} busy={busy} setModal={setModal} run={run} />
           : <StudentActivities activities={activities} busy={busy} run={run} />)}
@@ -172,15 +213,34 @@ export default function XpCenter() {
   </main>
 }
 
-function Dashboard({ data, profile, setTab }) {
+function Dashboard({ data, profile, ranking, isStaff, setTab }) {
   const recent = data?.transactions?.[0]
   const pending = (data?.requests || []).filter((r) => ['pending', 'approved', 'ready'].includes(r.status)).length
-  return <><div className="xpc-hero"><div><span>Olá, {profile?.nome?.split(' ')[0]}</span><h2>Seu esforço virou progresso.</h2>
-    <p>Conclua atividades, acumule XP e escolha recompensas da sua escola.</p></div><div className="xpc-orb"><small>DISPONÍVEL</small><strong>{formatXp(availableXp(data?.wallet))}</strong></div></div>
+  const progress = getStudentProgress(profile, data)
+  const weekly = getWeeklyStreak(data?.transactions || [])
+  const achievements = [
+    { icon: '✦', title: 'Primeiros passos', text: 'Conquistou seu primeiro XP', unlocked: progress.totalXp > 0 },
+    { icon: '⚡', title: 'Ritmo de estudo', text: 'Ativo em 3 dias da semana', unlocked: weekly.activeDays >= 3 },
+    { icon: '◆', title: '500 XP', text: 'Acumulou 500 XP no NEXO', unlocked: progress.totalXp >= 500 },
+    { icon: '★', title: 'Nível 5', text: 'Chegou ao nível 5', unlocked: progress.level >= 5 },
+  ]
+  return <>
+    <div className="xpc-hero xpc-level-hero"><div className="xpc-level-copy"><span>Olá, {profile?.nome?.split(' ')[0]}</span><h2>{isStaff ? 'Transforme esforço em reconhecimento.' : `Nível ${progress.level} — continue avançando.`}</h2>
+      <p>{isStaff ? 'Crie oportunidades, acompanhe a evolução e valorize cada conquista dos alunos.' : 'Cada atividade concluída fortalece sua jornada acadêmica.'}</p>
+      {!isStaff && <div className="xpc-level-progress"><div className="xpc-level-progress-label"><strong>{progress.totalXp.toLocaleString('pt-BR')} / {progress.nextLevelXp.toLocaleString('pt-BR')} XP</strong><span>{progress.missing > 0 ? `+${progress.missing} XP para o próximo nível` : 'Novo nível alcançado!'}</span></div><div className="xpc-level-progress-track"><span style={{ width: `${progress.percentage}%` }}/></div></div>}
+      </div><div className="xpc-orb"><small>{isStaff ? 'XP GERENCIADO' : 'NÍVEL ATUAL'}</small><strong>{isStaff ? formatXp(data?.wallet?.total) : progress.level}</strong>{!isStaff && <span>{progress.percentage}%</span>}</div></div>
+
+    {!isStaff && <div className="xpc-academic-pulse"><article><span>Sequência semanal</span><strong>🔥 {weekly.streak} dia{weekly.streak === 1 ? '' : 's'}</strong><small>{weekly.activeDays}/7 dias com ganho de XP</small></article><article><span>Curso</span><strong>{nomeCurso(profile?.course_area)}</strong><small>Sua comunidade acadêmica</small></article><article><span>Próxima conquista</span><strong>{progress.totalXp < 500 ? '500 XP' : progress.level < 5 ? 'Nível 5' : 'Consistência'}</strong><small>Continue concluindo atividades</small></article></div>}
+
     <div className="xpc-stats"><article><span>Saldo disponível</span><strong>{formatXp(availableXp(data?.wallet))}</strong><small>XP que pode ser usado agora</small></article>
       <article><span>XP reservado</span><strong>{formatXp(data?.wallet?.reserved)}</strong><small>Em solicitações pendentes</small></article>
       <article><span>Solicitações ativas</span><strong>{pending}</strong><small>Acompanhe cada etapa</small></article>
     </div>
+
+    {!isStaff && <><div className="xpc-section-head"><div><span>CONQUISTAS</span><h2>Sua coleção acadêmica</h2></div><small>{achievements.filter((item) => item.unlocked).length}/{achievements.length} desbloqueadas</small></div><div className="xpc-achievements">{achievements.map((item) => <article key={item.title} className={item.unlocked ? 'unlocked' : 'locked'}><i>{item.icon}</i><div><strong>{item.title}</strong><span>{item.text}</span></div><b>{item.unlocked ? '✓' : '🔒'}</b></article>)}</div></>}
+
+    {!isStaff && <><div className="xpc-section-head"><div><span>DA SUA INSTITUIÇÃO</span><h2>Ranking do curso</h2><p>{nomeCurso(profile?.course_area)} · classificação por XP total</p></div></div><div className="xpc-ranking">{ranking.map((item, index) => <article key={item.id} className={item.id === profile?.id ? 'is-me' : ''}><b>{index + 1}</b>{item.foto_url ? <img src={item.foto_url} alt=""/> : <i>{item.nome?.charAt(0)?.toUpperCase() || '?'}</i>}<div><strong>{item.nome}</strong><span>@{item.username}{item.id === profile?.id ? ' · você' : ''}</span></div><em>{Number(item.xp_total || 0).toLocaleString('pt-BR')} XP</em></article>)}{!ranking.length && <Empty icon="trophy" title="Ranking sendo formado" text="Quando os alunos do seu curso ganharem XP, a classificação aparecerá aqui."/>}</div></>}
+
     <div className="xpc-section-head"><div><span>EXTRATO</span><h2>Movimentações recentes</h2></div>{recent && <button onClick={() => setTab('history')}>Ver histórico</button>}</div>
     <div className="xpc-recent">{recent ? <article className="xpc-transaction"><i className={recent.amount >= 0 ? 'positive' : 'negative'}><Icon name="trend"/></i><div><strong>{recent.reason}</strong><span>{date(recent.created_at)} · saldo após: {formatXp(recent.balance_after)}</span></div><b className={recent.amount >= 0 ? 'positive' : 'negative'}>{recent.amount > 0 ? '+' : ''}{formatXp(recent.amount)}</b></article> : <Empty icon="history" title="Nenhuma movimentação encontrada" text="Quando você receber ou utilizar XP, as movimentações aparecerão aqui."/>}</div>
     <div className="xpc-section-head"><div><span>PRÓXIMOS PASSOS</span><h2>Continue avançando</h2></div></div>

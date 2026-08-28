@@ -334,6 +334,71 @@ img {
   gap: 14px;
 }
 
+.feed-mode-tabs {
+  position: sticky;
+  top: calc(77px + var(--safe-top));
+  z-index: 16;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0 0 8px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.feed-mode-tabs button {
+  position: relative;
+  min-width: 0;
+  min-height: 43px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.feed-mode-tabs button.active {
+  color: #071006;
+  background: #2bff1a;
+  box-shadow: 0 6px 20px rgb(43 255 26 / 18%);
+}
+
+.feed-mode-tabs button:focus-visible {
+  outline: 3px solid rgb(43 255 26 / 28%);
+  outline-offset: 2px;
+}
+
+.feed-mode-description {
+  margin: 0 3px 14px;
+  color: var(--muted);
+  font-size: .76rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .feed-mode-tabs {
+    top: calc(71px + var(--safe-top));
+    border-radius: 14px;
+  }
+
+  .feed-mode-tabs button {
+    min-height: 40px;
+    padding-inline: 5px;
+    font-size: .78rem;
+  }
+
+  .feed-mode-description { font-size: .7rem; }
+}
+
 .feed-creation-incentive {
   margin: 14px 0;
   padding: 20px;
@@ -17522,6 +17587,110 @@ body[data-theme='verde'] .card {
   color: #7f897f;
   font-size: 0.76rem;
   text-align: center;
+}
+
+/* Progressão acadêmica, conquistas e ranking */
+.xpc-level-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 24%, rgb(52 255 86 / 20%), transparent 25%),
+    linear-gradient(135deg, #122016 0%, #0b110d 58%, #111812 100%);
+}
+
+.xpc-level-copy {
+  width: min(720px, calc(100% - 170px));
+  min-width: 0;
+}
+
+.xpc-level-progress { margin-top: 25px; }
+.xpc-level-progress-label { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 9px; }
+.xpc-level-progress-label strong { color: #f3fff4; font-size: 13px; }
+.xpc-level-progress-label span { color: #61f678; font-size: 12px; font-weight: 800; }
+.xpc-level-progress-track { width: 100%; height: 11px; overflow: hidden; border: 1px solid rgb(90 255 112 / 18%); border-radius: 999px; background: #070c08; }
+.xpc-level-progress-track > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1dc944, #65ff7b); box-shadow: 0 0 18px rgb(62 255 91 / 40%); transition: width .5s ease; }
+.xpc-level-hero .xpc-orb span { display: block; margin-top: 3px; color: #7efa8f; font-size: 11px; font-weight: 850; }
+
+.xpc-academic-pulse {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+  margin: 0 0 20px;
+}
+
+.xpc-academic-pulse article {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #27342b;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #111813, #0e130f);
+}
+
+.xpc-academic-pulse span,
+.xpc-academic-pulse small { display: block; color: #839087; font-size: 11px; }
+.xpc-academic-pulse strong { display: block; margin: 7px 0; color: #f2f7f3; font-size: clamp(15px, 2vw, 20px); overflow-wrap: anywhere; }
+
+.xpc-achievements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.xpc-achievements article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #263029;
+  border-radius: 17px;
+  background: #101512;
+}
+
+.xpc-achievements article > i { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; color: #54f16d; background: #19271c; font-size: 22px; font-style: normal; }
+.xpc-achievements article strong,
+.xpc-achievements article span { display: block; }
+.xpc-achievements article strong { color: #eef5ef; }
+.xpc-achievements article span { margin-top: 4px; color: #859088; font-size: 11px; }
+.xpc-achievements article > b { color: #50ee69; text-align: center; }
+.xpc-achievements article.locked { opacity: .52; filter: saturate(.25); }
+
+.xpc-ranking { display: grid; gap: 8px; }
+.xpc-ranking > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 10px 16px;
+  border: 1px solid #263029;
+  border-radius: 16px;
+  background: #101512;
+}
+
+.xpc-ranking > article.is-me { border-color: #43d95d; background: linear-gradient(90deg, rgb(49 222 76 / 12%), #101512); }
+.xpc-ranking > article > b { color: #6ef184; font-size: 16px; text-align: center; }
+.xpc-ranking img,
+.xpc-ranking > article > i { width: 42px; height: 42px; display: grid; place-items: center; object-fit: cover; border-radius: 50%; background: #1a241c; color: #65f47b; font-style: normal; font-weight: 900; }
+.xpc-ranking article > div { min-width: 0; }
+.xpc-ranking article > div strong,
+.xpc-ranking article > div span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xpc-ranking article > div span { margin-top: 3px; color: #7f8b82; font-size: 11px; }
+.xpc-ranking article > em { color: #5cef73; font-size: 13px; font-style: normal; font-weight: 900; white-space: nowrap; }
+
+@media (max-width: 767px) {
+  .xpc-level-copy { width: 100%; }
+  .xpc-level-hero .xpc-orb { position: static; width: 96px; height: 96px; margin-top: 20px; }
+  .xpc-level-progress-label { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .xpc-academic-pulse { grid-template-columns: 1fr; gap: 9px; }
+  .xpc-academic-pulse article { padding: 15px; }
+  .xpc-achievements { grid-template-columns: 1fr; }
+  .xpc-ranking > article { grid-template-columns: 25px 38px minmax(0, 1fr) auto; gap: 9px; padding: 9px 11px; }
+  .xpc-ranking img,
+  .xpc-ranking > article > i { width: 38px; height: 38px; }
+  .xpc-ranking article > em { font-size: 11px; }
 }
 
 @media (max-width: 767px) {
