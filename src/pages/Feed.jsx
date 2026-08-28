@@ -205,8 +205,6 @@ export default function Feed() {
   const [posts, setPosts] = useState([])
   const [stories, setStories] = useState([])
   const [meuPerfil, setMeuPerfil] = useState(null)
-  const [abaFeed, setAbaFeed] = useState(() => localStorage.getItem('nexo-feed-tab') || 'para-voce')
-  const [idsSeguindoFeed, setIdsSeguindoFeed] = useState([])
   const [feedEmDescoberta, setFeedEmDescoberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -223,40 +221,6 @@ export default function Feed() {
     const indice = (hoje.getFullYear() * 372 + hoje.getMonth() * 31 + hoje.getDate()) % INCENTIVOS_CRIACAO.length
     return INCENTIVOS_CRIACAO[indice]
   }, [])
-
-  const postsExibidos = useMemo(() => {
-    const seguindo = new Set(idsSeguindoFeed)
-
-    if (abaFeed === 'seguindo') {
-      return posts
-        .filter((post) => post.ehMeuPost || seguindo.has(post.profile_id))
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    }
-
-    if (abaFeed === 'escola') {
-      const instituicaoId = `${meuPerfil?.institution_id || ''}`.trim().toLowerCase()
-      const instituicaoNome = `${meuPerfil?.institution_name || meuPerfil?.teacher_school || ''}`.trim().toLowerCase()
-
-      return posts
-        .filter((post) => {
-          const autor = post.autor || {}
-          const autorInstituicaoId = `${autor.institution_id || ''}`.trim().toLowerCase()
-          const autorInstituicaoNome = `${autor.institution_name || autor.teacher_school || ''}`.trim().toLowerCase()
-
-          if (instituicaoId && autorInstituicaoId) return instituicaoId === autorInstituicaoId
-          if (instituicaoNome && autorInstituicaoNome) return instituicaoNome === autorInstituicaoNome
-          return false
-        })
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-    }
-
-    return ordenarPostsPorRelevancia(posts)
-  }, [abaFeed, idsSeguindoFeed, meuPerfil, posts])
-
-  function selecionarAbaFeed(aba) {
-    setAbaFeed(aba)
-    localStorage.setItem('nexo-feed-tab', aba)
-  }
 
   useEffect(() => {
     carregarTudo()
@@ -449,7 +413,6 @@ export default function Feed() {
         ),
       ]
       const seguindoSet = new Set(idsSeguindo)
-      setIdsSeguindoFeed(idsSeguindo)
       const usuarioNovo = idsSeguindo.length === 0
       setFeedEmDescoberta(usuarioNovo)
 
@@ -1258,24 +1221,6 @@ export default function Feed() {
       <div className="page">
         {erro && <div className="alert-box erro-box">{erro}</div>}
 
-        <nav className="feed-mode-tabs" aria-label="Escolher conteúdo do feed">
-          <button type="button" className={abaFeed === 'para-voce' ? 'active' : ''} onClick={() => selecionarAbaFeed('para-voce')}>
-            Para você
-          </button>
-          <button type="button" className={abaFeed === 'seguindo' ? 'active' : ''} onClick={() => selecionarAbaFeed('seguindo')}>
-            Seguindo
-          </button>
-          <button type="button" className={abaFeed === 'escola' ? 'active' : ''} onClick={() => selecionarAbaFeed('escola')}>
-            Escola
-          </button>
-        </nav>
-
-        <p className="feed-mode-description">
-          {abaFeed === 'para-voce' && 'Descobertas escolhidas para você com base em relevância e novidades.'}
-          {abaFeed === 'seguindo' && 'Publicações recentes das pessoas que você acompanha.'}
-          {abaFeed === 'escola' && `Projetos, trabalhos, eventos e avisos${meuPerfil?.institution_name ? ` de ${meuPerfil.institution_name}` : ' da sua instituição'}.`}
-        </p>
-
         <StoryBar
           grupos={gruposStories}
           meuPerfil={meuPerfil}
@@ -1308,17 +1253,11 @@ export default function Feed() {
           </div>
         </section>
 
-        {postsExibidos.length === 0 ? (
+        {posts.length === 0 ? (
           <div className="empty-state">
-            <h3 style={{ marginBottom: 10, color: 'white' }}>
-              {abaFeed === 'seguindo' ? 'Seu feed de pessoas está quietinho' : abaFeed === 'escola' ? 'Sua escola ainda não publicou por aqui' : 'Seja a primeira pessoa a publicar'}
-            </h3>
+            <h3 style={{ marginBottom: 10, color: 'white' }}>Seja a primeira pessoa a publicar</h3>
             <p>
-              {abaFeed === 'seguindo'
-                ? 'Siga pessoas da sua turma ou publique algo para começar a conversa.'
-                : abaFeed === 'escola'
-                ? 'Compartilhe um projeto, trabalho, evento ou novidade da sua instituição.'
-                : feedEmDescoberta
+              {feedEmDescoberta
                 ? 'Crie uma postagem ou um vídeo e ajude a comunidade a ganhar vida.'
                 : 'Compartilhe algo com as pessoas que acompanham você.'}
             </p>
@@ -1326,7 +1265,7 @@ export default function Feed() {
           </div>
         ) : (
           <div className="feed-list">
-            {postsExibidos.map((post) => (
+            {posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
