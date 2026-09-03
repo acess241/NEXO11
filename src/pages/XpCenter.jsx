@@ -91,6 +91,7 @@ export default function XpCenter() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [ranking, setRanking] = useState([])
+  const [xpCelebration, setXpCelebration] = useState(0)
 
   const isStaff = ['teacher', 'professor', 'admin', 'school_admin', 'coordinator'].includes(profile?.role)
   const isTeacher = ['teacher', 'professor'].includes(profile?.role)
@@ -105,6 +106,15 @@ export default function XpCenter() {
       setProfile(current)
       const dashboard = await rpc('xp_dashboard')
       setData(dashboard)
+      const currentXp = Math.max(0, Number(current.xp_total || 0), Number(dashboard?.wallet?.total || 0))
+      const xpStorageKey = `nexo:last-xp:${current.id}`
+      try {
+        const lastXp = window.sessionStorage.getItem(xpStorageKey)
+        if (lastXp !== null && currentXp > Number(lastXp)) setXpCelebration(currentXp - Number(lastXp))
+        window.sessionStorage.setItem(xpStorageKey, String(currentXp))
+      } catch {
+        // A central continua funcionando mesmo se o navegador bloquear o armazenamento local.
+      }
       if (!['teacher', 'professor', 'admin', 'school_admin', 'coordinator'].includes(current.role)) {
         try {
           let rankingQuery = supabase.from('profiles').select('id, nome, username, foto_url, xp_total, level, course_area').eq('role', 'student').eq('course_area', current.course_area || 'base_central').order('xp_total', { ascending: false }).limit(8)
@@ -127,6 +137,12 @@ export default function XpCenter() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    if (!xpCelebration) return undefined
+    const timeout = window.setTimeout(() => setXpCelebration(0), 3800)
+    return () => window.clearTimeout(timeout)
+  }, [xpCelebration])
 
   async function run(key, fn, success) {
     setBusy(key)
@@ -158,6 +174,11 @@ export default function XpCenter() {
   ]
 
   return <main className={`xpc-page ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    {xpCelebration > 0 && <div className="nexo-xp-celebration" role="status" aria-live="polite">
+      <span>+{xpCelebration.toLocaleString('pt-BR')} XP</span>
+      <strong>Seu esforço virou progresso!</strong>
+      <i aria-hidden="true">NX</i>
+    </div>}
     <header className="xpc-topbar">
       <button className="xpc-mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir menu"><Icon name="menu"/></button>
       <button className="xpc-back" onClick={() => navigate('/academia')} aria-label="Voltar para a Academia"><Icon name="chevron"/></button>

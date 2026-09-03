@@ -5,6 +5,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
 import VerifiedBadge from '../components/VerifiedBadge'
+import InstallNexo from '../components/InstallNexo'
 import { nomeCurso } from '../lib/academy'
 import { nomeInstituicaoCurto } from '../lib/education'
 import { listarContasSalvas, removerContaSalva, salvarContaDaSessao } from '../lib/savedAccounts'
@@ -443,6 +444,8 @@ export default function Profile() {
                 <button type="button" className="profile-sidepanel-item" onClick={() => irPara('/oxente')}>
                   Atividades
                 </button>
+
+                <InstallNexo />
               </section>
 
               <section className="profile-sidepanel-section">

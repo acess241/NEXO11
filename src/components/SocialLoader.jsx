@@ -1,8 +1,10 @@
+import logoNexo from '/logo-novo.png'
+
 function FeedSkeleton() {
   return (
     <>
       <div className="social-loader-topbar">
-        <div className="skeleton shimmer skeleton-wordmark" />
+        <div className="social-loader-brand"><img src={logoNexo} alt=""/><strong>NEXO</strong><span>conectando...</span></div>
         <div className="social-loader-topbar-actions">
           <div className="skeleton shimmer skeleton-circle small" />
           <div className="skeleton shimmer skeleton-pill small" />

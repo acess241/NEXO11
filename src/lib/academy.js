@@ -111,6 +111,10 @@ export function traduzirErroAcademia(error, fallback) {
     return 'Selecione o professor da materia antes da troca.'
   }
 
+  if (detalhe.includes('vinculo com o professor obrigatorio')) {
+    return 'Para trocar XP, você precisa estar aprovado em uma turma desse professor.'
+  }
+
   if (detalhe.includes('professor selecionado não corresponde a materia informada')) {
     return 'O professor selecionado não corresponde a materia informada.'
   }

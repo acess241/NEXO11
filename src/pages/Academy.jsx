@@ -171,6 +171,7 @@ export default function Academy() {
       escola.trim() &&
       materiaEfetivaTroca &&
       professorSelecionadoId &&
+      professorSelecionado?.vinculoAtivo &&
       pacoteTrocaSelecionado &&
       !trocaComSaldoInsuficiente
   )
@@ -329,6 +330,22 @@ export default function Academy() {
         const bateMunicipio = escolaBateMunicipio(escolaProfessor)
         return bateEscola && bateMateria && bateMunicipio
       })
+
+      if (perfil?.id && lista.length > 0) {
+        const vinculos = await Promise.all(
+          lista.map(async (professor) => {
+            const { data, error } = await supabase.rpc('academy_has_teacher_link', {
+              p_teacher_profile_id: professor.id,
+            })
+            return [professor.id, !error && data === true]
+          })
+        )
+        const vinculosPorProfessor = new Map(vinculos)
+        lista = lista.map((professor) => ({
+          ...professor,
+          vinculoAtivo: vinculosPorProfessor.get(professor.id) === true,
+        }))
+      }
 
       setProfessoresMateria(lista)
       if (!lista.some((item) => item.id === professorSelecionadoId)) {
@@ -562,6 +579,12 @@ export default function Academy() {
 
     if (!professorSelecionadoId) {
       setErro('Escolha o professor da materia antes de solicitar a troca.')
+      return
+    }
+
+
+    if (!professorSelecionado?.vinculoAtivo) {
+      setErro('Para trocar XP, você precisa estar aprovado em uma turma desse professor.')
       return
     }
 

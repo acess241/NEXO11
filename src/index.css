@@ -4271,6 +4271,45 @@ body[data-theme='claro'] .mention-suggestion {
   justify-content: space-between;
 }
 
+.social-loader-brand {
+  display: grid;
+  grid-template-columns: 38px auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 10px;
+  min-width: 0;
+}
+
+.social-loader-brand img {
+  grid-row: 1 / 3;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 11px;
+  filter: drop-shadow(0 0 9px rgba(27, 255, 0, 0.44));
+  animation: nexoLoaderFloat 1.7s ease-in-out infinite;
+}
+
+.social-loader-brand strong {
+  color: #f7fff4;
+  font-size: 16px;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+
+.social-loader-brand span {
+  color: #1bff00;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+@keyframes nexoLoaderFloat {
+  0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 7px rgba(27, 255, 0, 0.34)); }
+  50% { transform: translateY(-3px); filter: drop-shadow(0 0 13px rgba(27, 255, 0, 0.58)); }
+}
+
 .social-loader-topbar.editor {
   gap: 12px;
 }
@@ -10348,6 +10387,135 @@ body[data-theme='claro'] .profile-avatar-modal-close {
   color: #ffc4c4;
 }
 
+.nexo-install-button {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(27, 255, 0, 0.34);
+  background: linear-gradient(135deg, rgba(27, 255, 0, 0.13), rgba(7, 14, 24, 0.75));
+}
+
+.nexo-install-button::before {
+  content: '';
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 1px solid rgba(27, 255, 0, 0.55);
+  border-radius: 9px;
+  background: linear-gradient(145deg, #1bff00, #00a91d);
+  box-shadow: 0 0 16px rgba(27, 255, 0, 0.22);
+  clip-path: polygon(46% 17%, 58% 17%, 58% 56%, 72% 42%, 82% 52%, 52% 83%, 22% 52%, 32% 42%, 46% 56%);
+}
+
+.nexo-install-button > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nexo-install-button b { color: #f4fff1; font-size: 13px; }
+.nexo-install-button small { color: #92aa9a; font-size: 10px; font-weight: 600; }
+.nexo-install-message { margin: 7px 4px 0; color: #1bff00; font-size: 11px; }
+
+.nexo-install-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(10px);
+}
+
+.nexo-install-dialog {
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  border: 1px solid rgba(27, 255, 0, 0.28);
+  border-radius: 24px;
+  padding: 28px;
+  background: radial-gradient(circle at 50% 0, rgba(27, 255, 0, 0.12), transparent 38%), #0a0d0a;
+  color: #f7fff4;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.62), 0 0 30px rgba(27, 255, 0, 0.08);
+}
+
+.nexo-install-logo {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 18px;
+  border: 1px solid #1bff00;
+  border-radius: 17px;
+  color: #1bff00;
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: -0.12em;
+  box-shadow: 0 0 22px rgba(27, 255, 0, 0.17);
+}
+
+.nexo-install-dialog h2 { margin: 0 0 8px; font-size: clamp(24px, 7vw, 32px); }
+.nexo-install-dialog ol { margin: 22px 0; padding-left: 22px; color: #c8d5c6; }
+.nexo-install-dialog li + li { margin-top: 10px; }
+.nexo-install-dialog p { color: #8fa08d; font-size: 13px; line-height: 1.55; }
+.nexo-install-dialog > button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: #1bff00;
+  color: #031003;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.nexo-xp-celebration {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 10020;
+  display: grid;
+  grid-template-columns: auto 42px;
+  gap: 2px 18px;
+  min-width: min(360px, calc(100vw - 32px));
+  padding: 14px 16px 14px 20px;
+  border: 1px solid rgba(27, 255, 0, 0.52);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(6, 20, 7, 0.98), rgba(5, 7, 5, 0.98));
+  color: #f4fff1;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), 0 0 28px rgba(27, 255, 0, 0.16);
+  transform: translateX(-50%);
+  animation: nexoXpReward 3.8s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.nexo-xp-celebration span { color: #1bff00; font-size: 22px; font-weight: 950; }
+.nexo-xp-celebration strong { grid-column: 1; font-size: 11px; letter-spacing: .04em; }
+.nexo-xp-celebration i {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #1bff00;
+  color: #041004;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+@keyframes nexoXpReward {
+  0% { opacity: 0; transform: translate(-50%, -24px) scale(.94); }
+  12%, 82% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -10px) scale(.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-loader-brand img,
+  .nexo-xp-celebration { animation: none; }
+}
+
 .inline-spinner {
   width: 14px;
   height: 14px;
@@ -12615,6 +12783,9 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 }
 
 .oxente-library-grid .oxente-library-book {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-rows: minmax(104px, auto) auto;
   min-width: 0;
   margin: 0;
   padding: 10px;
@@ -12730,7 +12901,8 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 }
 
 .oxente-library-grid .oxente-library-actions {
-  flex: 0 0 100%;
+  grid-column: 1 / -1;
+  width: 100%;
   align-self: end;
   margin-top: 0;
 }
@@ -12755,7 +12927,8 @@ body[data-theme='claro'] .chat-bubble.mine .chat-audio-player {
 }
 
 .oxente-library-grid .oxente-library-actions button {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
   border-color: var(--book-accent, #1dff00);
   background: var(--book-accent, #1dff00);
 }

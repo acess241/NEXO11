@@ -8,6 +8,17 @@ import './index.css'
 
 aplicarTema(obterTemaSalvo())
 
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault()
+  window.__nexoInstallPrompt = event
+  window.dispatchEvent(new CustomEvent('nexo-install-available'))
+})
+
+window.addEventListener('appinstalled', () => {
+  window.__nexoInstallPrompt = null
+  window.dispatchEvent(new CustomEvent('nexo-app-installed'))
+})
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
