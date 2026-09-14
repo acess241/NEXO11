@@ -164,7 +164,7 @@ export default function NexisFeed() {
 
   return (
     <div className="nexis-page">
-      <header className="nexis-topbar"><strong>NEXIS</strong><div><button type="button" onClick={() => setMudo((valor) => !valor)}>{mudo ? 'Som desligado' : 'Som ligado'}</button><button type="button" onClick={() => navigate('/novo-post?tipo=nexis')}>Criar</button></div></header>
+      <header className="nexis-topbar"><strong>NEXIS</strong><div><button type="button" onClick={() => setMudo((valor) => !valor)}>{mudo ? 'Som desligado' : 'Som ligado'}</button><button type="button" onClick={() => navigate('/filtros')}>Criar</button></div></header>
       {erro ? <div className="nexis-error">{erro}<button onClick={() => setErro('')}>×</button></div> : null}
       <main className="nexis-scroll" ref={containerRef}>
         {itens.map((item) => (
@@ -187,7 +187,7 @@ export default function NexisFeed() {
             </aside>
           </article>
         ))}
-        {!itens.length ? <div className="nexis-empty"><h2>Nenhum Nexis ainda</h2><p>Publique o primeiro vídeo curto.</p><button onClick={() => navigate('/novo-post')}>Criar Nexis</button></div> : null}
+        {!itens.length ? <div className="nexis-empty"><h2>Nenhum Nexis ainda</h2><p>Publique o primeiro vídeo curto.</p><button onClick={() => navigate('/filtros')}>Criar Nexis</button></div> : null}
       </main>
       {comentando ? (
         <div className="nexis-comments-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setComentando(null)}>

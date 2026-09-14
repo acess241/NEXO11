@@ -17975,29 +17975,54 @@ body[data-theme='verde'] .card {
 .study-filter-download {
   position: absolute;
   z-index: 7;
-  top: calc(64px + env(safe-area-inset-top));
-  left: calc(12px + env(safe-area-inset-left));
-  min-height: 38px;
+  left: 50%;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  width: 86px;
+  height: 86px;
+  min-height: 0;
   display: grid;
   place-items: center;
-  padding: 0 13px;
-  border: 1px solid rgba(255,255,255,.24);
-  border-radius: 999px;
+  padding: 0;
+  border: 6px solid #fff;
+  border-radius: 50%;
   color: #fff;
-  background: rgba(0,0,0,.42);
-  backdrop-filter: blur(12px);
-  font-size: .78rem;
+  background: #ff2759;
+  box-shadow: 0 18px 45px rgba(0,0,0,.45), 0 0 0 5px rgba(255,255,255,.2);
+  transform: translateX(-50%);
+  font-size: 0;
   font-weight: 950;
   text-decoration: none;
 }
+.study-filter-record::after {
+  content: '';
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #ff2759;
+}
 .study-filter-record.recording {
-  border-color: rgba(255,95,112,.75);
-  background: #f43f5e;
+  background: #fff;
   animation: study-filter-record-pulse .9s ease-in-out infinite alternate;
 }
+.study-filter-record.recording::after {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #f43f5e;
+}
 .study-filter-download {
-  top: calc(108px + env(safe-area-inset-top));
-  background: color-mix(in srgb, var(--filter-accent) 72%, rgba(0,0,0,.42));
+  left: auto;
+  right: calc(22px + env(safe-area-inset-right));
+  bottom: calc(48px + env(safe-area-inset-bottom));
+  width: auto;
+  height: 42px;
+  padding: 0 13px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(0,0,0,.52);
+  transform: none;
+  font-size: .74rem;
+  backdrop-filter: blur(12px);
 }
 @keyframes study-filter-record-pulse {
   from { transform: scale(1); }
@@ -18232,7 +18257,7 @@ body[data-theme='verde'] .card {
   position: absolute;
   z-index: 8;
   left: 50%;
-  bottom: calc(142px + env(safe-area-inset-bottom));
+  bottom: calc(210px + env(safe-area-inset-bottom));
   width: min(380px, calc(100% - 32px));
   display: grid;
   justify-items: center;
@@ -18263,7 +18288,7 @@ body[data-theme='verde'] .card {
   z-index: 7;
   left: 0;
   right: 0;
-  bottom: calc(14px + env(safe-area-inset-bottom));
+  bottom: calc(122px + env(safe-area-inset-bottom));
   display: grid;
   gap: 9px;
   padding: 0 12px;
@@ -18280,7 +18305,8 @@ body[data-theme='verde'] .card {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 0 4px 4px;
+  padding: 4px calc(50% - 43px) 8px;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
 .study-filter-picker > div::-webkit-scrollbar { display: none; }
@@ -18292,10 +18318,11 @@ body[data-theme='verde'] .card {
   border: 0;
   color: #fff;
   background: transparent;
+  scroll-snap-align: center;
 }
 .study-filter-picker i {
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 62px;
   display: grid;
   place-items: center;
   border: 3px solid rgba(255,255,255,.86);
@@ -18307,7 +18334,9 @@ body[data-theme='verde'] .card {
   font-weight: 950;
 }
 .study-filter-picker button.active i {
-  outline: 4px solid var(--item-color);
+  width: 78px;
+  height: 78px;
+  outline: 5px solid #fff;
   outline-offset: 3px;
 }
 .study-filter-picker small {
@@ -18344,4 +18373,6 @@ body[data-theme='verde'] .card {
   .study-filter-top { right: auto; }
   .study-filter-effect { right: auto; }
   .study-filter-picker { right: auto; }
+  .study-filter-record { left: 50%; }
+  .study-filter-download { right: calc(50% - min(194px, 45vw)); }
 }

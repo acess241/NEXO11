@@ -1176,7 +1176,7 @@ export default function Feed() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
-            onClick={() => navigate('/novo-post')}
+            onClick={() => navigate('/filtros')}
             className="feed-create-btn"
           >
             Criar
@@ -1248,7 +1248,7 @@ export default function Feed() {
           <div className="feed-creation-actions">
             <button type="button" onClick={() => navigate('/novo-post')}>✎ <span>Postagem</span></button>
             <button type="button" onClick={() => navigate('/novo-post?tipo=foto')}>▣ <span>Foto</span></button>
-            <button type="button" onClick={() => navigate('/novo-post?tipo=nexis')} className="is-primary">▶ <span>Gravar Nexis</span></button>
+            <button type="button" onClick={() => navigate('/filtros')} className="is-primary">▶ <span>Gravar Nexis</span></button>
             <button type="button" onClick={() => navigate('/novo-story')}>＋ <span>Story</span></button>
           </div>
         </section>
@@ -1261,7 +1261,7 @@ export default function Feed() {
                 ? 'Crie uma postagem ou um vídeo e ajude a comunidade a ganhar vida.'
                 : 'Compartilhe algo com as pessoas que acompanham você.'}
             </p>
-            <button type="button" className="empty-state-create" onClick={() => navigate('/novo-post')}>Criar minha primeira publicação</button>
+            <button type="button" className="empty-state-create" onClick={() => navigate('/filtros')}>Criar minha primeira publicação</button>
           </div>
         ) : (
           <div className="feed-list">
