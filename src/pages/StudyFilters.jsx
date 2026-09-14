@@ -67,7 +67,7 @@ export default function StudyFilters() {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error('unavailable')
         const portrait = window.innerHeight > window.innerWidth
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: facing }, width: { ideal: portrait ? 720 : 1280 }, height: { ideal: portrait ? 1280 : 720 } } })
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: facing, width: { ideal: portrait ? 720 : 1280 }, height: { ideal: portrait ? 1280 : 720 } } })
         if (!active || operation !== operationRef.current) { stream.getTracks().forEach(track => track.stop()); return }
         streamRef.current = stream
         const track = stream.getVideoTracks()[0], zoom = track.getCapabilities?.().zoom
@@ -149,7 +149,7 @@ export default function StudyFilters() {
     canvas.height = Math.round(canvas.width * bounds.height / bounds.width)
     return canvas
   }
-  function draw() { paintCameraFrame(canvasRef.current, videoRef.current, stageRef.current, facing === 'user'); animationRef.current = requestAnimationFrame(draw) }
+  function draw() { paintCameraFrame(canvasRef.current, videoRef.current, stageRef.current, false); animationRef.current = requestAnimationFrame(draw) }
   async function startRecording() {
     if (captureBusyRef.current || recording || cameraState !== 'ready') return
     captureBusyRef.current = true; setStarting(true); setNotice('')
@@ -194,7 +194,7 @@ export default function StudyFilters() {
     if (cameraState !== 'ready' || captureBusyRef.current) return
     captureBusyRef.current = true; setStarting(true)
     try {
-      const canvas = prepareCanvas(); paintCameraFrame(canvas, videoRef.current, stageRef.current, facing === 'user')
+      const canvas = prepareCanvas(); paintCameraFrame(canvas, videoRef.current, stageRef.current, false)
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .92))
       if (!blob) throw new Error('Não foi possível capturar a foto. Tente novamente.')
       setCapture({ file: new File([blob], `nexo-${Date.now()}.jpg`, { type: 'image/jpeg' }), duration: 15 })
@@ -218,7 +218,7 @@ export default function StudyFilters() {
     <main className="nexo-camera" style={{ '--game-color': filter.color }}>
       <section className="nc-stage" ref={stageRef} aria-label="Câmera e jogo">
         <video className="nc-backdrop" ref={backdropRef} muted playsInline autoPlay aria-hidden="true" />
-        <video className={`nc-video ${facing === 'user' ? 'mirrored' : ''}`} ref={videoRef} muted playsInline autoPlay aria-label="Sua câmera ao vivo" />
+        <video className="nc-video" ref={videoRef} muted playsInline autoPlay aria-label="Sua câmera ao vivo" />
         <div className="nc-shade" />
         {cameraState !== 'ready' && <div className="nc-camera-empty"><Icon name="camera" /><strong>{cameraState === 'loading' ? 'Abrindo sua câmera…' : 'Sua câmera está desativada'}</strong>{cameraState === 'blocked' && <button onClick={() => setCameraRetry(value => value + 1)}>Tentar novamente</button>}</div>}
         <header className="nc-header"><button className="nc-icon-button" aria-label="Fechar câmera" onClick={() => navigate('/')}><Icon name="close" /></button><div className="nc-brand">NEXO<span>criar</span></div><div className="nc-tools"><button className={`nc-icon-button ${!micEnabled ? 'is-muted' : ''}`} disabled={recording || starting} aria-label={micEnabled ? 'Desativar microfone' : 'Ativar microfone'} aria-pressed={micEnabled} onClick={() => setMicEnabled(value => !value)}><Icon name="mic" /></button><button className="nc-icon-button" aria-label="Trocar câmera" disabled={recording || starting} onClick={() => setFacing(value => value === 'user' ? 'environment' : 'user')}><Icon name="flip" /></button></div></header>
