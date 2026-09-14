@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import InstantCameraSheet from '../components/InstantCameraSheet'
 import SocialLoader from '../components/SocialLoader'
 import { supabase } from '../lib/supabase'
+import { clearCaptureDraft, getCaptureDraft } from '../lib/captureDraft'
 
 function IconeCamera() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" /><circle cx="12" cy="13" r="4" /></svg>
@@ -71,6 +72,24 @@ export default function CreateStory() {
   const arrastandoLegendaRef = useRef(false)
   const abriuCameraRef = useRef(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const captureLoadedRef = useRef(false)
+
+  useEffect(() => {
+    const captured = searchParams.get('camera') === '1' ? getCaptureDraft('story') : null
+    if (!captured || captureLoadedRef.current) return
+    captureLoadedRef.current = true
+    abriuCameraRef.current = true
+    if (captured.fromGallery) {
+      void aplicarArquivoSelecionado(captured.file)
+      return
+    }
+    setArquivo(captured.file)
+    setMediaKind(captured.file.type.startsWith('video/') ? 'video' : 'image')
+    setDuracaoStory(Math.min(60, Math.max(1, Math.ceil(captured.duration || DURACAO_PADRAO))))
+    setPreview(URL.createObjectURL(captured.file))
+    setCameraAberta(false)
+  }, [searchParams])
 
   useEffect(() => {
     async function carregar() {
@@ -266,6 +285,7 @@ export default function CreateStory() {
       })
       if (insertError) throw insertError
       setSucesso('Story publicado!')
+      clearCaptureDraft()
       window.setTimeout(() => navigate('/'), 800)
     } catch (error) {
       setErro(error?.message ? `Erro ao postar: ${error.message}` : 'Erro ao postar story.')

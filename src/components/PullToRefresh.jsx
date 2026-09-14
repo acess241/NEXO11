@@ -65,6 +65,7 @@ export default function PullToRefresh() {
     }
 
     function handleTouchStart(event) {
+      if (event.target?.closest?.('.nexo-camera')) return
       if (event.touches.length !== 1) return
       if (isInteractiveTarget(event.target)) return
       if (hasScrollableParent(event.target)) return

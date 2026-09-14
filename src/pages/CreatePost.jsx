@@ -11,6 +11,7 @@ import {
 import { supabase } from '../lib/supabase'
 import InstantCameraSheet from '../components/InstantCameraSheet'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
+import { clearCaptureDraft, getCaptureDraft } from '../lib/captureDraft'
 
 function IconeNotas() {
   return (
@@ -110,12 +111,24 @@ export default function CreatePost() {
   const inputArquivoRef = useRef(null)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const captureLoadedRef = useRef(false)
 
   useEffect(() => {
     carregarPerfil()
   }, [])
 
   useEffect(() => {
+    const captured = searchParams.get('camera') === '1' ? getCaptureDraft('post') : null
+    if (captured) {
+      if (!captureLoadedRef.current) {
+        captureLoadedRef.current = true
+        setTipo(captured.file.type.startsWith('video/') ? 'nexis' : 'foto')
+        setArquivo(captured.file)
+        setPreview(URL.createObjectURL(captured.file))
+        setCameraFotoAberta(false)
+      }
+      return
+    }
     const tipoSolicitado = searchParams.get('tipo')
     if (tipoSolicitado === 'nexis') {
       navigate('/filtros', { replace: true })
@@ -361,6 +374,7 @@ export default function CreatePost() {
       }
 
       setSucesso('Post publicado com sucesso!')
+      clearCaptureDraft()
       setConteudo('')
       setArquivo(null)
       setPreview('')
