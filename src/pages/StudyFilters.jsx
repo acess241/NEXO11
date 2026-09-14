@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const FILTERS = [
-  { id: 'portugues-lado', subject: 'portugues', mode: 'lado', label: 'Portugues', short: 'POR', color: '#ff4f8b' },
-  { id: 'matematica-lado', subject: 'matematica', mode: 'lado', label: 'Matematica', short: 'MAT', color: '#1aa7ff' },
-  { id: 'ingles-quiz', subject: 'ingles', mode: 'quiz', label: 'Ingles', short: 'ING', color: '#7c5cff' },
-  { id: 'ciencias-chuva', subject: 'ciencias', mode: 'chuva', label: 'Ciencias', short: 'CIE', color: '#22c55e' },
   { id: 'amigo-caminho', subject: 'matematica', mode: 'amigo', label: 'Leve o amigo', short: 'AMG', color: '#facc15' },
+  { id: 'tribunal-portugues', subject: 'portugues', mode: 'lado', label: 'Tribunal da lingua', short: 'JUIZ', color: '#ff4f8b' },
+  { id: 'cantina-matematica', subject: 'matematica', mode: 'lado', label: 'Quem paga?', short: 'R$', color: '#1aa7ff' },
+  { id: 'ciencias-salvar', subject: 'ciencias', mode: 'chuva', label: 'Salve o amigo', short: 'LAB', color: '#22c55e' },
+  { id: 'ingles-quiz', subject: 'ingles', mode: 'quiz', label: 'Ingles rapido', short: 'ING', color: '#7c5cff' },
   { id: 'portugues-sequencia', subject: 'portugues', mode: 'sequencia', label: 'Frase certa', short: 'ABC', color: '#f97316' },
   { id: 'matematica-chuva', subject: 'matematica', mode: 'chuva', label: 'Conta caiu', short: '123', color: '#06b6d4' },
 ]
+
+const CAPTURE_MODES = ['PUBLICAR', 'CRIAR', 'NEXIS', 'STORY', 'FOTO', 'NOTAS']
 
 const QUESTION_BANK = {
   portugues: [
@@ -84,6 +86,7 @@ export default function StudyFilters() {
   const [cameraState, setCameraState] = useState('loading')
   const [recording, setRecording] = useState(false)
   const [recordedUrl, setRecordedUrl] = useState('')
+  const [captureMode, setCaptureMode] = useState('CRIAR')
 
   const questions = QUESTION_BANK[activeFilter.subject]
   const current = questions[(round + (activeFilter.mode === 'amigo' ? friendStep : 0)) % questions.length]
@@ -347,6 +350,14 @@ export default function StudyFilters() {
       </button>
       {recordedUrl && <a className="study-filter-download" href={recordedUrl} download="nexo-filtro.webm">Baixar video</a>}
 
+      <nav className="study-filter-capture-tabs" aria-label="Tipo de criacao">
+        {CAPTURE_MODES.map((mode) => (
+          <button key={mode} type="button" className={mode === captureMode ? 'active' : ''} onClick={() => setCaptureMode(mode)}>
+            {mode}
+          </button>
+        ))}
+      </nav>
+
       <section className="study-filter-top">
         <b>{activeFilter.label}</b>
         <span>{score} pts</span>
@@ -427,7 +438,6 @@ export default function StudyFilters() {
       )}
 
       <section className="study-filter-picker" aria-label="Escolher filtro">
-        <span>Filtros</span>
         <div>
           {FILTERS.map((filter) => (
             <button key={filter.id} type="button" className={filter.id === activeFilter.id ? 'active' : ''} onClick={() => chooseFilter(filter)} style={{ '--item-color': filter.color }}>

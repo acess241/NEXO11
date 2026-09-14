@@ -48,17 +48,6 @@ function IconNexis() {
   )
 }
 
-function IconFilters() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 7h16" />
-      <path d="M7 12h10" />
-      <path d="M10 17h4" />
-      <path d="M12 3v3M12 18v3" />
-    </svg>
-  )
-}
-
 function IconMessage() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -258,10 +247,6 @@ export default function BottomNav({ hideNotifications = false }) {
 
       <NavLink to="/nexis" className={({ isActive }) => (isActive ? 'active' : '')} aria-label="Nexis">
         <IconNexis />
-      </NavLink>
-
-      <NavLink to="/filtros" className={({ isActive }) => (isActive ? 'active' : '')} aria-label="Filtros educativos">
-        <IconFilters />
       </NavLink>
 
       {!hideNotifications ? (

@@ -17915,7 +17915,7 @@ body[data-theme='verde'] .card {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transform: scaleX(-1);
   background: #111827;
 }
@@ -17951,8 +17951,9 @@ body[data-theme='verde'] .card {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(0,0,0,.62), transparent 23%, transparent 58%, rgba(0,0,0,.82)),
-    radial-gradient(circle at center, transparent 42%, rgba(0,0,0,.32));
+    radial-gradient(circle at 50% 36%, color-mix(in srgb, var(--filter-accent) 15%, transparent), transparent 28%),
+    linear-gradient(180deg, rgba(0,0,0,.48), transparent 24%, transparent 56%, rgba(0,0,0,.9)),
+    radial-gradient(circle at center, transparent 42%, rgba(0,0,0,.28));
 }
 .study-filter-close {
   position: absolute;
@@ -17976,7 +17977,7 @@ body[data-theme='verde'] .card {
   position: absolute;
   z-index: 7;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom));
+  bottom: calc(54px + env(safe-area-inset-bottom));
   width: 86px;
   height: 86px;
   min-height: 0;
@@ -18013,7 +18014,7 @@ body[data-theme='verde'] .card {
 .study-filter-download {
   left: auto;
   right: calc(22px + env(safe-area-inset-right));
-  bottom: calc(48px + env(safe-area-inset-bottom));
+  bottom: calc(72px + env(safe-area-inset-bottom));
   width: auto;
   height: 42px;
   padding: 0 13px;
@@ -18039,6 +18040,32 @@ body[data-theme='verde'] .card {
   justify-content: flex-end;
   gap: 8px;
 }
+.study-filter-capture-tabs {
+  position: absolute;
+  z-index: 7;
+  left: 0;
+  right: 0;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  gap: clamp(14px, 5vw, 34px);
+  padding: 0 16px;
+  overflow: hidden;
+  pointer-events: auto;
+}
+.study-filter-capture-tabs button {
+  border: 0;
+  color: rgba(255,255,255,.42);
+  background: transparent;
+  font-size: clamp(.9rem, 3.7vw, 1.25rem);
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-shadow: 0 2px 12px #000;
+}
+.study-filter-capture-tabs button.active {
+  color: #fff;
+  transform: scale(1.12);
+}
 .study-filter-top b {
   margin-right: auto;
   padding: 8px 12px;
@@ -18058,7 +18085,7 @@ body[data-theme='verde'] .card {
 .study-filter-effect {
   position: absolute;
   z-index: 5;
-  inset: calc(80px + env(safe-area-inset-top)) 16px calc(160px + env(safe-area-inset-bottom));
+  inset: calc(82px + env(safe-area-inset-top)) 16px calc(214px + env(safe-area-inset-bottom));
   display: grid;
   align-content: start;
   pointer-events: none;
@@ -18068,9 +18095,9 @@ body[data-theme='verde'] .card {
   max-width: min(560px, 94vw);
   padding: 14px 18px;
   border: 1px solid rgba(255,255,255,.22);
-  border-radius: 22px;
+  border-radius: 26px;
   color: #fff;
-  background: rgba(0,0,0,.58);
+  background: linear-gradient(135deg, rgba(0,0,0,.74), color-mix(in srgb, var(--filter-accent) 24%, rgba(0,0,0,.56)));
   box-shadow: 0 16px 40px rgba(0,0,0,.35);
   backdrop-filter: blur(14px);
   font-size: clamp(1rem, 4.6vw, 1.7rem);
@@ -18096,9 +18123,9 @@ body[data-theme='verde'] .card {
 .study-filter-sequence-game button {
   min-height: 72px;
   border: 2px solid color-mix(in srgb, var(--filter-accent) 70%, white);
-  border-radius: 20px;
+  border-radius: 24px;
   color: #fff;
-  background: color-mix(in srgb, var(--filter-accent) 72%, rgba(0,0,0,.55));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--filter-accent) 84%, white), color-mix(in srgb, var(--filter-accent) 72%, rgba(0,0,0,.38)));
   box-shadow: 0 14px 34px rgba(0,0,0,.32);
   font-size: clamp(1rem, 4vw, 1.35rem);
   font-weight: 950;
@@ -18165,8 +18192,8 @@ body[data-theme='verde'] .card {
   align-items: center;
   padding: 10px 14px;
   border: 1px solid rgba(255,255,255,.2);
-  border-radius: 20px;
-  background: rgba(0,0,0,.58);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(0,0,0,.68), color-mix(in srgb, var(--filter-accent) 18%, rgba(0,0,0,.5)));
   backdrop-filter: blur(14px);
 }
 .study-filter-friend-card img,
@@ -18257,7 +18284,7 @@ body[data-theme='verde'] .card {
   position: absolute;
   z-index: 8;
   left: 50%;
-  bottom: calc(210px + env(safe-area-inset-bottom));
+  bottom: calc(254px + env(safe-area-inset-bottom));
   width: min(380px, calc(100% - 32px));
   display: grid;
   justify-items: center;
@@ -18288,17 +18315,17 @@ body[data-theme='verde'] .card {
   z-index: 7;
   left: 0;
   right: 0;
-  bottom: calc(122px + env(safe-area-inset-bottom));
+  bottom: calc(150px + env(safe-area-inset-bottom));
   display: grid;
   gap: 9px;
   padding: 0 12px;
 }
 .study-filter-picker > span {
   justify-self: center;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 999px;
   background: rgba(0,0,0,.5);
-  font-size: .72rem;
+  font-size: .69rem;
   font-weight: 900;
 }
 .study-filter-picker > div {
@@ -18321,21 +18348,23 @@ body[data-theme='verde'] .card {
   scroll-snap-align: center;
 }
 .study-filter-picker i {
-  width: 62px;
-  height: 62px;
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
-  border: 3px solid rgba(255,255,255,.86);
+  border: 3px solid rgba(255,255,255,.88);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--item-color) 78%, rgba(0,0,0,.24));
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.54), transparent 26%),
+    linear-gradient(145deg, color-mix(in srgb, var(--item-color) 82%, white), color-mix(in srgb, var(--item-color) 74%, #111));
   box-shadow: 0 12px 28px rgba(0,0,0,.36);
-  font-size: .9rem;
+  font-size: .82rem;
   font-style: normal;
   font-weight: 950;
 }
 .study-filter-picker button.active i {
-  width: 78px;
-  height: 78px;
+  width: 82px;
+  height: 82px;
   outline: 5px solid #fff;
   outline-offset: 3px;
 }
@@ -18365,6 +18394,7 @@ body[data-theme='verde'] .card {
   .study-filter-vignette { transform: translateX(-50%); }
   .study-filter-effect,
   .study-filter-top,
+  .study-filter-capture-tabs,
   .study-filter-picker {
     left: 50%;
     width: min(430px, 100vw);
@@ -18372,6 +18402,7 @@ body[data-theme='verde'] .card {
   }
   .study-filter-top { right: auto; }
   .study-filter-effect { right: auto; }
+  .study-filter-capture-tabs { right: auto; }
   .study-filter-picker { right: auto; }
   .study-filter-record { left: 50%; }
   .study-filter-download { right: calc(50% - min(194px, 45vw)); }
