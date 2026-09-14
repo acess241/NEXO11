@@ -9,6 +9,7 @@ import SocialLoader from './components/SocialLoader'
 import NotificationBridge from './components/NotificationBridge'
 import UpdateAnnouncement from './components/UpdateAnnouncement'
 import LegalAcceptanceGate from './components/LegalAcceptanceGate'
+import GlobalXpRanking from './components/GlobalXpRanking'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -159,6 +160,7 @@ export default function App() {
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />
       <UpdateAnnouncement session={session} />
+      {session && <GlobalXpRanking />}
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
