@@ -17819,7 +17819,7 @@ body[data-theme='verde'] .card {
 /* Ranking geral de XP */
 .global-xp-ranking-button {
   position: fixed;
-  top: calc(14px + env(safe-area-inset-top));
+  bottom: calc(22px + env(safe-area-inset-bottom));
   right: calc(16px + env(safe-area-inset-right));
   z-index: 900;
   width: 46px;
@@ -17885,7 +17885,13 @@ body[data-theme='verde'] .card {
 .global-xp-ranking-state button { border: 0; border-radius: 10px; padding: 9px 13px; color: white; background: #176fd1; font-weight: 800; cursor: pointer; }
 .global-xp-ranking-state.is-error { color: #ff9b9b; }
 @media (max-width: 640px) {
-  .global-xp-ranking-button { top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); width: 42px; height: 42px; border-radius: 14px; }
+  .global-xp-ranking-button {
+    bottom: calc(94px + env(safe-area-inset-bottom));
+    right: calc(14px + env(safe-area-inset-right));
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
   .global-xp-ranking-overlay { align-items: end; padding: 0; }
   .global-xp-ranking-modal { max-height: 86dvh; border-radius: 24px 24px 0 0; }
   .global-xp-ranking-list article { padding-inline: 9px; }
