@@ -17897,3 +17897,326 @@ body[data-theme='verde'] .card {
   .global-xp-ranking-list article { padding-inline: 9px; }
   .global-xp-ranking-list article em { font-size: .77rem; }
 }
+
+/* Filtros educativos com camera */
+.study-filter-camera {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  min-height: 100dvh;
+  overflow: hidden;
+  color: #fff;
+  background: #05070b;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  touch-action: manipulation;
+}
+.study-filter-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  background: #111827;
+}
+.study-filter-camera-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--filter-accent) 34%, transparent), transparent 32%),
+    linear-gradient(155deg, #101625, #05070b 70%);
+  text-align: center;
+}
+.study-filter-camera-fallback.hidden { display: none; }
+.study-filter-camera-fallback strong { font-size: 1.2rem; }
+.study-filter-camera-fallback span { max-width: 310px; color: rgba(255,255,255,.72); font-size: .88rem; line-height: 1.45; }
+.study-filter-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.62), transparent 23%, transparent 58%, rgba(0,0,0,.82)),
+    radial-gradient(circle at center, transparent 42%, rgba(0,0,0,.32));
+}
+.study-filter-close {
+  position: absolute;
+  z-index: 7;
+  top: calc(12px + env(safe-area-inset-top));
+  left: calc(12px + env(safe-area-inset-left));
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0,0,0,.38);
+  backdrop-filter: blur(12px);
+  font-size: 30px;
+  line-height: 1;
+}
+.study-filter-top {
+  position: absolute;
+  z-index: 6;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 68px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.study-filter-top b {
+  margin-right: auto;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--filter-accent) 38%, rgba(0,0,0,.55));
+  backdrop-filter: blur(12px);
+}
+.study-filter-top span {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.42);
+  backdrop-filter: blur(12px);
+  font-size: .82rem;
+  font-weight: 900;
+}
+.study-filter-effect {
+  position: absolute;
+  z-index: 5;
+  inset: calc(80px + env(safe-area-inset-top)) 16px calc(160px + env(safe-area-inset-bottom));
+  display: grid;
+  align-content: start;
+  pointer-events: none;
+}
+.study-filter-question {
+  justify-self: center;
+  max-width: min(560px, 94vw);
+  padding: 14px 18px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 22px;
+  color: #fff;
+  background: rgba(0,0,0,.58);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+  backdrop-filter: blur(14px);
+  font-size: clamp(1rem, 4.6vw, 1.7rem);
+  font-weight: 950;
+  line-height: 1.16;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(0,0,0,.55);
+}
+.study-filter-side-game,
+.study-filter-quiz-game,
+.study-filter-sequence-game,
+.study-filter-rain-game { pointer-events: auto; }
+.study-filter-side-game {
+  align-self: end;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: min(42dvh, 360px);
+}
+.study-filter-side-game button,
+.study-filter-quiz-game button,
+.study-filter-sequence-game button {
+  min-height: 72px;
+  border: 2px solid color-mix(in srgb, var(--filter-accent) 70%, white);
+  border-radius: 20px;
+  color: #fff;
+  background: color-mix(in srgb, var(--filter-accent) 72%, rgba(0,0,0,.55));
+  box-shadow: 0 14px 34px rgba(0,0,0,.32);
+  font-size: clamp(1rem, 4vw, 1.35rem);
+  font-weight: 950;
+  cursor: pointer;
+}
+.study-filter-side-game small {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(255,255,255,.72);
+  font-size: .63rem;
+  letter-spacing: .14em;
+}
+.study-filter-quiz-game {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 10px;
+  justify-self: center;
+  margin-top: 28px;
+}
+.study-filter-rain-game {
+  position: relative;
+  min-height: 45dvh;
+}
+.study-filter-rain-game button {
+  position: absolute;
+  left: var(--drop-left);
+  top: 0;
+  min-width: 94px;
+  min-height: 58px;
+  border: 2px solid rgba(255,255,255,.82);
+  border-radius: 999px;
+  color: #fff;
+  background: color-mix(in srgb, var(--filter-accent) 75%, rgba(0,0,0,.4));
+  box-shadow: 0 16px 35px rgba(0,0,0,.35);
+  font-weight: 950;
+  animation: study-filter-drop 4.6s linear infinite;
+  animation-delay: var(--drop-delay);
+}
+@keyframes study-filter-drop {
+  from { transform: translateY(-20px) scale(.96); opacity: .95; }
+  to { transform: translateY(43dvh) scale(1.04); opacity: 1; }
+}
+.study-filter-sequence-game {
+  width: min(560px, 100%);
+  justify-self: center;
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+.study-filter-sequence-game > div,
+.study-filter-sequence-game nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.study-filter-sequence-game span {
+  min-width: 70px;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.34);
+  border-radius: 15px;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(12px);
+  font-weight: 950;
+}
+.study-filter-sequence-game button:disabled {
+  opacity: .38;
+}
+.study-filter-result {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: calc(142px + env(safe-area-inset-bottom));
+  width: min(380px, calc(100% - 32px));
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 24px;
+  background: rgba(0,0,0,.72);
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+  text-align: center;
+}
+.study-filter-result.good strong { color: #70ff8a; }
+.study-filter-result.bad strong { color: #ff8a9a; }
+.study-filter-result span { color: rgba(255,255,255,.78); font-size: .88rem; }
+.study-filter-result button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  color: #061012;
+  background: #fff;
+  font-weight: 950;
+}
+.study-filter-picker {
+  position: absolute;
+  z-index: 7;
+  left: 0;
+  right: 0;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 9px;
+  padding: 0 12px;
+}
+.study-filter-picker > span {
+  justify-self: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.5);
+  font-size: .72rem;
+  font-weight: 900;
+}
+.study-filter-picker > div {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0 4px 4px;
+  scrollbar-width: none;
+}
+.study-filter-picker > div::-webkit-scrollbar { display: none; }
+.study-filter-picker button {
+  flex: 0 0 76px;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  border: 0;
+  color: #fff;
+  background: transparent;
+}
+.study-filter-picker i {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 3px solid rgba(255,255,255,.86);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--item-color) 78%, rgba(0,0,0,.24));
+  box-shadow: 0 12px 28px rgba(0,0,0,.36);
+  font-size: .9rem;
+  font-style: normal;
+  font-weight: 950;
+}
+.study-filter-picker button.active i {
+  outline: 4px solid var(--item-color);
+  outline-offset: 3px;
+}
+.study-filter-picker small {
+  width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px #000;
+  font-size: .68rem;
+  font-weight: 850;
+}
+@media (min-width: 780px) {
+  .study-filter-camera {
+    display: grid;
+    place-items: center;
+    background: #05070b;
+  }
+  .study-filter-video,
+  .study-filter-camera-fallback,
+  .study-filter-vignette {
+    left: 50%;
+    width: min(430px, 100vw);
+    transform: translateX(-50%) scaleX(-1);
+  }
+  .study-filter-camera-fallback,
+  .study-filter-vignette { transform: translateX(-50%); }
+  .study-filter-effect,
+  .study-filter-top,
+  .study-filter-picker {
+    left: 50%;
+    width: min(430px, 100vw);
+    transform: translateX(-50%);
+  }
+  .study-filter-top { right: auto; }
+  .study-filter-effect { right: auto; }
+  .study-filter-picker { right: auto; }
+}

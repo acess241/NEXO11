@@ -31,6 +31,7 @@ const GroupRoom = lazy(() => import('./pages/GroupRoom'))
 const Connections = lazy(() => import('./pages/Connections'))
 const Academy = lazy(() => import('./pages/Academy'))
 const XpCenter = lazy(() => import('./pages/XpCenter'))
+const StudyFilters = lazy(() => import('./pages/StudyFilters'))
 const ActivityLink = lazy(() => import('./pages/ActivityLink'))
 const OxenteHub = lazy(() => import('./pages/OxenteHub'))
 const BlockedProfiles = lazy(() => import('./pages/BlockedProfiles'))
@@ -358,6 +359,14 @@ export default function App() {
             element={
               <ProtectedRoute session={session}>
                 <XpCenter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/filtros"
+            element={
+              <ProtectedRoute session={session}>
+                <StudyFilters />
               </ProtectedRoute>
             }
           />
