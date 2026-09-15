@@ -60,8 +60,8 @@ export function paintCameraFrame(canvas, video, stage, mirrored) {
     ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, 0, width, height)
     drawVideo(ctx, video, fit, mirrored)
   }
-  const bounds = stage.getBoundingClientRect(), scale = width / bounds.width
-  ctx.save(); ctx.scale(scale, scale)
+  const bounds = stage.getBoundingClientRect(), scaleX = width / bounds.width, scaleY = height / bounds.height
+  ctx.save(); ctx.scale(scaleX, scaleY)
   for (const node of stage.querySelectorAll('[data-capture]')) {
     const rect = node.getBoundingClientRect()
     if (!rect.width || !rect.height) continue
