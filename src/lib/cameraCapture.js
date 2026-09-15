@@ -8,8 +8,9 @@ function coverVideo(sw, sh, width, height) {
 }
 export function recorderOptions(Recorder = globalThis.MediaRecorder) {
   const mimeType = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find(type => Recorder?.isTypeSupported?.(type))
-  return { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 2500000 }
+  return { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 2000000, audioBitsPerSecond: 96000 }
 }
+const overlayCache = new WeakMap()
 function wrapText(ctx, value, x, y, width, lineHeight, maxLines = 4) {
   const words = String(value || '').trim().split(/\s+/).filter(Boolean), lines = []
   let line = ''
@@ -129,21 +130,34 @@ export function paintCameraFrame(canvas, video, stage, mirrored) {
   if (video.readyState >= 2 && video.videoWidth) {
     const cover = coverVideo(video.videoWidth, video.videoHeight, width, height)
     const fit = fitVideo(video.videoWidth, video.videoHeight, width, height)
-    ctx.save()
-    ctx.filter = 'blur(30px) brightness(.48)'
-    drawVideo(ctx, video, cover, mirrored)
-    ctx.restore()
-    ctx.fillStyle = 'rgba(0,0,0,.10)'; ctx.fillRect(0, 0, width, height)
+    ctx.save(); ctx.globalAlpha = .46; drawVideo(ctx, video, cover, mirrored); ctx.restore()
+    ctx.fillStyle = 'rgba(0,0,0,.24)'; ctx.fillRect(0, 0, width, height)
     drawVideo(ctx, video, fit, mirrored)
   }
   const shade = ctx.createLinearGradient(0, 0, 0, height)
   shade.addColorStop(0, 'rgba(0,0,0,.42)'); shade.addColorStop(.22, 'rgba(0,0,0,0)'); shade.addColorStop(.7, 'rgba(0,0,0,0)'); shade.addColorStop(1, 'rgba(0,0,0,.38)')
   ctx.fillStyle = shade; ctx.fillRect(0, 0, width, height)
-  const bounds = stage.getBoundingClientRect(), scaleX = width / bounds.width, scaleY = height / bounds.height
-  const accent = getComputedStyle(stage.closest('.nexo-camera') || stage).getPropertyValue('--game-color').trim() || '#b2ee67'
-  ctx.save(); ctx.scale(scaleX, scaleY)
-  drawPanel(ctx, 14, 14, 116, 27, { radius: 14, fill: 'rgba(2,13,8,.66)', stroke: `${accent}66`, shadow: false })
-  drawText(ctx, 'NEXO  •  APRENDER', 21, 22, 102, { size: 9, weight: 900, color: '#ecfff0', maxLines: 1 })
-  for (const node of stage.querySelectorAll('[data-capture]')) drawCaptureNode(ctx, node, bounds, accent)
-  ctx.restore()
+  const now = performance.now()
+  let cached = overlayCache.get(canvas)
+  if (!cached || cached.width !== width || cached.height !== height) {
+    const overlay = document.createElement('canvas')
+    overlay.width = width; overlay.height = height
+    cached = { overlay, width, height, updatedAt: 0 }
+    overlayCache.set(canvas, cached)
+  }
+  if (now - cached.updatedAt >= 100) {
+    const overlayCtx = cached.overlay.getContext('2d'), bounds = stage.getBoundingClientRect()
+    overlayCtx.clearRect(0, 0, width, height)
+    if (bounds.width && bounds.height) {
+      const scaleX = width / bounds.width, scaleY = height / bounds.height
+      const accent = getComputedStyle(stage.closest('.nexo-camera') || stage).getPropertyValue('--game-color').trim() || '#b2ee67'
+      overlayCtx.save(); overlayCtx.scale(scaleX, scaleY)
+      drawPanel(overlayCtx, 14, 14, 116, 27, { radius: 14, fill: 'rgba(2,13,8,.66)', stroke: `${accent}66`, shadow: false })
+      drawText(overlayCtx, 'NEXO  •  APRENDER', 21, 22, 102, { size: 9, weight: 900, color: '#ecfff0', maxLines: 1 })
+      for (const node of stage.querySelectorAll('[data-capture]')) drawCaptureNode(overlayCtx, node, bounds, accent)
+      overlayCtx.restore()
+    }
+    cached.updatedAt = now
+  }
+  ctx.drawImage(cached.overlay, 0, 0)
 }

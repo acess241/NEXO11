@@ -34,6 +34,7 @@ export default function StudyFilters() {
   const streamRef = useRef(null), micRef = useRef(null), recorderRef = useRef(null), animationRef = useRef(null)
   const mountedRef = useRef(false), operationRef = useRef(0), captureBusyRef = useRef(false), answerLockRef = useRef(false)
   const recordingStartRef = useRef(0), recordingDurationRef = useRef(0), fileInputRef = useRef(null)
+  const lastDrawAtRef = useRef(0)
   const requestedMode = searchParams.get('mode')?.toUpperCase()
   const initialMode = ['POST', 'NEXIS', 'STORY', 'FOTO'].includes(requestedMode) ? requestedMode : 'NEXIS'
   const [filter, setFilter] = useState(STUDY_FILTERS[0])
@@ -192,12 +193,19 @@ export default function StudyFilters() {
   function prepareCanvas() {
     const bounds = stageRef.current.getBoundingClientRect(), canvas = canvasRef.current
     const largestSide = Math.max(bounds.width, bounds.height)
-    const scale = Math.min(2, 1280 / Math.max(1, largestSide), devicePixelRatio || 1)
+    const pixelBudget = window.innerWidth < 900 ? 960 : 1280
+    const scale = Math.min(2, pixelBudget / Math.max(1, largestSide), devicePixelRatio || 1)
     canvas.width = Math.max(2, Math.round(bounds.width * scale))
     canvas.height = Math.max(2, Math.round(bounds.height * scale))
     return canvas
   }
-  function draw() { paintCameraFrame(canvasRef.current, videoRef.current, stageRef.current, facing === 'user'); animationRef.current = requestAnimationFrame(draw) }
+  function draw(now = performance.now()) {
+    if (now - lastDrawAtRef.current >= 1000 / 24) {
+      paintCameraFrame(canvasRef.current, videoRef.current, stageRef.current, facing === 'user')
+      lastDrawAtRef.current = now
+    }
+    animationRef.current = requestAnimationFrame(draw)
+  }
   async function startRecording() {
     if (captureBusyRef.current || recording || cameraState !== 'ready') return
     captureBusyRef.current = true; setStarting(true); setNotice('')
@@ -206,35 +214,43 @@ export default function StudyFilters() {
       if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error('Este navegador não consegue gravar com efeitos. Atualize o navegador ou envie um vídeo da galeria.')
       let mic
       if (micEnabled) {
-        try { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); micRef.current = mic }
+        try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); micRef.current = mic }
         catch { if (mountedRef.current) setNotice('Microfone indisponível. A gravação ficará sem som.') }
       }
       if (!mountedRef.current) { mic?.getTracks().forEach(track => track.stop()); return }
-      prepareCanvas()
+      cancelAnimationFrame(animationRef.current); lastDrawAtRef.current = 0; prepareCanvas()
       if (hasGame && (phase === 'ready' || phase === 'finished')) resetGame(true)
-      draw(); output = canvasRef.current.captureStream(30)
+      draw(); output = canvasRef.current.captureStream(24)
       mic?.getAudioTracks().forEach(track => output.addTrack(track))
       const recorder = new MediaRecorder(output, recorderOptions()), chunks = []
+      let failed = false
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data) }
       recorder.onstop = () => {
         cancelAnimationFrame(animationRef.current); output.getTracks().forEach(track => track.stop()); micRef.current = null
+        captureBusyRef.current = false
         if (!mountedRef.current) return
+        if (failed) { recorderRef.current = null; setRecording(false); return }
         const type = recorder.mimeType || chunks[0]?.type || 'video/webm'
         const file = new File(chunks, `nexo-${Date.now()}.${type.includes('mp4') ? 'mp4' : 'webm'}`, { type })
-        setRecording(false)
+        recorderRef.current = null; setRecording(false)
         if (file.size) setCapture({ file, duration: recordingDurationRef.current || 1 })
         else setNotice('A gravação ficou vazia. Tente gravar novamente.')
       }
-      recorder.onerror = () => { setNotice('Não foi possível concluir a gravação. Tente novamente.'); stopRecording() }
+      recorder.onerror = () => {
+        failed = true; captureBusyRef.current = false
+        cancelAnimationFrame(animationRef.current); output.getTracks().forEach(track => track.stop()); micRef.current?.getTracks().forEach(track => track.stop())
+        micRef.current = null; recorderRef.current = null; setRecording(false); setNotice('Não foi possível concluir a gravação. Tente novamente.')
+      }
       recorderRef.current = recorder; recordingStartRef.current = performance.now(); recordingDurationRef.current = 0
-      recorder.start(250); setElapsed(0); setRecording(true)
+      recorder.start(500); setElapsed(0); setRecording(true)
     } catch (error) {
       cancelAnimationFrame(animationRef.current); output?.getTracks().forEach(track => track.stop()); micRef.current?.getTracks().forEach(track => track.stop())
-      setNotice(error.message || 'Não foi possível iniciar a gravação.')
+      micRef.current = null; recorderRef.current = null; setRecording(false); setNotice(error.message || 'Não foi possível iniciar a gravação.')
     } finally { captureBusyRef.current = false; if (mountedRef.current) setStarting(false) }
   }
   function stopRecording() {
     if (recorderRef.current?.state !== 'recording') return
+    captureBusyRef.current = true
     recordingDurationRef.current = Math.min(60, (performance.now() - recordingStartRef.current) / 1000)
     recorderRef.current.stop(); setRecording(false)
   }
