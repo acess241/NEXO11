@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { saveCaptureDraft } from '../lib/captureDraft'
 import { STUDY_FILTERS, GAME_QUESTIONS } from '../lib/studyGames'
@@ -29,13 +29,17 @@ function Icon({ name, ...props }) {
 
 export default function StudyFilters() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const videoRef = useRef(null), backdropRef = useRef(null), stageRef = useRef(null), canvasRef = useRef(null)
   const streamRef = useRef(null), micRef = useRef(null), recorderRef = useRef(null), animationRef = useRef(null)
   const mountedRef = useRef(false), operationRef = useRef(0), captureBusyRef = useRef(false), answerLockRef = useRef(false)
   const recordingStartRef = useRef(0), recordingDurationRef = useRef(0), fileInputRef = useRef(null)
+  const requestedMode = searchParams.get('mode')?.toUpperCase()
+  const initialMode = ['POST', 'NEXIS', 'STORY', 'FOTO'].includes(requestedMode) ? requestedMode : 'NEXIS'
   const [filter, setFilter] = useState(STUDY_FILTERS[0])
-  const [mode, setMode] = useState('NEXIS'), [storyVideo, setStoryVideo] = useState(true)
+  const [mode, setMode] = useState(initialMode), [storyVideo, setStoryVideo] = useState(searchParams.get('capture') !== 'photo')
   const [facing, setFacing] = useState('user'), [cameraState, setCameraState] = useState('loading')
+  const [cameraDeviceId, setCameraDeviceId] = useState('')
   const [cameraRetry, setCameraRetry] = useState(0), [micEnabled, setMicEnabled] = useState(true)
   const [notice, setNotice] = useState(''), [phase, setPhase] = useState('ready')
   const [round, setRound] = useState(0), [score, setScore] = useState(0), [timeLeft, setTimeLeft] = useState(25)
@@ -61,20 +65,26 @@ export default function StudyFilters() {
   }, [])
   useEffect(() => {
     let active = true
+    let ownedStream = null
     const operation = ++operationRef.current
-    setCameraState('loading'); streamRef.current?.getTracks().forEach(track => track.stop())
+    setCameraState('loading')
+    const previousStream = streamRef.current
+    streamRef.current = null
+    for (const video of [videoRef.current, backdropRef.current]) {
+      if (video) { video.pause(); video.srcObject = null }
+    }
+    previousStream?.getTracks().forEach(track => track.stop())
     async function open() {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error('unavailable')
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            facingMode: { ideal: facing },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            aspectRatio: { ideal: 16 / 9 },
-          },
-        })
+        const size = { width: { ideal: 1280 }, height: { ideal: 720 }, aspectRatio: { ideal: 16 / 9 } }
+        let stream
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: cameraDeviceId ? { ...size, deviceId: { exact: cameraDeviceId } } : { ...size, facingMode: { exact: facing } } })
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { ...size, facingMode: { ideal: facing } } })
+        }
+        ownedStream = stream
         if (!active || operation !== operationRef.current) { stream.getTracks().forEach(track => track.stop()); return }
         streamRef.current = stream
         const track = stream.getVideoTracks()[0], zoom = track.getCapabilities?.().zoom
@@ -86,8 +96,12 @@ export default function StudyFilters() {
       }
     }
     void open()
-    return () => { active = false; streamRef.current?.getTracks().forEach(track => track.stop()) }
-  }, [facing, cameraRetry])
+    return () => {
+      active = false
+      ownedStream?.getTracks().forEach(track => track.stop())
+      if (streamRef.current === ownedStream) streamRef.current = null
+    }
+  }, [facing, cameraDeviceId, cameraRetry])
   useEffect(() => {
     let active = true
     async function load() {
@@ -133,6 +147,31 @@ export default function StudyFilters() {
   function resetGame(start = false) {
     answerLockRef.current = false
     setRound(0); setScore(0); setTimeLeft(25); setFeedback(null); setSequence([]); setPhase(start ? 'playing' : 'ready')
+  }
+  async function switchCamera() {
+    if (recording || starting || cameraState === 'loading') return
+    try {
+      const devices = (await navigator.mediaDevices.enumerateDevices()).filter(device => device.kind === 'videoinput')
+      const currentId = streamRef.current?.getVideoTracks?.()[0]?.getSettings?.().deviceId || cameraDeviceId
+      if (devices.length > 1) {
+        const desiredFacing = facing === 'user' ? 'environment' : 'user'
+        const desiredPattern = desiredFacing === 'environment' ? /back|rear|traseir|environment/ : /front|frontal|user|facetime/
+        const currentIndex = Math.max(0, devices.findIndex(device => device.deviceId === currentId))
+        const next = devices.find(device => device.deviceId !== currentId && desiredPattern.test(device.label.toLowerCase())) || devices[(currentIndex + 1) % devices.length]
+        setFacing(desiredFacing)
+        setCameraDeviceId(next.deviceId)
+      } else {
+        setCameraDeviceId('')
+        setFacing(value => value === 'user' ? 'environment' : 'user')
+      }
+    } catch {
+      setCameraDeviceId('')
+      setFacing(value => value === 'user' ? 'environment' : 'user')
+    }
+  }
+  function closeCamera() {
+    if (mode === 'STORY' || requestedMode === 'STORY') navigate(searchParams.get('restore') === '1' ? '/novo-story?camera=1' : '/novo-story?camera=cancel', { replace: true })
+    else navigate('/')
   }
   function chooseFilter(next, event) { setFilter(next); resetGame(); event?.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }) }
   function finishAnswer(ok, text) { answerLockRef.current = true; if (ok) setScore(value => value + 1); setFeedback({ ok, text }); setPhase('feedback') }
@@ -230,7 +269,7 @@ export default function StudyFilters() {
         <video className={`nc-video ${facing === 'user' ? 'mirrored' : ''}`} ref={videoRef} muted playsInline autoPlay disablePictureInPicture aria-label="Sua câmera ao vivo" />
         <div className="nc-shade" />
         {cameraState !== 'ready' && <div className="nc-camera-empty"><Icon name="camera" /><strong>{cameraState === 'loading' ? 'Abrindo sua câmera…' : 'Sua câmera está desativada'}</strong>{cameraState === 'blocked' && <button onClick={() => setCameraRetry(value => value + 1)}>Tentar novamente</button>}</div>}
-        <header className="nc-header"><button className="nc-icon-button" aria-label="Fechar câmera" onClick={() => navigate('/')}><Icon name="close" /></button><div className="nc-brand">NEXO<span>criar</span></div><div className="nc-tools"><button className={`nc-icon-button ${!micEnabled ? 'is-muted' : ''}`} disabled={recording || starting} aria-label={micEnabled ? 'Desativar microfone' : 'Ativar microfone'} aria-pressed={micEnabled} onClick={() => setMicEnabled(value => !value)}><Icon name="mic" /></button><button className="nc-icon-button" aria-label="Trocar câmera" disabled={recording || starting} onClick={() => setFacing(value => value === 'user' ? 'environment' : 'user')}><Icon name="flip" /></button></div></header>
+        <header className="nc-header"><button className="nc-icon-button" aria-label="Fechar câmera" onClick={closeCamera}><Icon name="close" /></button><div className="nc-brand">NEXO<span>criar</span></div><div className="nc-tools"><button className={`nc-icon-button ${!micEnabled ? 'is-muted' : ''}`} disabled={recording || starting} aria-label={micEnabled ? 'Desativar microfone' : 'Ativar microfone'} aria-pressed={micEnabled} onClick={() => setMicEnabled(value => !value)}><Icon name="mic" /></button><button className="nc-icon-button" aria-label={cameraState === 'loading' ? 'Trocando câmera' : 'Trocar entre câmera frontal e traseira'} disabled={recording || starting || cameraState === 'loading'} onClick={switchCamera}><Icon name="flip" /></button></div></header>
         {notice && <div className="nc-notice" role="status">{notice}<button aria-label="Fechar aviso" onClick={() => setNotice('')}>×</button></div>}
         {recording && <div className="nc-recording-badge">● REC {String(Math.floor(elapsed / 60)).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')} / 01:00</div>}
         {hasGame && <div className="nc-game">

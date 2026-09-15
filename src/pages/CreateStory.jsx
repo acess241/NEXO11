@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import InstantCameraSheet from '../components/InstantCameraSheet'
 import SocialLoader from '../components/SocialLoader'
 import { supabase } from '../lib/supabase'
-import { clearCaptureDraft, getCaptureDraft } from '../lib/captureDraft'
+import { clearCaptureDraft, getCaptureDraft, saveCaptureDraft } from '../lib/captureDraft'
 
 function IconeCamera() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" /><circle cx="12" cy="13" r="4" /></svg>
@@ -51,7 +50,6 @@ export default function CreateStory() {
   const [duracaoStory, setDuracaoStory] = useState(DURACAO_PADRAO)
   const [caption, setCaption] = useState('')
   const [captionPosition, setCaptionPosition] = useState({ x: 50, y: 72 })
-  const [cameraAberta, setCameraAberta] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
@@ -88,7 +86,6 @@ export default function CreateStory() {
     setMediaKind(captured.file.type.startsWith('video/') ? 'video' : 'image')
     setDuracaoStory(Math.min(60, Math.max(1, Math.ceil(captured.duration || DURACAO_PADRAO))))
     setPreview(URL.createObjectURL(captured.file))
-    setCameraAberta(false)
   }, [searchParams])
 
   useEffect(() => {
@@ -180,8 +177,8 @@ export default function CreateStory() {
   useEffect(() => {
     if (carregando || preview || abriuCameraRef.current) return
     abriuCameraRef.current = true
-    setCameraAberta(true)
-  }, [carregando, preview])
+    if (searchParams.get('camera') !== 'cancel') navigate('/filtros?mode=STORY', { replace: true })
+  }, [carregando, preview, navigate, searchParams])
 
   async function aplicarArquivoSelecionado(file) {
     if (!file) return
@@ -206,7 +203,12 @@ export default function CreateStory() {
     setMediaKind(ehVideo ? 'video' : 'image')
     setDuracaoStory(ehVideo ? Math.max(1, Math.ceil(duracao)) : DURACAO_PADRAO)
     setPreview(URL.createObjectURL(file))
-    setCameraAberta(false)
+  }
+
+  function abrirCameraComFiltros() {
+    abriuCameraRef.current = true
+    if (arquivo) saveCaptureDraft({ file: arquivo, target: 'story', duration: duracaoStory })
+    navigate(`/filtros?mode=STORY${arquivo ? '&restore=1' : ''}`)
   }
 
   async function escolherArquivo(event) {
@@ -337,7 +339,7 @@ export default function CreateStory() {
               <h1>Crie seu story</h1>
               <p>Tire uma foto agora ou escolha uma foto ou vídeo da galeria.</p>
               <div>
-                <button type="button" className="primary" onClick={() => setCameraAberta(true)}><IconeCamera /> Câmera</button>
+                <button type="button" className="primary" onClick={abrirCameraComFiltros}><IconeCamera /> Câmera com filtros</button>
                 <button type="button" onClick={() => inputFileRef.current?.click()}><IconeGaleria /> Galeria</button>
               </div>
             </div>
@@ -347,7 +349,7 @@ export default function CreateStory() {
             <aside className="story-editor-tools">
               <button type="button" onClick={() => document.getElementById('story-overlay-text')?.focus()}><IconeTexto /><span>Texto</span></button>
               <button type="button" onClick={() => setSeletorMusicaAberto(true)}><IconeMusica /><span>Música</span></button>
-              <button type="button" onClick={() => setCameraAberta(true)}><IconeCamera /><span>Câmera</span></button>
+              <button type="button" onClick={abrirCameraComFiltros}><IconeCamera /><span>Filtros</span></button>
               <button type="button" onClick={() => inputFileRef.current?.click()}><IconeGaleria /><span>Galeria</span></button>
             </aside>
           ) : null}
@@ -385,15 +387,6 @@ export default function CreateStory() {
           </button>
         </footer>
       ) : null}
-
-      <InstantCameraSheet
-        open={cameraAberta}
-        onClose={() => setCameraAberta(false)}
-        onCapture={(file) => void aplicarArquivoSelecionado(file)}
-        onOpenGallery={() => inputFileRef.current?.click()}
-        title="Adicionar ao story"
-        subtitle="Capture uma foto ou escolha da galeria"
-      />
 
       {seletorMusicaAberto ? (
         <div className="story-music-backdrop" onMouseDown={(event) => {
