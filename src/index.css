@@ -18407,3 +18407,144 @@ body[data-theme='verde'] .card {
   .study-filter-record { left: 50%; }
   .study-filter-download { right: calc(50% - min(194px, 45vw)); }
 }
+
+/* Alvos de toque e areas seguras no app instalado em celulares. */
+@media (max-width: 767px) {
+  .xpc-page .xpc-topbar {
+    padding-top: calc(14px + var(--safe-top));
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
+  }
+
+  .profile-topbar {
+    padding-top: calc(10px + var(--safe-top));
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
+  }
+
+  .profile-top-action-btn {
+    min-height: 44px;
+  }
+
+  .profile-top-action-btn.ghost {
+    min-width: 44px;
+  }
+
+  .global-xp-ranking-button {
+    bottom: calc(104px + var(--safe-bottom));
+    width: 48px;
+    height: 48px;
+  }
+
+  .global-xp-ranking-button.avoid-mobile-controls {
+    display: none;
+  }
+
+  .global-xp-ranking-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nexis-topbar {
+    height: calc(58px + var(--safe-top));
+    padding-top: var(--safe-top);
+    padding-left: max(18px, var(--safe-left));
+    padding-right: max(18px, var(--safe-right));
+  }
+
+  .nexis-topbar button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding-bottom: calc(110px + var(--safe-bottom));
+  }
+
+  .topbar {
+    padding-left: max(9px, var(--safe-left));
+    padding-right: max(9px, var(--safe-right));
+  }
+
+  .feed-brand,
+  .feed-create-btn,
+  .feed-logout-btn,
+  .feed-profile-btn {
+    min-height: 44px;
+  }
+
+  .feed-profile-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+  .icon-action-btn,
+  .action-btn,
+  .profile-buttons-modern button,
+  .profile-block-btn,
+  .nexinho-tabs button {
+    min-height: 44px;
+  }
+
+  .bottom-nav {
+    bottom: max(12px, var(--safe-bottom));
+    padding: 4px;
+  }
+
+  .bottom-nav a {
+    min-height: 52px;
+    height: 52px;
+    margin: 0;
+    touch-action: manipulation;
+  }
+
+  .bottom-nav svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .profile-avatar-zone {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    min-width: 64px;
+  }
+
+  .profile-story-quick-btn {
+    position: static;
+    width: 100%;
+    min-height: 44px;
+    padding: 4px 6px;
+    font-size: 10px;
+    transform: none;
+  }
+
+  .chat-composer-shell {
+    bottom: calc(82px + var(--safe-bottom));
+  }
+
+  .chat-room-shell > .chat-room-page {
+    padding-bottom: calc(170px + var(--safe-bottom));
+  }
+
+  .chat-attach-btn,
+  .chat-send-btn,
+  .nexinho-header button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .nexinho-header {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+}
+
+@media (max-width: 359px) {
+  .feed-brand span {
+    display: none;
+  }
+}

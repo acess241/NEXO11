@@ -1195,8 +1195,10 @@ export default function Feed() {
           </button>
 
           <button
+            type="button"
             onClick={() => navigate('/perfil')}
             className="feed-profile-btn"
+            aria-label="Abrir meu perfil"
           >
             {meuPerfil?.foto_url ? (
               <img

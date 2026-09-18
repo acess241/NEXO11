@@ -219,13 +219,14 @@ export default function BottomNav({ hideNotifications = false }) {
   }, [])
 
   return (
-    <nav className="bottom-nav">
-      <NavLink to="/" className={({ isActive }) => (isActive ? 'active' : '')}>
+    <nav className="bottom-nav" aria-label="Navegação principal">
+      <NavLink to="/" aria-label="Início" className={({ isActive }) => (isActive ? 'active' : '')}>
         <IconHome />
       </NavLink>
 
       <NavLink
         to="/pesquisar"
+        aria-label="Pesquisar"
         className={({ isActive }) => (isActive ? 'active' : '')}
       >
         <IconSearch />
@@ -233,6 +234,7 @@ export default function BottomNav({ hideNotifications = false }) {
 
       <NavLink
         to="/mensagens"
+        aria-label="Mensagens"
         className={({ isActive }) => (isActive ? 'active' : '')}
       >
         <div className="nav-icon-wrapper">
@@ -252,6 +254,7 @@ export default function BottomNav({ hideNotifications = false }) {
       {!hideNotifications ? (
         <NavLink
           to="/notificacoes"
+          aria-label="Notificações"
           className={({ isActive }) => (isActive ? 'active' : '')}
         >
           <div className="nav-icon-wrapper">
@@ -267,6 +270,7 @@ export default function BottomNav({ hideNotifications = false }) {
 
       <NavLink
         to="/perfil"
+        aria-label="Perfil"
         className={({ isActive }) => (isActive ? 'active' : '')}
       >
         <IconUser />

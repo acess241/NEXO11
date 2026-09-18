@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 function TrophyIcon() {
@@ -11,10 +12,15 @@ function TrophyIcon() {
 }
 
 export default function GlobalXpRanking() {
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const hasFixedMobileControls = pathname === '/nexis'
+    || pathname.startsWith('/mensagens/')
+    || pathname === '/filtros'
+    || pathname === '/novo-story'
 
   const loadRanking = useCallback(async () => {
     setLoading(true)
@@ -47,7 +53,7 @@ export default function GlobalXpRanking() {
     <>
       <button
         type="button"
-        className="global-xp-ranking-button"
+        className={`global-xp-ranking-button${hasFixedMobileControls ? ' avoid-mobile-controls' : ''}`}
         onClick={() => setOpen(true)}
         aria-label="Abrir ranking geral de XP"
         title="Ranking geral de XP"
