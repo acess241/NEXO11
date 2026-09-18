@@ -18497,12 +18497,35 @@ body[data-theme='verde'] .card {
     min-height: 52px;
     height: 52px;
     margin: 0;
+    flex-direction: column;
+    gap: 3px;
     touch-action: manipulation;
   }
 
   .bottom-nav svg {
     width: 23px;
     height: 23px;
+  }
+
+  .bottom-nav-label {
+    display: block;
+    color: currentColor;
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .chat-live-page {
+    padding-bottom: calc(150px + var(--safe-bottom));
+  }
+
+  .chat-live-sidebar.full {
+    padding-bottom: 28px;
+  }
+
+  .chat-live-new-btn {
+    min-height: 44px;
   }
 
   .profile-avatar-zone {

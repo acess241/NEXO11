@@ -222,6 +222,7 @@ export default function BottomNav({ hideNotifications = false }) {
     <nav className="bottom-nav" aria-label="Navegação principal">
       <NavLink to="/" aria-label="Início" className={({ isActive }) => (isActive ? 'active' : '')}>
         <IconHome />
+        <span className="bottom-nav-label">Início</span>
       </NavLink>
 
       <NavLink
@@ -230,6 +231,7 @@ export default function BottomNav({ hideNotifications = false }) {
         className={({ isActive }) => (isActive ? 'active' : '')}
       >
         <IconSearch />
+        <span className="bottom-nav-label">Buscar</span>
       </NavLink>
 
       <NavLink
@@ -245,10 +247,12 @@ export default function BottomNav({ hideNotifications = false }) {
             </span>
           )}
         </div>
+        <span className="bottom-nav-label">Conversas</span>
       </NavLink>
 
       <NavLink to="/nexis" className={({ isActive }) => (isActive ? 'active' : '')} aria-label="Nexis">
         <IconNexis />
+        <span className="bottom-nav-label">Nexis</span>
       </NavLink>
 
       {!hideNotifications ? (
@@ -265,6 +269,7 @@ export default function BottomNav({ hideNotifications = false }) {
               </span>
             )}
           </div>
+          <span className="bottom-nav-label">Alertas</span>
         </NavLink>
       ) : null}
 
@@ -274,6 +279,7 @@ export default function BottomNav({ hideNotifications = false }) {
         className={({ isActive }) => (isActive ? 'active' : '')}
       >
         <IconUser />
+        <span className="bottom-nav-label">Perfil</span>
       </NavLink>
     </nav>
   )
