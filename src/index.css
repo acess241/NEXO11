@@ -676,6 +676,22 @@ img {
   color: #00ef72;
 }
 
+.action-icon-only {
+  width: 38px;
+  min-width: 38px;
+  height: 36px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.action-icon-only:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 /* AÇÕES COM ÍCONE */
 
 .icon-action-btn {
@@ -11083,6 +11099,17 @@ body[data-theme='claro'] .settings-list-copy small {
 
 .profile-post-actions button > span:last-child {
   font-size: 10px;
+}
+
+.profile-post-actions button.profile-action-icon-only {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.profile-post-actions button.profile-action-icon-only > span:first-child {
+  grid-row: auto;
+  font-size: 24px;
 }
 
 .profile-post-comments {

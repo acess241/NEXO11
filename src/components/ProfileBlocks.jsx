@@ -525,16 +525,24 @@ export default function ProfileBlocks({
                             <strong>{interacoes[post.id]?.comentarios?.length || 0}</strong>
                             <span>Comentários</span>
                           </button>
-                          <button type="button" onClick={() => compartilhar(post)}>
+                          <button
+                            type="button"
+                            className="profile-action-icon-only"
+                            onClick={() => compartilhar(post)}
+                            aria-label={`Compartilhar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'}`}
+                            title={`Compartilhar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'}`}
+                          >
                             <span aria-hidden="true">↗</span>
-                            <strong>Enviar</strong>
-                            <span>Compartilhar</span>
                           </button>
                           {onAddToStory ? (
-                            <button type="button" onClick={() => onAddToStory(post)}>
+                            <button
+                              type="button"
+                              className="profile-action-icon-only"
+                              onClick={() => onAddToStory(post)}
+                              aria-label={`Adicionar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
+                              title={`Adicionar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
+                            >
                               <span aria-hidden="true">＋</span>
-                              <strong>Story</strong>
-                              <span>Adicionar</span>
                             </button>
                           ) : null}
                           <button type="button" className={interacoes[post.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(post.id)} disabled={!meuPerfil || enviando}>

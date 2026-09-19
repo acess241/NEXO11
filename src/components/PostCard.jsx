@@ -191,13 +191,26 @@ export default function PostCard({
           <span>{post.totalReposts}</span>
         </button>
 
-        <button className="action-btn share-post-btn" onClick={compartilharPost} disabled={compartilhando}>
-          {compartilhando ? 'Abrindo...' : 'Compartilhar'}
+        <button
+          type="button"
+          className="action-btn share-post-btn action-icon-only"
+          onClick={compartilharPost}
+          disabled={compartilhando}
+          aria-label={compartilhando ? 'Abrindo compartilhamento' : `Compartilhar ${tipo === 'nexis' ? 'Nexis' : 'publicação'}`}
+          title={compartilhando ? 'Abrindo compartilhamento' : `Compartilhar ${tipo === 'nexis' ? 'Nexis' : 'publicação'}`}
+        >
+          {compartilhando ? '…' : '↗'}
         </button>
 
         {onAddToStory ? (
-          <button className="action-btn story-post-btn" onClick={() => onAddToStory(post)}>
-            No story
+          <button
+            type="button"
+            className="action-btn story-post-btn action-icon-only"
+            onClick={() => onAddToStory(post)}
+            aria-label={`Adicionar ${tipo === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
+            title={`Adicionar ${tipo === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
+          >
+            ＋
           </button>
         ) : null}
 
