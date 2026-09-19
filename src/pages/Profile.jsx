@@ -649,6 +649,7 @@ export default function Profile() {
           descricao="Publicações do seu perfil em grade."
           emptyTitle="Nenhuma publicação ainda"
           emptyDescription="Publique uma nota, uma foto ou um vídeo curto para preencher sua grade."
+          onAddToStory={(post) => navigate(`/novo-story?post=${encodeURIComponent(post.id)}`)}
         />
       </div>
 

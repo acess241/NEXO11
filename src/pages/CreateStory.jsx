@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import SocialLoader from '../components/SocialLoader'
 import { supabase } from '../lib/supabase'
 import { clearCaptureDraft, getCaptureDraft, saveCaptureDraft } from '../lib/captureDraft'
+import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
+import { obterMediaKind } from '../lib/postTypes'
 
 function IconeCamera() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" /><circle cx="12" cy="13" r="4" /></svg>
@@ -42,7 +44,84 @@ function obterDuracaoVideo(file) {
   })
 }
 
+function quebrarTextoCanvas(contexto, texto, larguraMaxima) {
+  const palavras = `${texto || ''}`.trim().split(/\s+/).filter(Boolean)
+  const linhas = []
+  let linhaAtual = ''
+
+  palavras.forEach((palavra) => {
+    const tentativa = linhaAtual ? `${linhaAtual} ${palavra}` : palavra
+    if (contexto.measureText(tentativa).width <= larguraMaxima || !linhaAtual) {
+      linhaAtual = tentativa
+    } else {
+      linhas.push(linhaAtual)
+      linhaAtual = palavra
+    }
+  })
+
+  if (linhaAtual) linhas.push(linhaAtual)
+  return linhas
+}
+
+function criarArquivoDaNota(texto, autor = 'NEXO 11') {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1080
+    canvas.height = 1920
+    const contexto = canvas.getContext('2d')
+    if (!contexto) {
+      reject(new Error('canvas_indisponivel'))
+      return
+    }
+
+    const gradiente = contexto.createLinearGradient(0, 0, 1080, 1920)
+    gradiente.addColorStop(0, '#081b19')
+    gradiente.addColorStop(0.55, '#03100f')
+    gradiente.addColorStop(1, '#050505')
+    contexto.fillStyle = gradiente
+    contexto.fillRect(0, 0, canvas.width, canvas.height)
+
+    contexto.fillStyle = '#00ef72'
+    contexto.beginPath()
+    contexto.arc(120, 150, 34, 0, Math.PI * 2)
+    contexto.fill()
+    contexto.fillStyle = '#f2f7f4'
+    contexto.font = '700 38px Arial, sans-serif'
+    contexto.fillText('NEXO 11', 180, 164)
+    contexto.fillStyle = 'rgba(242,247,244,.65)'
+    contexto.font = '400 25px Arial, sans-serif'
+    contexto.fillText('publicação compartilhada', 180, 205)
+
+    contexto.fillStyle = '#f2f7f4'
+    contexto.font = '600 58px Arial, sans-serif'
+    const linhas = quebrarTextoCanvas(contexto, texto, 820).slice(0, 17)
+    const alturaLinha = 82
+    const alturaBloco = linhas.length * alturaLinha
+    let y = (canvas.height - alturaBloco) / 2
+    linhas.forEach((linha) => {
+      contexto.fillText(linha, 130, y)
+      y += alturaLinha
+    })
+
+    contexto.fillStyle = 'rgba(242,247,244,.7)'
+    contexto.font = '400 28px Arial, sans-serif'
+    contexto.fillText(`por ${autor}`, 130, 1745)
+    contexto.fillStyle = '#00ef72'
+    contexto.fillRect(130, 1790, 170, 8)
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('nota_sem_imagem'))
+        return
+      }
+      resolve(new File([blob], `nexo-nota-${Date.now()}.png`, { type: 'image/png' }))
+    }, 'image/png')
+  })
+}
+
 export default function CreateStory() {
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [perfil, setPerfil] = useState(null)
   const [arquivo, setArquivo] = useState(null)
   const [preview, setPreview] = useState('')
@@ -51,6 +130,7 @@ export default function CreateStory() {
   const [caption, setCaption] = useState('')
   const [captionPosition, setCaptionPosition] = useState({ x: 50, y: 72 })
   const [carregando, setCarregando] = useState(true)
+  const [carregandoPost, setCarregandoPost] = useState(() => Boolean(searchParams.get('post')))
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
@@ -69,9 +149,9 @@ export default function CreateStory() {
   const canvasRef = useRef(null)
   const arrastandoLegendaRef = useRef(false)
   const abriuCameraRef = useRef(false)
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const captureLoadedRef = useRef(false)
+  const postImportadoRef = useRef('')
+  const postParaStoryId = searchParams.get('post')
 
   useEffect(() => {
     const captured = searchParams.get('camera') === '1' ? getCaptureDraft('story') : null
@@ -110,6 +190,63 @@ export default function CreateStory() {
     }
     void carregar()
   }, [navigate])
+
+  useEffect(() => {
+    if (!postParaStoryId || postImportadoRef.current === postParaStoryId) return undefined
+    postImportadoRef.current = postParaStoryId
+    let ativo = true
+
+    async function prepararPublicacao() {
+      setCarregandoPost(true)
+      setErro('')
+      try {
+        const { data: post, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('id', postParaStoryId)
+          .maybeSingle()
+        if (error) throw error
+        if (!post) throw new Error('post_indisponivel')
+
+        const tipoMidia = obterMediaKind(post)
+        const { data: perfilAutor } = await supabase
+          .from('profiles')
+          .select('nome, username')
+          .eq('id', post.profile_id)
+          .maybeSingle()
+
+        let arquivoImportado
+        if (tipoMidia && post.media_url) {
+          const urlMidia = await criarUrlAssinadaParaMidia(post.media_url) || post.media_url
+          const resposta = await fetch(urlMidia)
+          if (!resposta.ok) throw new Error('midia_indisponivel')
+          const blob = await resposta.blob()
+          const tipoArquivo = blob.type || (tipoMidia === 'video' ? 'video/mp4' : 'image/jpeg')
+          const extensao = tipoArquivo.split('/')[1]?.replace('jpeg', 'jpg') || (tipoMidia === 'video' ? 'mp4' : 'jpg')
+          arquivoImportado = new File([blob], `nexo-post-${post.id}.${extensao}`, { type: tipoArquivo })
+        } else {
+          arquivoImportado = await criarArquivoDaNota(
+            post.content || 'Uma nota compartilhada no NEXO 11.',
+            perfilAutor?.nome || (perfilAutor?.username ? `@${perfilAutor.username}` : 'NEXO 11')
+          )
+        }
+
+        if (!ativo) return
+        await aplicarArquivoSelecionado(arquivoImportado)
+        setCaption(tipoMidia ? (post.content || '') : '')
+        setSucesso('Publicação preparada para o seu story.')
+      } catch (error) {
+        if (ativo) setErro(error?.message === 'post_indisponivel' ? 'Ops, publicação indisponível.' : 'Não foi possível preparar esta publicação para o story.')
+      } finally {
+        if (ativo) setCarregandoPost(false)
+      }
+    }
+
+    void prepararPublicacao()
+    return () => {
+      ativo = false
+    }
+  }, [postParaStoryId])
 
   useEffect(() => () => {
     if (musica?.localUrl?.startsWith('blob:')) URL.revokeObjectURL(musica.localUrl)
@@ -175,10 +312,10 @@ export default function CreateStory() {
   }, [preview])
 
   useEffect(() => {
-    if (carregando || preview || abriuCameraRef.current) return
+    if (carregando || carregandoPost || postParaStoryId || preview || abriuCameraRef.current) return
     abriuCameraRef.current = true
     if (searchParams.get('camera') !== 'cancel') navigate('/filtros?mode=STORY', { replace: true })
-  }, [carregando, preview, navigate, searchParams])
+  }, [carregando, carregandoPost, postParaStoryId, preview, navigate, searchParams])
 
   async function aplicarArquivoSelecionado(file) {
     if (!file) return
@@ -296,7 +433,7 @@ export default function CreateStory() {
     }
   }
 
-  if (carregando) return <SocialLoader variant="editor" />
+  if (carregando || carregandoPost) return <SocialLoader variant="editor" />
 
   return (
     <div className="story-instagram-editor">

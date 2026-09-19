@@ -521,6 +521,12 @@ img {
   transform: translateY(-2px);
 }
 
+.post-card.is-shared-target {
+  border-color: rgba(0, 239, 114, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 239, 114, 0.12), 0 0 28px rgba(0, 239, 114, 0.2);
+  scroll-margin-top: 24px;
+}
+
 .feed-top-notifications {
   position: relative;
   width: 44px;
@@ -656,6 +662,18 @@ img {
 .delete-btn {
   border-color: #5a1f1f;
   color: var(--danger);
+}
+
+.share-post-btn,
+.story-post-btn {
+  border-color: rgba(0, 239, 114, 0.35);
+  color: #bfffd8;
+}
+
+.share-post-btn:hover,
+.story-post-btn:hover {
+  border-color: #00ef72;
+  color: #00ef72;
 }
 
 /* AÇÕES COM ÍCONE */
@@ -10855,7 +10873,7 @@ body[data-theme='claro'] .settings-list-copy small {
 
 .profile-post-actions {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
   padding: 10px 0;

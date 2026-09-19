@@ -1,6 +1,7 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 
 export default function ProtectedRoute({ session, children }) {
-  if (!session) return <Navigate to="/auth" replace />
+  const location = useLocation()
+  if (!session) return <Navigate to={`/auth${location.search || ''}`} replace />
   return children
 }

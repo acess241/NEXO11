@@ -169,7 +169,7 @@ export default function App() {
         <Routes>
           <Route
             path="/auth"
-            element={!session ? <Auth /> : <Navigate to="/" replace />}
+            element={!session ? <Auth /> : <Navigate to={`/${window.location.search || ''}`} replace />}
           />
 
           <Route path="/reset-senha" element={<Auth forceRecoveryMode />} />

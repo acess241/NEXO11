@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
@@ -215,8 +215,13 @@ export default function Feed() {
   const [comentarioRespondendo, setComentarioRespondendo] = useState({})
   const [postParaApagar, setPostParaApagar] = useState(null)
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0)
+  const [linkStatus, setLinkStatus] = useState('idle')
 
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const legacyPostId = typeof window !== 'undefined' ? window.location.hash.match(/^#post-(.+)$/)?.[1] : ''
+  const sharedPostId = searchParams.get('post') || searchParams.get('nexis') || legacyPostId
+  const sharedStoryId = searchParams.get('story')
   const incentivoCriacao = useMemo(() => {
     const hoje = new Date()
     const indice = (hoje.getFullYear() * 372 + hoje.getMonth() * 31 + hoje.getDate()) % INCENTIVOS_CRIACAO.length
@@ -226,6 +231,28 @@ export default function Feed() {
   useEffect(() => {
     carregarTudo()
   }, [])
+
+  useEffect(() => {
+    if (carregando || (!sharedPostId && !sharedStoryId)) return undefined
+
+    if (sharedPostId) {
+      const alvo = posts.find((post) => `${post.id}` === `${sharedPostId}`)
+      if (!alvo) {
+        setLinkStatus('unavailable')
+        return undefined
+      }
+
+      setLinkStatus('available')
+      const timer = window.setTimeout(() => {
+        document.getElementById(`post-${alvo.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 120)
+      return () => window.clearTimeout(timer)
+    }
+
+    const storyExiste = stories.some((story) => `${story.id}` === `${sharedStoryId}`)
+    setLinkStatus(storyExiste ? 'available' : 'unavailable')
+    return undefined
+  }, [carregando, posts, stories, sharedPostId, sharedStoryId])
 
   useEffect(() => {
     if (!meuPerfil?.id) return undefined
@@ -387,7 +414,7 @@ export default function Feed() {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        navigate('/auth')
+        navigate(`/auth${window.location.search || ''}`)
         return
       }
 
@@ -423,7 +450,15 @@ export default function Feed() {
         .order('created_at', { ascending: false })
         .limit(220)
 
-      const postsBase = await safeSelect('FEED_POSTS_LOAD', postsQuery, [])
+      let postsBase = await safeSelect('FEED_POSTS_LOAD', postsQuery, [])
+      if (sharedPostId && !postsBase.some((post) => `${post.id}` === `${sharedPostId}`)) {
+        const { data: postDireto, error: erroPostDireto } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('id', sharedPostId)
+          .maybeSingle()
+        if (!erroPostDireto && postDireto) postsBase = [postDireto, ...postsBase]
+      }
       const idsPosts = postsBase.map((post) => post.id)
       const idsPerfisPosts = [...new Set(postsBase.map((post) => post.profile_id))]
 
@@ -724,6 +759,22 @@ export default function Feed() {
     if (perfisError) throw perfisError
     const mapa = criarMapaPorId(perfis || [])
     return (views || []).map((view) => ({ ...view, perfil: mapa.get(view.profile_id) })).filter((item) => item.perfil)
+  }
+
+  async function compartilharPost(post) {
+    if (!post?.id) return
+    try {
+      await compartilharPublicacao({
+        id: post.id,
+        tipo: post.post_type === 'nexis' ? 'nexis' : 'post',
+        title: post.content ? `Publicação no NEXO: ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
+        text: post.content || 'Veja esta publicação no NEXO',
+        imageUrl: post.media_url || '',
+        onCopied: () => window.alert('Link da publicação copiado.'),
+      })
+    } catch (error) {
+      if (error?.name !== 'AbortError') window.alert('Não foi possível compartilhar agora.')
+    }
   }
 
   async function compartilharStory(story) {
@@ -1228,10 +1279,16 @@ export default function Feed() {
 
       <div className="page">
         {erro && <div className="alert-box erro-box">{erro}</div>}
+        {linkStatus === 'unavailable' ? (
+          <div className="alert-box erro-box" role="alert">
+            Ops, {sharedStoryId ? 'story' : 'post'} indisponível.
+          </div>
+        ) : null}
 
         <StoryBar
           grupos={gruposStories}
           meuPerfil={meuPerfil}
+          initialStoryId={sharedStoryId}
           onStoryViewed={marcarStoryComoVisto}
           onOpenCreateStory={() => navigate('/novo-story')}
           onOpenProfile={abrirPerfilPorUsername}
@@ -1277,6 +1334,7 @@ export default function Feed() {
               <PostCard
                 key={post.id}
                 post={post}
+                destacado={sharedPostId === `${post.id}`}
                 comentariosAbertos={comentariosAbertos}
                 setComentariosAbertos={setComentariosAbertos}
                 alternarCurtidaPost={alternarCurtidaPost}
@@ -1290,6 +1348,8 @@ export default function Feed() {
                 IconeEstrela={IconeEstrela}
                 IconeComentarios={IconeComentarios}
                 IconeRepost={IconeRepost}
+                onShare={() => compartilharPost(post)}
+                onAddToStory={() => navigate(`/novo-story?post=${encodeURIComponent(post.id)}`)}
               />
             ))}
           </div>

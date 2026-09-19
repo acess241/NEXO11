@@ -195,6 +195,7 @@ export default function ProfileBlocks({
   descricao = 'Toque em uma publicação para abrir.',
   emptyTitle = 'Nada por aqui ainda',
   emptyDescription = 'Quando algo for publicado, vai aparecer aqui.',
+  onAddToStory,
 }) {
   const [blocoAtivo, setBlocoAtivo] = useState('foto')
   const [postAbertoId, setPostAbertoId] = useState(null)
@@ -430,7 +431,7 @@ export default function ProfileBlocks({
         tipo: normalizarTipoPost(post.post_type) === 'nexis' ? 'nexis' : 'post',
         title: post.content ? `Publicação de ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
         text: post.content || 'Veja esta publicação no NEXO',
-        imageUrl: obterMediaKind(post) === 'image' ? post.media_url : '',
+        imageUrl: post.media_url || '',
         onCopied: () => setAviso('Link da publicação copiado.'),
       })
     } catch (error) {
@@ -529,6 +530,13 @@ export default function ProfileBlocks({
                             <strong>Enviar</strong>
                             <span>Compartilhar</span>
                           </button>
+                          {onAddToStory ? (
+                            <button type="button" onClick={() => onAddToStory(post)}>
+                              <span aria-hidden="true">＋</span>
+                              <strong>Story</strong>
+                              <span>Adicionar</span>
+                            </button>
+                          ) : null}
                           <button type="button" className={interacoes[post.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(post.id)} disabled={!meuPerfil || enviando}>
                             <span aria-hidden="true">⇄</span>
                             <strong>{interacoes[post.id]?.reposts || 0}</strong>

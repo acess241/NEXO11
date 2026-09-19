@@ -495,6 +495,7 @@ export default function UserProfile() {
                 ? 'Desbloqueie para voltar a seguir, mandar mensagem e ver o feed deste perfil.'
                 : 'Somente seguidores aceitos podem ver stories e postagens deste perfil.'
           }
+          onAddToStory={(post) => navigate(`/novo-story?post=${encodeURIComponent(post.id)}`)}
         />
       </div>
 

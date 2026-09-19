@@ -31,6 +31,7 @@ function StoryViewer({
   onReply,
   onShare,
   onLoadViewers,
+  initialStoryId,
 }) {
   const [indiceAtual, setIndiceAtual] = useState(0)
   const [apagando, setApagando] = useState(false)
@@ -66,6 +67,12 @@ function StoryViewer({
     setMediaSrc(storyAtual?.media_url || '')
     setTentouUrlAssinada(false)
   }, [storyAtual?.id])
+
+  useEffect(() => {
+    if (!initialStoryId || !grupo?.stories?.length) return
+    const index = grupo.stories.findIndex((story) => `${story.id}` === `${initialStoryId}`)
+    if (index >= 0) setIndiceAtual(index)
+  }, [grupo?.perfil?.id, initialStoryId])
 
   async function tratarErroMidia() {
     if (!tentouUrlAssinada) {
@@ -379,6 +386,7 @@ export default function StoryBar({
   onReply,
   onShare,
   onLoadViewers,
+  initialStoryId,
 }) {
   const [grupoAbertoIndex, setGrupoAbertoIndex] = useState(null)
 
@@ -397,6 +405,12 @@ export default function StoryBar({
       setGrupoAbertoIndex(grupos.length - 1)
     }
   }, [grupos, grupoAbertoIndex])
+
+  useEffect(() => {
+    if (!initialStoryId || !grupos.length) return
+    const index = grupos.findIndex((grupo) => grupo.stories.some((story) => `${story.id}` === `${initialStoryId}`))
+    if (index >= 0) setGrupoAbertoIndex(index)
+  }, [grupos, initialStoryId])
 
   function abrirGrupo(index) {
     setGrupoAbertoIndex(index)
@@ -509,6 +523,7 @@ export default function StoryBar({
           onReply={onReply}
           onShare={onShare}
           onLoadViewers={onLoadViewers}
+          initialStoryId={initialStoryId}
         />
       )}
     </>

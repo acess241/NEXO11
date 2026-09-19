@@ -4,6 +4,7 @@ import { formatDisplayName } from '../lib/textFormat'
 import VerifiedBadge from './VerifiedBadge'
 import MentionText from './MentionText'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
+import { compartilharPublicacao } from '../lib/share'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -33,6 +34,9 @@ export default function PostCard({
   IconeEstrela,
   IconeComentarios,
   IconeRepost,
+  destacado = false,
+  onShare,
+  onAddToStory,
 }) {
   const tipo = normalizarTipoPost(post.post_type)
   const mediaKind = obterMediaKind(post)
@@ -41,6 +45,7 @@ export default function PostCard({
   const [mediaComErro, setMediaComErro] = useState(false)
   const [mediaSrc, setMediaSrc] = useState(post.media_url || '')
   const [tentouUrlAssinada, setTentouUrlAssinada] = useState(false)
+  const [compartilhando, setCompartilhando] = useState(false)
 
   useEffect(() => {
     setMediaComErro(false)
@@ -60,11 +65,34 @@ export default function PostCard({
     setMediaComErro(true)
   }
 
+  async function compartilharPost() {
+    if (compartilhando) return
+    setCompartilhando(true)
+    try {
+      if (onShare) {
+        await onShare(post)
+      } else {
+        await compartilharPublicacao({
+          id: post.id,
+          tipo: tipo === 'nexis' ? 'nexis' : 'post',
+          title: post.content ? `Publicação no NEXO: ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
+          text: post.content || 'Veja esta publicação no NEXO',
+          imageUrl: post.media_url || '',
+          onCopied: () => window.alert('Link da publicação copiado.'),
+        })
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') window.alert('Não foi possível compartilhar agora.')
+    } finally {
+      setCompartilhando(false)
+    }
+  }
+
   const nomeAutor = formatDisplayName(post.autor?.nome) || 'Usuário'
   const labelFallback = mediaKind === 'video' ? 'Vídeo indisponível' : 'Mídia indisponível'
 
   return (
-    <div className="post-card">
+    <div id={`post-${post.id}`} className={`post-card ${destacado ? 'is-shared-target' : ''}`}>
       <button
         type="button"
         className={`post-header post-author-btn ${podeAbrirPerfilAutor ? 'is-clickable' : ''}`}
@@ -162,6 +190,16 @@ export default function PostCard({
           <IconeRepost />
           <span>{post.totalReposts}</span>
         </button>
+
+        <button className="action-btn share-post-btn" onClick={compartilharPost} disabled={compartilhando}>
+          {compartilhando ? 'Abrindo...' : 'Compartilhar'}
+        </button>
+
+        {onAddToStory ? (
+          <button className="action-btn story-post-btn" onClick={() => onAddToStory(post)}>
+            No story
+          </button>
+        ) : null}
 
         {post.ehMeuPost && (
           <button className="action-btn delete-btn" onClick={() => setPostParaApagar(post.id)}>
