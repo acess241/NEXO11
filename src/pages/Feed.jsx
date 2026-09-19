@@ -684,20 +684,22 @@ export default function Feed() {
     if (!story?.id || !meuPerfil) return false
 
     if (story.profile_id !== meuPerfil.id) {
-      setErro('Você s? pode apagar seus próprios stories.')
+      setErro('Você só pode apagar seus próprios stories.')
       return false
     }
 
     try {
       setErro('')
 
-      const { error } = await supabase
+      const { data: storiesRemovidos, error } = await supabase
         .from('stories')
         .delete()
         .eq('id', story.id)
         .eq('profile_id', meuPerfil.id)
+        .select('id')
 
       if (error) throw error
+      if (!storiesRemovidos?.length) throw new Error('story_nao_removido')
 
       setStories((prev) => prev.filter((item) => item.id !== story.id))
 
@@ -709,6 +711,17 @@ export default function Feed() {
 
         if (erroStorage) {
           console.warn('Falha ao remover arquivo do story:', erroStorage.message)
+        }
+      }
+
+      const caminhoMusica = extrairCaminhoStorageStory(story.music_url)
+      if (caminhoMusica) {
+        const { error: erroMusica } = await supabase.storage
+          .from('stories')
+          .remove([caminhoMusica])
+
+        if (erroMusica) {
+          console.warn('Falha ao remover música do story:', erroMusica.message)
         }
       }
 
@@ -1297,6 +1310,7 @@ export default function Feed() {
           onReply={responderStory}
           onShare={compartilharStory}
           onLoadViewers={carregarVisualizadoresStory}
+          onOpenPost={(postId, tipo) => navigate(`/?${tipo === 'nexis' ? 'nexis' : 'post'}=${encodeURIComponent(postId)}`)}
         />
 
         <section className="feed-creation-incentive" aria-labelledby="feed-creation-title">

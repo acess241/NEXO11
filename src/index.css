@@ -1530,6 +1530,55 @@ img {
   width: 18%;
 }
 
+.story-viewer-media-wrap.is-repost {
+  background: #161616;
+}
+
+.story-viewer-repost-layout {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: #1b1b1b;
+}
+
+.story-viewer-repost-layout::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.64));
+}
+
+.story-viewer-repost-layout .story-repost-backdrop {
+  position: absolute;
+  inset: -9%;
+  z-index: -2;
+  width: 118%;
+  height: 118%;
+  object-fit: cover;
+  filter: blur(28px) saturate(1.22);
+  opacity: 0.82;
+  transform: scale(1.1);
+}
+
+.story-viewer-repost-target {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.story-viewer-repost-target:focus-visible .story-repost-card,
+.story-viewer-repost-target:hover .story-repost-card {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(0, 239, 114, 0.42);
+}
+
 .story-click-zone {
   position: absolute;
   top: 0;

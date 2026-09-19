@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { criarLinkPublicacao } from '../lib/share'
+import { lerLegendaStory } from '../lib/storyRepost'
 import { supabase } from '../lib/supabase'
 
 const META_FIELDS = [
@@ -96,7 +97,8 @@ export default function SocialMetaBridge() {
           .maybeSingle()
 
         const autor = perfil?.nome || (perfil?.username ? `@${perfil.username}` : 'alguém da comunidade')
-        const texto = publicacao.content || publicacao.caption || publicacao.text || ''
+        const legendaStory = linkInfo.chave === 'story' ? lerLegendaStory(publicacao.caption).caption : ''
+        const texto = publicacao.content || legendaStory || publicacao.text || ''
         const tipo = linkInfo.chave === 'story' ? 'Story' : linkInfo.chave === 'nexis' ? 'Nexis' : 'Publicação'
         const titulo = texto ? `${tipo} de ${autor}: ${resumirTexto(texto, 88)}` : `${tipo} de ${autor} no NEXO 11`
         const descricao = texto ? resumirTexto(texto) : `Confira este ${tipo.toLowerCase()} no NEXO 11.`

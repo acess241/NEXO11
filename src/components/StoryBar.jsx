@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
+import { lerLegendaStory } from '../lib/storyRepost'
 
 function formatarTempoRelativo(dataIso) {
   const data = new Date(dataIso)
@@ -31,6 +32,7 @@ function StoryViewer({
   onReply,
   onShare,
   onLoadViewers,
+  onOpenPost,
   initialStoryId,
 }) {
   const [indiceAtual, setIndiceAtual] = useState(0)
@@ -47,6 +49,8 @@ function StoryViewer({
 
   const storyAtual = grupo?.stories?.[indiceAtual]
   const ehVideo = storyEhVideo(storyAtual)
+  const dadosLegenda = lerLegendaStory(storyAtual?.caption)
+  const repostCompartilhado = dadosLegenda.repost
   const ehMeuStory = Boolean(
     perfilAtual?.id &&
       storyAtual?.profile_id &&
@@ -142,10 +146,19 @@ function StoryViewer({
 
     setApagando(true)
     try {
-      await onDeleteStory(storyAtual)
+      const apagou = await onDeleteStory(storyAtual)
+      if (apagou !== false) onClose()
     } finally {
       setApagando(false)
     }
+  }
+
+  function abrirPublicacaoCompartilhada() {
+    if (!repostCompartilhado?.id || !onOpenPost) return
+    const confirmou = window.confirm('Ir até esta publicação?')
+    if (!confirmou) return
+    onClose()
+    onOpenPost(repostCompartilhado.id, repostCompartilhado.tipo)
   }
 
   async function enviarResposta(event) {
@@ -248,13 +261,55 @@ function StoryViewer({
           </div>
         </div>
 
-        <div className={`story-viewer-media-wrap ${ehVideo ? 'is-video' : ''}`}>
+        <div className={`story-viewer-media-wrap ${ehVideo ? 'is-video' : ''} ${repostCompartilhado ? 'is-repost' : ''}`}>
           <button
             type="button"
             className="story-click-zone left"
             onClick={voltar}
           />
-          {ehVideo ? (
+          {repostCompartilhado ? (
+            <div className="story-viewer-repost-layout">
+              {repostCompartilhado.tipo !== 'nota' ? (
+                ehVideo
+                  ? <video src={mediaSrc || storyAtual.media_url} className="story-repost-backdrop" autoPlay loop muted playsInline onError={tratarErroMidia} aria-hidden="true" />
+                  : <img src={mediaSrc || storyAtual.media_url} alt="" className="story-repost-backdrop" onError={tratarErroMidia} aria-hidden="true" />
+              ) : null}
+              <div
+                className="story-viewer-repost-target"
+                role="button"
+                tabIndex={0}
+                onClick={abrirPublicacaoCompartilhada}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    abrirPublicacaoCompartilhada()
+                  }
+                }}
+                aria-label="Abrir publicação compartilhada"
+                title="Abrir publicação compartilhada"
+              >
+                <article className={`story-repost-card ${repostCompartilhado.tipo === 'nota' ? 'is-note' : ''}`}>
+                  <header className="story-repost-card-header">
+                    {repostCompartilhado.autorFoto ? <img src={repostCompartilhado.autorFoto} alt="" /> : <span>{repostCompartilhado.autorNome.charAt(0).toUpperCase()}</span>}
+                    <div><strong>{repostCompartilhado.autorNome}</strong><small>@{repostCompartilhado.autorUsername}</small></div>
+                    <b>•••</b>
+                  </header>
+                  {repostCompartilhado.tipo === 'nota' ? (
+                    <div className="story-repost-note-content">{repostCompartilhado.conteudo || 'Publicação no NEXO 11'}</div>
+                  ) : (
+                    <div className="story-repost-media-wrap">
+                      {ehVideo
+                        ? <video src={mediaSrc || storyAtual.media_url} className="story-repost-media" autoPlay loop muted playsInline />
+                        : <img src={mediaSrc || storyAtual.media_url} alt="Prévia da publicação" className="story-repost-media" />}
+                    </div>
+                  )}
+                  {repostCompartilhado.tipo !== 'nota' && repostCompartilhado.conteudo ? <p className="story-repost-caption">{repostCompartilhado.conteudo}</p> : null}
+                  <footer className="story-repost-card-actions"><span>♡</span><span>◯</span><span>↗</span><span>⌑</span></footer>
+                </article>
+              </div>
+              {dadosLegenda.caption.trim() ? <p className="story-repost-user-caption">{dadosLegenda.caption}</p> : null}
+            </div>
+          ) : ehVideo ? (
             <video
               key={`${storyAtual.id}-${tentativaMidia}`}
               src={mediaSrc || storyAtual.media_url}
@@ -286,7 +341,7 @@ function StoryViewer({
               }}>Tentar novamente</button>
             </div>
           ) : null}
-          {storyAtual.caption ? (
+          {!repostCompartilhado && dadosLegenda.caption ? (
             <p
               className="story-caption-overlay"
               style={{
@@ -294,7 +349,7 @@ function StoryViewer({
                 top: `${Number(storyAtual.caption_y ?? 72)}%`,
               }}
             >
-              {storyAtual.caption}
+              {dadosLegenda.caption}
             </p>
           ) : null}
           <button
@@ -386,6 +441,7 @@ export default function StoryBar({
   onReply,
   onShare,
   onLoadViewers,
+  onOpenPost,
   initialStoryId,
 }) {
   const [grupoAbertoIndex, setGrupoAbertoIndex] = useState(null)
@@ -523,6 +579,7 @@ export default function StoryBar({
           onReply={onReply}
           onShare={onShare}
           onLoadViewers={onLoadViewers}
+          onOpenPost={onOpenPost}
           initialStoryId={initialStoryId}
         />
       )}
