@@ -6,6 +6,7 @@ import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
 import VerifiedBadge from '../components/VerifiedBadge'
 import InstallNexo from '../components/InstallNexo'
+import ProfileAvatar from '../components/ProfileAvatar'
 import { nomeCurso } from '../lib/academy'
 import { nomeInstituicaoCurto } from '../lib/education'
 import { listarContasSalvas, removerContaSalva, salvarContaDaSessao } from '../lib/savedAccounts'
@@ -299,7 +300,7 @@ export default function Profile() {
       }
 
       const [postsResp, seguidoresResp, seguindoResp, repostsResp] = await Promise.all([
-        supabase.from('posts').select('*').eq('profile_id', perfilData.id).order('created_at', { ascending: false }),
+        supabase.from('posts').select('id, profile_id, content, media_url, media_kind, post_type, created_at').eq('profile_id', perfilData.id).order('created_at', { ascending: false }).limit(100),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_profile_id', perfilData.id),
         supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_profile_id', perfilData.id),
         supabase.from('reposts').select('post_id').eq('profile_id', perfilData.id),
@@ -312,7 +313,7 @@ export default function Profile() {
       const idsRepublicados = (repostsResp.data || []).map((item) => item.post_id)
 
       if (idsRepublicados.length > 0) {
-        const republicadosResp = await supabase.from('posts').select('*').in('id', idsRepublicados)
+        const republicadosResp = await supabase.from('posts').select('id, profile_id, content, media_url, media_kind, post_type, created_at').in('id', idsRepublicados.slice(0, 100))
         const mapaRepublicados = new Map((republicadosResp.data || []).map((post) => [post.id, post]))
         setRepublicados(idsRepublicados.map((id) => mapaRepublicados.get(id)).filter(Boolean))
       } else {
@@ -576,11 +577,13 @@ export default function Profile() {
 
           <div className="profile-header-modern">
             <div className="profile-avatar-zone">
-              {perfil.foto_url ? (
-                <img src={perfil.foto_url} alt={formatDisplayName(perfil.nome)} className="profile-modern-avatar" />
-              ) : (
-                <div className="profile-modern-avatar fallback">{formatDisplayName(perfil.nome)?.charAt(0)?.toUpperCase()}</div>
-              )}
+              <ProfileAvatar
+                src={perfil.foto_url}
+                name={formatDisplayName(perfil.nome)}
+                alt={formatDisplayName(perfil.nome)}
+                className="profile-modern-avatar"
+                fallbackClassName="fallback"
+              />
 
               <button type="button" className="profile-story-quick-btn" onClick={() => navigate('/novo-story')}>
                 + Story

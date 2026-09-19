@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
+import ProfileAvatar from '../components/ProfileAvatar'
 import { supabase } from '../lib/supabase'
 import { dispararAtualizacaoChat } from '../lib/chat'
 import { compartilharPublicacao } from '../lib/share'
@@ -446,15 +447,15 @@ export default function Feed() {
 
       const postsQuery = supabase
         .from('posts')
-        .select('*')
+        .select('id, profile_id, content, media_url, media_kind, post_type, created_at')
         .order('created_at', { ascending: false })
-        .limit(220)
+        .limit(80)
 
       let postsBase = await safeSelect('FEED_POSTS_LOAD', postsQuery, [])
       if (sharedPostId && !postsBase.some((post) => `${post.id}` === `${sharedPostId}`)) {
         const { data: postDireto, error: erroPostDireto } = await supabase
           .from('posts')
-          .select('*')
+          .select('id, profile_id, content, media_url, media_kind, post_type, created_at')
           .eq('id', sharedPostId)
           .maybeSingle()
         if (!erroPostDireto && postDireto) postsBase = [postDireto, ...postsBase]
@@ -466,7 +467,7 @@ export default function Feed() {
         idsPerfisPosts.length > 0
           ? safeSelect(
               'FEED_POST_AUTHORS_LOAD',
-              supabase.from('profiles').select('*').in('id', idsPerfisPosts),
+              supabase.from('profiles').select('id, nome, username, foto_url, is_private, is_verified').in('id', idsPerfisPosts),
               []
             )
           : Promise.resolve([]),
@@ -477,21 +478,22 @@ export default function Feed() {
                 .from('comments')
                 .select('id, post_id, content, created_at, profile_id, parent_comment_id')
                 .in('post_id', idsPosts)
-                .order('created_at', { ascending: true }),
+                .order('created_at', { ascending: true })
+                .limit(600),
               []
             )
           : Promise.resolve([]),
         idsPosts.length > 0
           ? safeSelect(
               'FEED_REPOSTS_LOAD',
-              supabase.from('reposts').select('post_id, profile_id').in('post_id', idsPosts),
+              supabase.from('reposts').select('post_id, profile_id').in('post_id', idsPosts).limit(1200),
               []
             )
           : Promise.resolve([]),
         idsPosts.length > 0
           ? safeSelect(
               'FEED_POST_LIKES_LOAD',
-              supabase.from('post_likes').select('post_id, profile_id').in('post_id', idsPosts),
+              supabase.from('post_likes').select('post_id, profile_id').in('post_id', idsPosts).limit(1200),
               []
             )
           : Promise.resolve([]),
@@ -595,9 +597,10 @@ export default function Feed() {
 
         const { data: storiesData, error: storiesError } = await supabase
           .from('stories')
-          .select('*')
+          .select('id, profile_id, media_url, media_kind, caption, caption_x, caption_y, created_at, expires_at, duration_seconds, music_url, music_title, music_artist, music_start_seconds, music_volume')
           .in('profile_id', idsPermitidosStories)
           .order('created_at', { ascending: false })
+          .limit(120)
 
         if (storiesError) throw storiesError
 
@@ -612,12 +615,12 @@ export default function Feed() {
 
           const { data: perfisStories } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, nome, username, foto_url, is_verified')
             .in('id', idsStories)
 
           const { data: views } = await supabase
             .from('story_views')
-            .select('*')
+            .select('story_id')
             .eq('profile_id', perfil.id)
 
           const { data: likes } = await supabase
@@ -1270,15 +1273,12 @@ export default function Feed() {
             className="feed-profile-btn"
             aria-label="Abrir meu perfil"
           >
-            {meuPerfil?.foto_url ? (
-              <img
-                src={meuPerfil.foto_url}
-                alt={meuPerfil.nome}
-                className="feed-profile-btn-img"
-              />
-            ) : (
-              <span>{meuPerfil?.nome?.charAt(0)?.toUpperCase() || 'P'}</span>
-            )}
+            <ProfileAvatar
+              src={meuPerfil?.foto_url}
+              name={meuPerfil?.nome}
+              alt={meuPerfil?.nome || 'Meu perfil'}
+              className="feed-profile-btn-img"
+            />
           </button>
 
           <button
@@ -1316,7 +1316,11 @@ export default function Feed() {
         <section className="feed-creation-incentive" aria-labelledby="feed-creation-title">
           <div className="feed-creation-heading">
             <div className="feed-creation-avatar">
-              {meuPerfil?.foto_url ? <img src={meuPerfil.foto_url} alt="" /> : <span>{meuPerfil?.nome?.charAt(0)?.toUpperCase() || 'N'}</span>}
+              <ProfileAvatar
+                src={meuPerfil?.foto_url}
+                name={meuPerfil?.nome}
+                alt=""
+              />
             </div>
             <div>
               <span className="feed-creation-kicker">CRIE NO NEXO</span>

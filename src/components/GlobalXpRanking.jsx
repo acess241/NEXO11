@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import ProfileAvatar from './ProfileAvatar'
 
 function TrophyIcon() {
   return (
@@ -81,9 +82,7 @@ export default function GlobalXpRanking() {
               {!loading && !error && rows.map((item, index) => (
                 <article key={item.id} className={index < 3 ? `is-podium podium-${index + 1}` : ''}>
                   <b className="global-xp-ranking-position">{index + 1}º</b>
-                  {item.foto_url
-                    ? <img src={item.foto_url} alt="" />
-                    : <i>{item.nome?.trim()?.charAt(0)?.toUpperCase() || '?'}</i>}
+                  <ProfileAvatar src={item.foto_url} name={item.nome} alt={item.nome || 'Estudante'} />
                   <div>
                     <strong>{item.nome || 'Estudante'}</strong>
                     <span>{item.username ? `@${item.username}` : `Nível ${Number(item.level || 1)}`}</span>

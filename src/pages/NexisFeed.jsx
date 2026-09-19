@@ -8,6 +8,7 @@ import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
 import ShareMenu from '../components/ShareMenu'
+import ProfileAvatar from '../components/ProfileAvatar'
 
 function NexisVideo({ item, ativo, mudo, onMediaError, onProgress, onTogglePause }) {
   const ref = useRef(null)
@@ -72,14 +73,14 @@ export default function NexisFeed() {
       const { data: perfil, error: perfilErro } = await supabase.from('profiles').select('*').eq('account_id', user.id).single()
       if (perfilErro) throw perfilErro
       setMeuPerfil(perfil)
-      const { data: posts, error: postsErro } = await supabase.from('posts').select('*').eq('post_type', 'nexis').order('created_at', { ascending: false }).limit(150)
+      const { data: posts, error: postsErro } = await supabase.from('posts').select('id, profile_id, content, media_url, media_kind, post_type, created_at').eq('post_type', 'nexis').order('created_at', { ascending: false }).limit(80)
       if (postsErro) throw postsErro
       const idsPerfis = [...new Set((posts || []).map((post) => post.profile_id))]
       const idsPosts = (posts || []).map((post) => post.id)
       const [perfisResp, likesResp, commentsResp, followsResp] = await Promise.all([
         idsPerfis.length ? supabase.from('profiles').select('id,nome,username,foto_url,bio,is_private,is_verified').in('id', idsPerfis) : { data: [] },
-        idsPosts.length ? supabase.from('post_likes').select('post_id,profile_id').in('post_id', idsPosts) : { data: [] },
-        idsPosts.length ? supabase.from('comments').select('id,post_id,profile_id,content,created_at').in('post_id', idsPosts).order('created_at') : { data: [] },
+        idsPosts.length ? supabase.from('post_likes').select('post_id,profile_id').in('post_id', idsPosts).limit(1200) : { data: [] },
+        idsPosts.length ? supabase.from('comments').select('id,post_id,profile_id,content,created_at').in('post_id', idsPosts).order('created_at').limit(500) : { data: [] },
         supabase.from('follows').select('following_profile_id').eq('follower_profile_id', perfil.id),
       ])
       const idsAutoresComentarios = [...new Set((commentsResp.data || []).map((item) => item.profile_id).filter((id) => !idsPerfis.includes(id)))]
@@ -186,7 +187,7 @@ export default function NexisFeed() {
             {pausado && ativoId === item.id ? <div className="nexis-paused">▶</div> : null}
             {coracao === item.id ? <div className="nexis-heart-burst">♥</div> : null}
             <div className="nexis-author" onClick={() => navigate(`/usuario/${item.autor.username}`)}>
-              {item.autor.foto_url ? <img src={item.autor.foto_url} alt="" /> : <span>{item.autor.nome?.charAt(0)}</span>}
+              <ProfileAvatar src={item.autor.foto_url} name={item.autor.nome} alt={item.autor.nome || item.autor.username} />
               <div><strong>@{item.autor.username}<VerifiedBadge verified={item.autor.is_verified} /></strong><small>{item.autor.nome}</small></div>
               {item.autor.id !== meuPerfil?.id ? <button type="button" onClick={(event) => { event.stopPropagation(); void alternarSeguir(item.autor.id) }}>{seguindo.has(item.autor.id) ? 'Seguindo' : 'Seguir'}</button> : null}
             </div>
@@ -209,7 +210,7 @@ export default function NexisFeed() {
         <div className="nexis-comments-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setComentando(null)}>
           <section className="nexis-comments-sheet">
             <header><strong>Comentários</strong><button onClick={() => setComentando(null)}>×</button></header>
-            <div>{comentando.comentarios.map((item) => <article className="nexis-comment" key={item.id}>{item.autor?.foto_url ? <img src={item.autor.foto_url} alt="" /> : <span>{item.autor?.nome?.charAt(0) || 'U'}</span>}<p><strong>@{item.autor?.username || 'usuario'}</strong>{item.content}</p></article>)}{!comentando.comentarios.length ? <small>Seja o primeiro a comentar.</small> : null}</div>
+            <div>{comentando.comentarios.map((item) => <article className="nexis-comment" key={item.id}><ProfileAvatar src={item.autor?.foto_url} name={item.autor?.nome} alt={item.autor?.nome || item.autor?.username || 'Usuário'} /><p><strong>@{item.autor?.username || 'usuario'}</strong>{item.content}</p></article>)}{!comentando.comentarios.length ? <small>Seja o primeiro a comentar.</small> : null}</div>
             <form onSubmit={publicarComentario}><input value={comentario} onChange={(event) => setComentario(event.target.value)} placeholder="Adicione um comentário..." maxLength={500} /><button disabled={!comentario.trim()}>Publicar</button></form>
           </section>
         </div>

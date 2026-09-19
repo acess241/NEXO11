@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import { formatDisplayName } from '../lib/textFormat'
 import { supabase } from '../lib/supabase'
 import VerifiedBadge from '../components/VerifiedBadge'
+import ProfileAvatar from '../components/ProfileAvatar'
 
 const RECENT_SEARCHES_KEY = 'nexo_recent_profile_searches'
 const RECENT_SEARCHES_LIMIT = 8
@@ -219,15 +220,12 @@ export default function SearchUsers() {
                     className="search-profile-row search-profile-row-recent"
                   >
                     <div className="search-profile-avatar">
-                      {user.foto_url ? (
-                        <img
-                          src={user.foto_url}
-                          alt={formatDisplayName(user.nome) || user.username}
-                          className="search-profile-avatar-image"
-                        />
-                      ) : (
-                        getInitials(user.nome)
-                      )}
+                      <ProfileAvatar
+                        src={user.foto_url}
+                        name={formatDisplayName(user.nome) || user.username}
+                        alt={formatDisplayName(user.nome) || user.username}
+                        className="search-profile-avatar-image"
+                      />
                     </div>
 
                     <div className="search-profile-copy">
@@ -287,15 +285,12 @@ export default function SearchUsers() {
                 className="search-profile-row"
               >
                 <div className="search-profile-avatar">
-                  {user.foto_url ? (
-                    <img
-                      src={user.foto_url}
-                      alt={formatDisplayName(user.nome) || user.username}
-                      className="search-profile-avatar-image"
-                    />
-                  ) : (
-                    getInitials(user.nome)
-                  )}
+                  <ProfileAvatar
+                    src={user.foto_url}
+                    name={formatDisplayName(user.nome) || user.username}
+                    alt={formatDisplayName(user.nome) || user.username}
+                    className="search-profile-avatar-image"
+                  />
                 </div>
 
                 <div className="search-profile-copy">

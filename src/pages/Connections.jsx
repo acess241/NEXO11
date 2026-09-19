@@ -5,6 +5,7 @@ import SocialLoader from '../components/SocialLoader'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { formatDisplayName } from '../lib/textFormat'
 import { supabase } from '../lib/supabase'
+import ProfileAvatar from '../components/ProfileAvatar'
 
 function getInicial(nome) {
   return formatDisplayName(nome)?.charAt(0)?.toUpperCase() || 'U'
@@ -113,7 +114,7 @@ export default function Connections() {
         .select('receiver_profile_id')
         .eq('requester_profile_id', meuProfileId)
         .eq('status', 'pending'),
-      supabase.from('profiles').select('id, nome, username, foto_url, bio, is_private').order('created_at', { ascending: false }).limit(300),
+      supabase.from('profiles').select('id, nome, username, foto_url, bio, is_private').order('created_at', { ascending: false }).limit(120),
     ])
 
     if (seguidoresResp.error) throw seguidoresResp.error
@@ -326,11 +327,7 @@ export default function Connections() {
                     onClick={() => abrirPerfilPorUsername(perfilAlvo.username)}
                   >
                     <div className="connections-avatar">
-                      {perfilAlvo.foto_url ? (
-                        <img src={perfilAlvo.foto_url} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
-                      ) : (
-                        <span>{getInicial(perfilAlvo.nome)}</span>
-                      )}
+                      <ProfileAvatar src={perfilAlvo.foto_url} name={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
                     </div>
 
                     <div className="connections-user-copy">
@@ -377,11 +374,7 @@ export default function Connections() {
                     onClick={() => abrirPerfilPorUsername(perfilAlvo.username)}
                   >
                     <div className="connections-avatar">
-                      {perfilAlvo.foto_url ? (
-                        <img src={perfilAlvo.foto_url} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
-                      ) : (
-                        <span>{getInicial(perfilAlvo.nome)}</span>
-                      )}
+                      <ProfileAvatar src={perfilAlvo.foto_url} name={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
                     </div>
 
                     <div className="connections-user-copy">
@@ -424,11 +417,7 @@ export default function Connections() {
                     onClick={() => abrirPerfilPorUsername(perfilAlvo.username)}
                   >
                     <div className="connections-avatar">
-                      {perfilAlvo.foto_url ? (
-                        <img src={perfilAlvo.foto_url} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
-                      ) : (
-                        <span>{getInicial(perfilAlvo.nome)}</span>
-                      )}
+                      <ProfileAvatar src={perfilAlvo.foto_url} name={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} alt={formatDisplayName(perfilAlvo.nome) || perfilAlvo.username} />
                     </div>
 
                     <div className="connections-user-copy">

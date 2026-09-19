@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import ProfileAvatar from '../components/ProfileAvatar'
 import BottomNav from '../components/BottomNav'
 
 export default function Notifications() {
@@ -436,11 +437,7 @@ export default function Notifications() {
               {solicitacoesVisiveis.map((solicitacao) => (
                 <div className="notification-card request" key={solicitacao.id}>
                   <div className="notification-left">
-                    {solicitacao.requester?.foto_url ? (
-                      <img src={solicitacao.requester.foto_url} alt="" />
-                    ) : (
-                      <div className="mini-avatar">{solicitacao.requester?.nome?.charAt(0)?.toUpperCase() || 'U'}</div>
-                    )}
+                    <ProfileAvatar src={solicitacao.requester?.foto_url} name={solicitacao.requester?.nome} alt={solicitacao.requester?.nome || 'Usuário'} className="mini-avatar" />
                   </div>
 
                   <div className="notification-content">
@@ -502,11 +499,12 @@ export default function Notifications() {
                   return (
                     <>
                       <div className="notification-left">
-                        {!ehQuiz && !ocultarAtor && notificacao.actor?.foto_url ? (
-                          <img src={notificacao.actor.foto_url} alt="" />
-                        ) : (
-                          <div className="mini-avatar">{inicialAvatar}</div>
-                        )}
+                        <ProfileAvatar
+                          src={!ehQuiz && !ocultarAtor ? notificacao.actor?.foto_url : ''}
+                          name={ehQuiz ? 'Academia' : ocultarAtor ? 'Atividades' : notificacao.actor?.nome}
+                          alt={nomeAtor}
+                          className="mini-avatar"
+                        />
                       </div>
 
                       <div className="notification-content">

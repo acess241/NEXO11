@@ -3,6 +3,7 @@ import { obterMediaKind, normalizarTipoPost } from '../lib/postTypes'
 import { compartilharPublicacao, criarLinkPublicacao } from '../lib/share'
 import { garantirConversaDireta, dispararAtualizacaoChat, traduzirErroChat } from '../lib/chat'
 import { supabase } from '../lib/supabase'
+import ProfileAvatar from './ProfileAvatar'
 
 function tipoDoPost(post) {
   return normalizarTipoPost(post?.post_type) === 'nexis' ? 'nexis' : 'post'
@@ -178,7 +179,7 @@ export default function ShareMenu({
                 <div className="share-menu-user-list">
                   {usuarios.map((usuario) => (
                     <button type="button" key={usuario.id} onClick={() => enviarParaUsuario(usuario)} disabled={Boolean(enviandoPara)}>
-                      {usuario.foto_url ? <img src={usuario.foto_url} alt="" /> : <span className="share-menu-avatar-fallback">{usuario.nome?.charAt(0)?.toUpperCase() || 'U'}</span>}
+                      <ProfileAvatar src={usuario.foto_url} name={usuario.nome || usuario.username} alt={usuario.nome || usuario.username} />
                       <span><strong>{usuario.nome || 'Usuário'}</strong><small>@{usuario.username || 'usuario'}</small></span>
                       <b>{enviandoPara === usuario.id ? '…' : 'Enviar'}</b>
                     </button>
@@ -194,4 +195,3 @@ export default function ShareMenu({
     </div>
   )
 }
-

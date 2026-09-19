@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import ProfileBlocks from '../components/ProfileBlocks'
 import SocialLoader from '../components/SocialLoader'
 import VerifiedBadge from '../components/VerifiedBadge'
+import ProfileAvatar from '../components/ProfileAvatar'
 import { bloquearPerfil, desbloquearPerfil, estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { nomeCurso } from '../lib/academy'
@@ -102,7 +103,7 @@ export default function UserProfile() {
         .eq('receiver_profile_id', perfilVisitado.id)
         .eq('status', 'pending')
         .maybeSingle(),
-      supabase.from('posts').select('*', { count: 'exact', head: true }).eq('profile_id', perfilVisitado.id),
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('profile_id', perfilVisitado.id),
     ])
 
     if (
@@ -137,7 +138,7 @@ export default function UserProfile() {
     }
 
     const [postsResp, repostsResp] = await Promise.all([
-      supabase.from('posts').select('*').eq('profile_id', perfilVisitado.id).order('created_at', { ascending: false }),
+      supabase.from('posts').select('id, profile_id, content, media_url, media_kind, post_type, created_at').eq('profile_id', perfilVisitado.id).order('created_at', { ascending: false }).limit(100),
       supabase.from('reposts').select('post_id').eq('profile_id', perfilVisitado.id),
     ])
 
@@ -151,7 +152,7 @@ export default function UserProfile() {
     const idsRepublicados = (repostsResp.data || []).map((item) => item.post_id)
 
     if (idsRepublicados.length > 0) {
-      const republicadosResp = await supabase.from('posts').select('*').in('id', idsRepublicados)
+      const republicadosResp = await supabase.from('posts').select('id, profile_id, content, media_url, media_kind, post_type, created_at').in('id', idsRepublicados.slice(0, 100))
 
       const mapaRepublicados = new Map((republicadosResp.data || []).map((post) => [post.id, post]))
 
@@ -367,18 +368,20 @@ export default function UserProfile() {
           ) : null}
 
           <div className="profile-header-modern">
-            {perfil.foto_url ? (
-              <button
-                type="button"
-                className="profile-avatar-preview-btn"
-                onClick={() => setFotoPerfilAberta(true)}
-                aria-label={`Abrir foto de perfil de ${formatDisplayName(perfil.nome) || perfil.username}`}
-              >
-                <img src={perfil.foto_url} alt={formatDisplayName(perfil.nome) || perfil.username} className="profile-modern-avatar" />
-              </button>
-            ) : (
-              <div className="profile-modern-avatar fallback">{formatDisplayName(perfil.nome)?.charAt(0)?.toUpperCase()}</div>
-            )}
+            <button
+              type="button"
+              className="profile-avatar-preview-btn"
+              onClick={() => perfil.foto_url && setFotoPerfilAberta(true)}
+              aria-label={`Abrir foto de perfil de ${formatDisplayName(perfil.nome) || perfil.username}`}
+            >
+              <ProfileAvatar
+                src={perfil.foto_url}
+                name={formatDisplayName(perfil.nome) || perfil.username}
+                alt={formatDisplayName(perfil.nome) || perfil.username}
+                className="profile-modern-avatar"
+                fallbackClassName="fallback"
+              />
+            </button>
 
             <div className="profile-hero-copy">
               <p className="profile-kicker">Perfil</p>
@@ -464,7 +467,12 @@ export default function UserProfile() {
               </div>
 
               <div className="profile-avatar-modal-body">
-                <img src={perfil.foto_url} alt={formatDisplayName(perfil.nome) || perfil.username} className="profile-avatar-modal-media" />
+                <ProfileAvatar
+                  src={perfil.foto_url}
+                  name={formatDisplayName(perfil.nome) || perfil.username}
+                  alt={formatDisplayName(perfil.nome) || perfil.username}
+                  className="profile-avatar-modal-media"
+                />
               </div>
             </article>
           </div>

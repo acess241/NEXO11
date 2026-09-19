@@ -6,6 +6,7 @@ import MentionText from './MentionText'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { compartilharPublicacao } from '../lib/share'
 import ShareMenu from './ShareMenu'
+import ProfileAvatar from './ProfileAvatar'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -93,7 +94,11 @@ export default function PostCard({
         disabled={!podeAbrirPerfilAutor}
       >
         <div className="mini-avatar">
-          {post.autor?.foto_url ? <img src={post.autor.foto_url} alt={nomeAutor} /> : nomeAutor.charAt(0).toUpperCase()}
+          <ProfileAvatar
+            src={post.autor?.foto_url}
+            name={nomeAutor}
+            alt={nomeAutor}
+          />
         </div>
 
         <div>

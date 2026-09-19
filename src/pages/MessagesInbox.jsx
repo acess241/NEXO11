@@ -22,6 +22,7 @@ import { listarPerfisComBloqueio, traduzirErroBloqueio } from '../lib/blocks'
 import { supabase } from '../lib/supabase'
 import { listMyGroups, listPendingInvites } from '../lib/groups'
 import ConfirmDialog from '../components/ConfirmDialog'
+import ProfileAvatar from '../components/ProfileAvatar'
 
 const FILTER_OPTIONS = [
   { id: 'all', label: 'Todas' },
@@ -633,11 +634,7 @@ export default function MessagesInbox() {
                 >
                   <div className="chat-list-main-btn">
                     <div className="chat-avatar">
-                      {item.avatarUrl ? (
-                        <img src={item.avatarUrl} alt={item.title} />
-                      ) : (
-                        <span>{item.avatarFallback || getInitial(item.title)}</span>
-                      )}
+                      <ProfileAvatar src={item.avatarUrl} name={item.title} alt={item.title} />
                     </div>
 
                     <div className="chat-list-copy">

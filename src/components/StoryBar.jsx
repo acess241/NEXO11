@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { lerLegendaStory } from '../lib/storyRepost'
+import ProfileAvatar from './ProfileAvatar'
 
 function formatarTempoRelativo(dataIso) {
   const data = new Date(dataIso)
@@ -221,17 +222,13 @@ function StoryViewer({
             onClick={abrirPerfilDoStory}
             disabled={!grupo.perfil?.username}
           >
-            {grupo.perfil?.foto_url ? (
-              <img
-                src={grupo.perfil.foto_url}
-                alt={grupo.perfil.nome}
-                className="story-viewer-avatar"
-              />
-            ) : (
-              <div className="story-viewer-avatar fallback">
-                {grupo.perfil?.nome?.charAt(0)?.toUpperCase() || 'S'}
-              </div>
-            )}
+            <ProfileAvatar
+              src={grupo.perfil?.foto_url}
+              name={grupo.perfil?.nome}
+              alt={grupo.perfil?.nome || 'Story'}
+              className="story-viewer-avatar"
+              fallbackClassName="fallback"
+            />
 
             <div>
               <strong>@{grupo.perfil?.username || 'story'}</strong>
@@ -416,7 +413,7 @@ function StoryViewer({
               <div>
                 {visualizadores.map((item) => (
                   <button type="button" key={item.profile_id} onClick={() => { setVisualizadores(null); onOpenProfile?.(item.perfil.username) }}>
-                    {item.perfil.foto_url ? <img src={item.perfil.foto_url} alt="" /> : <span>{item.perfil.nome?.charAt(0)?.toUpperCase()}</span>}
+                    <ProfileAvatar src={item.perfil.foto_url} name={item.perfil.nome} alt={item.perfil.nome || item.perfil.username} />
                     <span><strong>{item.perfil.nome}</strong><small>@{item.perfil.username}</small></span>
                   </button>
                 ))}
@@ -498,17 +495,13 @@ export default function StoryBar({
       <div className="stories-bar insta-stories-bar">
         <div className="story-item insta-story-item">
           <div className="story-ring minha-story">
-            {meuPerfil?.foto_url ? (
-              <img
-                src={meuPerfil.foto_url}
-                alt={meuPerfil.nome}
-                className="story-avatar"
-              />
-            ) : (
-              <div className="story-avatar-fallback">
-                {meuPerfil?.nome?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-            )}
+            <ProfileAvatar
+              src={meuPerfil?.foto_url}
+              name={meuPerfil?.nome}
+              alt={meuPerfil?.nome || 'Meu story'}
+              className="story-avatar"
+              fallbackClassName="story-avatar-fallback"
+            />
 
             <button
               type="button"
@@ -533,17 +526,13 @@ export default function StoryBar({
                 onClick={() => abrirGrupo(index)}
               >
                 <div className={`story-ring ${temNaoVisto ? 'ativo' : 'visto'}`}>
-                  {grupo.perfil?.foto_url ? (
-                    <img
-                      src={grupo.perfil.foto_url}
-                      alt={grupo.perfil.nome}
-                      className="story-avatar"
-                    />
-                  ) : (
-                    <div className="story-avatar-fallback">
-                      {grupo.perfil?.nome?.charAt(0)?.toUpperCase() || 'S'}
-                    </div>
-                  )}
+                  <ProfileAvatar
+                    src={grupo.perfil?.foto_url}
+                    name={grupo.perfil?.nome}
+                    alt={grupo.perfil?.nome || 'Story'}
+                    className="story-avatar"
+                    fallbackClassName="story-avatar-fallback"
+                  />
                 </div>
               </button>
 

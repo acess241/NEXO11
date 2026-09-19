@@ -18,6 +18,7 @@ import { estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
+import ProfileAvatar from '../components/ProfileAvatar'
 
 function IconeVoltar() {
   return (
@@ -2159,11 +2160,7 @@ export default function ChatRoom() {
           onClick={() => navigate(`/usuario/${destinatario?.username}`)}
         >
           <div className="chat-avatar small">
-            {destinatario?.foto_url ? (
-              <img src={destinatario.foto_url} alt={destinatario.nome} />
-            ) : (
-              <span>{getInicial(destinatario?.nome)}</span>
-            )}
+            <ProfileAvatar src={destinatario?.foto_url} name={destinatario?.nome} alt={destinatario?.nome || 'Perfil'} />
           </div>
 
           <div className="chat-room-head-copy">
@@ -2506,11 +2503,7 @@ export default function ChatRoom() {
                   <div className={`chat-bubble-row ${ehMinha ? 'mine' : ''}`}>
                     {!ehMinha ? (
                       <div className="chat-thread-avatar" aria-hidden="true">
-                        {destinatario?.foto_url ? (
-                          <img src={destinatario.foto_url} alt="" />
-                        ) : (
-                          <span>{getInicial(destinatario?.nome)}</span>
-                        )}
+                        <ProfileAvatar src={destinatario?.foto_url} name={destinatario?.nome} alt="" />
                       </div>
                     ) : null}
 
@@ -2576,11 +2569,7 @@ export default function ChatRoom() {
             {digitandoOutro ? (
               <div className="chat-bubble-row typing-row">
                 <div className="chat-thread-avatar" aria-hidden="true">
-                  {destinatario?.foto_url ? (
-                    <img src={destinatario.foto_url} alt="" />
-                  ) : (
-                    <span>{getInicial(destinatario?.nome)}</span>
-                  )}
+                  <ProfileAvatar src={destinatario?.foto_url} name={destinatario?.nome} alt="" />
                 </div>
 
                 <div className="chat-typing-card">
