@@ -18566,6 +18566,21 @@ body[data-theme='verde'] .card {
   }
 }
 
+/* O menu fixo nunca pode esconder a última mensagem no celular instalado. */
+@media (max-width: 767px) {
+  .chat-live-page {
+    padding-bottom: calc(220px + var(--safe-bottom)) !important;
+  }
+
+  .chat-room-shell > .chat-room-page {
+    padding-bottom: calc(240px + var(--safe-bottom)) !important;
+  }
+
+  .chat-room-shell .chat-composer-shell {
+    bottom: calc(104px + var(--safe-bottom)) !important;
+  }
+}
+
 @media (max-width: 359px) {
   .feed-brand span {
     display: none;
