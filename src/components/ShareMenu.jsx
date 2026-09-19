@@ -13,6 +13,46 @@ function tituloDoPost(post) {
   return tipoDoPost(post) === 'nexis' ? 'Nexis' : 'publicação'
 }
 
+function ShareIcon({ tipo }) {
+  if (tipo === 'usuario') {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
+  }
+  if (tipo === 'story') {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5" /><path d="M8 15l2.6-3 2.2 2 1.7-2 2.5 3" /><circle cx="15.5" cy="8.5" r="1" /></svg>
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 4l7 8-7 8" /><path d="M20 12H4" /></svg>
+}
+
+function SharePreview({ post, titulo }) {
+  const mediaKind = obterMediaKind(post)
+  const texto = post?.content?.trim() || `Veja esta ${titulo} no NEXO 11`
+  const temImagem = Boolean(post?.media_url && mediaKind === 'image')
+  const [imagemComErro, setImagemComErro] = useState(false)
+
+  useEffect(() => {
+    setImagemComErro(false)
+  }, [post?.id, post?.media_url])
+
+  const mostrarImagem = temImagem && !imagemComErro
+
+  return (
+    <div className="share-menu-preview">
+      <div className={`share-menu-preview-media ${mostrarImagem ? 'has-image' : ''}`}>
+        {mostrarImagem ? (
+          <img src={post.media_url} alt="" loading="lazy" onError={() => setImagemComErro(true)} />
+        ) : (
+          <span aria-hidden="true">{mediaKind === 'video' ? '▶' : 'N'}</span>
+        )}
+      </div>
+      <div className="share-menu-preview-copy">
+        <span>NEXO 11 · {titulo}</span>
+        <strong>{texto}</strong>
+        <small>Escolha onde compartilhar</small>
+      </div>
+    </div>
+  )
+}
+
 export default function ShareMenu({
   post,
   meuPerfil,
@@ -146,12 +186,14 @@ export default function ShareMenu({
         <div className="share-menu-layer" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && fechar()}>
           <section className="share-menu-sheet" role="dialog" aria-modal="true" aria-label={`Enviar ${titulo}`}>
             <header className="share-menu-header">
-              <div><strong>Enviar {titulo}</strong><small>Escolha para onde mandar</small></div>
+              <div><strong>{modo === 'opcoes' ? 'Compartilhar' : 'Enviar para alguém'}</strong><small>{modo === 'opcoes' ? 'Publique ou envie esta publicação' : 'Escolha uma conversa do NEXO'}</small></div>
               <button type="button" onClick={fechar} aria-label="Fechar envio">×</button>
             </header>
 
             {modo === 'opcoes' ? (
-              <div className="share-menu-options">
+              <>
+                <SharePreview post={post} titulo={titulo} />
+                <div className="share-menu-options">
                 <button type="button" onClick={() => {
                   if (!meuPerfil?.id) {
                     setErro('Entre na sua conta para enviar a um usuário.')
@@ -159,19 +201,21 @@ export default function ShareMenu({
                   }
                   setModo('usuarios')
                 }}>
-                  <span aria-hidden="true">♙</span><div><strong>Enviar para usuário</strong><small>Mandar pelo Conversas</small></div><b>›</b>
+                  <span className="share-menu-option-icon user" aria-hidden="true"><ShareIcon tipo="usuario" /></span><div><strong>Enviar no NEXO</strong><small>Escolher uma conversa</small></div><b>›</b>
                 </button>
                 <button type="button" onClick={adicionarAoStory} disabled={!onAddToStory}>
-                  <span aria-hidden="true">＋</span><div><strong>Adicionar ao story</strong><small>Montar no formato do Instagram</small></div><b>›</b>
+                  <span className="share-menu-option-icon story" aria-hidden="true"><ShareIcon tipo="story" /></span><div><strong>Adicionar ao story</strong><small>Editar antes de publicar</small></div><b>›</b>
                 </button>
                 <button type="button" onClick={compartilharFora}>
-                  <span aria-hidden="true">↗</span><div><strong>Compartilhar fora do NEXO</strong><small>WhatsApp, Instagram e outras redes</small></div><b>›</b>
+                  <span className="share-menu-option-icon external" aria-hidden="true"><ShareIcon tipo="fora" /></span><div><strong>Outros aplicativos</strong><small>WhatsApp, Instagram e mais</small></div><b>›</b>
                 </button>
-              </div>
+                </div>
+              </>
             ) : (
               <div className="share-menu-users">
-                <button type="button" className="share-menu-back" onClick={() => { setModo('opcoes'); setErro(''); setMensagem('') }}>‹ Opções de envio</button>
-                <label><span>Buscar usuário</span><input autoFocus value={busca} onChange={(event) => setBusca(event.target.value)} placeholder="Nome ou @usuário" /></label>
+                <button type="button" className="share-menu-back" onClick={() => { setModo('opcoes'); setErro(''); setMensagem('') }}><span aria-hidden="true">‹</span> Voltar</button>
+                <SharePreview post={post} titulo={titulo} />
+                <label><span>Buscar usuário</span><div className="share-menu-search"><span aria-hidden="true">⌕</span><input autoFocus value={busca} onChange={(event) => setBusca(event.target.value)} placeholder="Nome ou @usuário" /></div></label>
                 {mensagem ? <p className="share-menu-success" role="status">{mensagem}</p> : null}
                 {erro ? <p className="share-menu-error" role="alert">{erro}</p> : null}
                 {carregandoUsuarios ? <p className="share-menu-empty">Carregando usuários...</p> : null}

@@ -17278,6 +17278,305 @@ body[data-theme='verde'] .card {
 .nexo-dialog-actions { display: flex; flex-direction: column; gap: 7px; margin-top: 20px; }
 .nexo-dialog-actions button { display: flex; flex-direction: column; padding: 13px 15px; border: 1px solid var(--border); border-radius: 14px 5px; background: var(--surface-1); color: var(--text); text-align: left; }
 .nexo-dialog-actions button:hover { border-color: var(--primary); }
+
+/* COMPARTILHAMENTO SOCIAL */
+.share-menu-layer {
+  align-items: end;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.share-menu-sheet {
+  width: min(100%, 520px);
+  max-height: min(92dvh, 760px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 28px 28px 0 0;
+  background: linear-gradient(180deg, #171a19 0%, #0c0f0e 100%);
+  box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.5);
+  animation: share-sheet-in 0.2s ease-out;
+}
+
+.share-menu-header {
+  padding: 19px 20px 15px;
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+}
+
+.share-menu-header strong {
+  color: #fff;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.share-menu-header small {
+  color: #9ca9a1;
+  font-size: 12px;
+}
+
+.share-menu-header > button {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: #dce8df;
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.share-menu-preview {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  margin: 16px 18px 10px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.share-menu-preview-media {
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 14px;
+  color: #b7ffd0;
+  background: linear-gradient(145deg, #123e28, #0b82a0 58%, #202b81);
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.share-menu-preview-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.share-menu-preview-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.share-menu-preview-copy span,
+.share-menu-preview-copy small {
+  color: #91a59a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.share-menu-preview-copy strong {
+  overflow: hidden;
+  color: #f5fff7;
+  font-size: 13px;
+  line-height: 1.28;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.share-menu-preview-copy small {
+  color: #697970;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.share-menu-options {
+  gap: 9px;
+  padding: 10px 18px 20px;
+}
+
+.share-menu-options > button {
+  min-height: 72px;
+  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.share-menu-options > button:active {
+  transform: scale(0.98);
+}
+
+.share-menu-options > button:hover:not(:disabled) {
+  border-color: rgba(0, 239, 114, 0.6);
+  background: rgba(0, 239, 114, 0.1);
+}
+
+.share-menu-option-icon {
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center;
+  border-radius: 50% !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #00d875, #00a7ff) !important;
+}
+
+.share-menu-option-icon.story {
+  background: linear-gradient(145deg, #ff5b8d, #ff9f4a 52%, #893cff) !important;
+}
+
+.share-menu-option-icon.external {
+  background: linear-gradient(145deg, #6976ff, #a94cff) !important;
+}
+
+.share-menu-option-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.share-menu-options > button > div {
+  gap: 4px;
+}
+
+.share-menu-options > button > div strong {
+  color: #f5fff7;
+  font-size: 14px;
+}
+
+.share-menu-options > button > div small {
+  color: #92a29a;
+  font-size: 11px;
+}
+
+.share-menu-options > button > b {
+  color: #84958b;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.share-menu-users {
+  gap: 13px;
+  padding: 13px 18px calc(20px + env(safe-area-inset-bottom));
+}
+
+.share-menu-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #a7ffc4;
+  font-size: 13px;
+}
+
+.share-menu-back span {
+  font-size: 23px;
+  line-height: 0.6;
+}
+
+.share-menu-users .share-menu-preview {
+  margin: 0;
+}
+
+.share-menu-users label {
+  gap: 7px;
+  color: #cad9cf;
+  font-size: 12px;
+}
+
+.share-menu-search {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.share-menu-search > span {
+  color: #89a196;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.share-menu-users input {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.share-menu-search:focus-within {
+  border-color: #00ef72;
+  box-shadow: 0 0 0 3px rgba(0, 239, 114, 0.11);
+}
+
+.share-menu-user-list {
+  max-height: 340px;
+  gap: 3px;
+  padding-top: 2px;
+}
+
+.share-menu-user-list > button {
+  min-height: 58px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 8px 9px;
+  border-radius: 15px;
+}
+
+.share-menu-user-list img,
+.share-menu-user-list > button > .profile-avatar-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.share-menu-user-list > button > span:nth-child(2) {
+  gap: 3px;
+}
+
+.share-menu-user-list strong {
+  font-size: 13px;
+}
+
+.share-menu-user-list small {
+  color: #899990;
+}
+
+.share-menu-user-list > button > b {
+  min-width: 56px;
+  padding: 8px 9px;
+  border-radius: 999px;
+  color: #07120b;
+  background: #29f27c;
+  text-align: center;
+  font-size: 11px;
+}
+
+@keyframes share-sheet-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 768px) {
+  .share-menu-layer {
+    place-items: center;
+    padding: 24px;
+  }
+
+  .share-menu-sheet {
+    width: min(520px, 100%);
+    border-radius: 28px;
+  }
+}
 .nexo-dialog-actions button small { margin-top: 2px; color: var(--muted); }
 .nexo-dialog-actions button.danger { border-color: rgba(255,80,80,.3); color: #ff6868; background: rgba(255,80,80,.07); }
 .nexo-dialog-actions button.cancel { align-items: center; color: var(--muted); background: transparent; }
