@@ -7,6 +7,7 @@ import MentionText from '../components/MentionText'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
+import ShareMenu from '../components/ShareMenu'
 
 function NexisVideo({ item, ativo, mudo, onMediaError, onProgress, onTogglePause }) {
   const ref = useRef(null)
@@ -193,7 +194,12 @@ export default function NexisFeed() {
             <aside className="nexis-actions">
               <button type="button" className={item.euCurti ? 'liked' : ''} onClick={() => alternarCurtida(item)}><b>{item.euCurti ? '♥' : '♡'}</b><span>{item.totalCurtidas}</span></button>
               <button type="button" onClick={() => setComentando(item)}><b>◯</b><span>{item.comentarios.length}</span></button>
-              <button type="button" onClick={() => compartilhar(item)}><b>⌁</b><span>Enviar</span></button>
+              <ShareMenu
+                post={item}
+                meuPerfil={meuPerfil}
+                onExternalShare={() => compartilhar(item)}
+                onAddToStory={() => navigate(`/novo-story?post=${encodeURIComponent(item.id)}`)}
+              />
             </aside>
           </article>
         ))}

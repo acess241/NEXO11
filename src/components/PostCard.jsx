@@ -5,6 +5,7 @@ import VerifiedBadge from './VerifiedBadge'
 import MentionText from './MentionText'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { compartilharPublicacao } from '../lib/share'
+import ShareMenu from './ShareMenu'
 
 function formatarData(dataIso) {
   const data = new Date(dataIso)
@@ -37,6 +38,7 @@ export default function PostCard({
   destacado = false,
   onShare,
   onAddToStory,
+  meuPerfil,
 }) {
   const tipo = normalizarTipoPost(post.post_type)
   const mediaKind = obterMediaKind(post)
@@ -45,7 +47,6 @@ export default function PostCard({
   const [mediaComErro, setMediaComErro] = useState(false)
   const [mediaSrc, setMediaSrc] = useState(post.media_url || '')
   const [tentouUrlAssinada, setTentouUrlAssinada] = useState(false)
-  const [compartilhando, setCompartilhando] = useState(false)
 
   useEffect(() => {
     setMediaComErro(false)
@@ -66,26 +67,14 @@ export default function PostCard({
   }
 
   async function compartilharPost() {
-    if (compartilhando) return
-    setCompartilhando(true)
-    try {
-      if (onShare) {
-        await onShare(post)
-      } else {
-        await compartilharPublicacao({
-          id: post.id,
-          tipo: tipo === 'nexis' ? 'nexis' : 'post',
-          title: post.content ? `Publicação no NEXO: ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
-          text: post.content || 'Veja esta publicação no NEXO',
-          imageUrl: post.media_url || '',
-          onCopied: () => window.alert('Link da publicação copiado.'),
-        })
-      }
-    } catch (error) {
-      if (error?.name !== 'AbortError') window.alert('Não foi possível compartilhar agora.')
-    } finally {
-      setCompartilhando(false)
-    }
+    await compartilharPublicacao({
+      id: post.id,
+      tipo: tipo === 'nexis' ? 'nexis' : 'post',
+      title: post.content ? `Publicação no NEXO: ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
+      text: post.content || 'Veja esta publicação no NEXO',
+      imageUrl: post.media_url || '',
+      onCopied: () => window.alert('Link da publicação copiado.'),
+    })
   }
 
   const nomeAutor = formatDisplayName(post.autor?.nome) || 'Usuário'
@@ -191,28 +180,7 @@ export default function PostCard({
           <span>{post.totalReposts}</span>
         </button>
 
-        <button
-          type="button"
-          className="action-btn share-post-btn action-icon-only"
-          onClick={compartilharPost}
-          disabled={compartilhando}
-          aria-label={compartilhando ? 'Abrindo compartilhamento' : `Compartilhar ${tipo === 'nexis' ? 'Nexis' : 'publicação'}`}
-          title={compartilhando ? 'Abrindo compartilhamento' : `Compartilhar ${tipo === 'nexis' ? 'Nexis' : 'publicação'}`}
-        >
-          {compartilhando ? '…' : '↗'}
-        </button>
-
-        {onAddToStory ? (
-          <button
-            type="button"
-            className="action-btn story-post-btn action-icon-only"
-            onClick={() => onAddToStory(post)}
-            aria-label={`Adicionar ${tipo === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
-            title={`Adicionar ${tipo === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
-          >
-            ＋
-          </button>
-        ) : null}
+        <ShareMenu post={post} meuPerfil={meuPerfil} onExternalShare={onShare || compartilharPost} onAddToStory={onAddToStory} />
 
         {post.ehMeuPost && (
           <button className="action-btn delete-btn" onClick={() => setPostParaApagar(post.id)}>

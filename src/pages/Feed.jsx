@@ -1362,6 +1362,7 @@ export default function Feed() {
                 IconeEstrela={IconeEstrela}
                 IconeComentarios={IconeComentarios}
                 IconeRepost={IconeRepost}
+                meuPerfil={meuPerfil}
                 onShare={() => compartilharPost(post)}
                 onAddToStory={() => navigate(`/novo-story?post=${encodeURIComponent(post.id)}`)}
               />

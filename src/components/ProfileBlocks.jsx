@@ -2,6 +2,7 @@
 import { POST_TYPE_META, normalizarTipoPost, obterMediaKind } from '../lib/postTypes'
 import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
+import ShareMenu from './ShareMenu'
 
 function IconeNotas() {
   return (
@@ -525,26 +526,7 @@ export default function ProfileBlocks({
                             <strong>{interacoes[post.id]?.comentarios?.length || 0}</strong>
                             <span>Comentários</span>
                           </button>
-                          <button
-                            type="button"
-                            className="profile-action-icon-only"
-                            onClick={() => compartilhar(post)}
-                            aria-label={`Compartilhar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'}`}
-                            title={`Compartilhar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'}`}
-                          >
-                            <span aria-hidden="true">↗</span>
-                          </button>
-                          {onAddToStory ? (
-                            <button
-                              type="button"
-                              className="profile-action-icon-only"
-                              onClick={() => onAddToStory(post)}
-                              aria-label={`Adicionar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
-                              title={`Adicionar ${normalizarTipoPost(post.post_type) === 'nexis' ? 'Nexis' : 'publicação'} ao story`}
-                            >
-                              <span aria-hidden="true">＋</span>
-                            </button>
-                          ) : null}
+                          <ShareMenu post={post} meuPerfil={meuPerfil} onExternalShare={compartilhar} onAddToStory={onAddToStory} />
                           <button type="button" className={interacoes[post.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(post.id)} disabled={!meuPerfil || enviando}>
                             <span aria-hidden="true">⇄</span>
                             <strong>{interacoes[post.id]?.reposts || 0}</strong>
