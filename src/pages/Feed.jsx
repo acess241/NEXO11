@@ -230,7 +230,7 @@ export default function Feed() {
 
   useEffect(() => {
     carregarTudo()
-  }, [])
+  }, [sharedPostId, sharedStoryId])
 
   useEffect(() => {
     if (carregando || (!sharedPostId && !sharedStoryId)) return undefined
