@@ -126,6 +126,7 @@ export default function CreateStory() {
   const [arquivo, setArquivo] = useState(null)
   const [preview, setPreview] = useState('')
   const [mediaKind, setMediaKind] = useState('image')
+  const [postCompartilhado, setPostCompartilhado] = useState(null)
   const [duracaoStory, setDuracaoStory] = useState(DURACAO_PADRAO)
   const [caption, setCaption] = useState('')
   const [captionPosition, setCaptionPosition] = useState({ x: 50, y: 72 })
@@ -211,9 +212,20 @@ export default function CreateStory() {
         const tipoMidia = obterMediaKind(post)
         const { data: perfilAutor } = await supabase
           .from('profiles')
-          .select('nome, username')
+          .select('nome, username, foto_url')
           .eq('id', post.profile_id)
           .maybeSingle()
+
+        if (ativo) {
+          setPostCompartilhado({
+            id: post.id,
+            tipo: post.post_type === 'nexis' ? 'nexis' : post.post_type === 'nota' ? 'nota' : 'foto',
+            conteudo: post.content || '',
+            autorNome: perfilAutor?.nome || 'Usuário',
+            autorUsername: perfilAutor?.username || 'usuario',
+            autorFoto: perfilAutor?.foto_url || '',
+          })
+        }
 
         let arquivoImportado
         if (tipoMidia && post.media_url) {
@@ -233,7 +245,7 @@ export default function CreateStory() {
 
         if (!ativo) return
         await aplicarArquivoSelecionado(arquivoImportado)
-        setCaption(tipoMidia ? (post.content || '') : '')
+        setCaption('')
         setSucesso('Publicação preparada para o seu story.')
       } catch (error) {
         if (ativo) setErro(error?.message === 'post_indisponivel' ? 'Ops, publicação indisponível.' : 'Não foi possível preparar esta publicação para o story.')
@@ -350,7 +362,10 @@ export default function CreateStory() {
 
   async function escolherArquivo(event) {
     const file = event.target.files?.[0]
-    if (file) await aplicarArquivoSelecionado(file)
+    if (file) {
+      setPostCompartilhado(null)
+      await aplicarArquivoSelecionado(file)
+    }
     event.target.value = ''
   }
 
@@ -447,29 +462,58 @@ export default function CreateStory() {
       {sucesso ? <div className="story-editor-message success">{sucesso}</div> : null}
 
       <main className="story-editor-stage">
-        <section ref={canvasRef} className={`story-editor-canvas ${preview ? 'has-media' : ''}`}>
+        <section ref={canvasRef} className={`story-editor-canvas ${preview ? 'has-media' : ''} ${postCompartilhado ? 'is-repost' : ''}`}>
           {preview ? (
-            <>
-              {mediaKind === 'video'
-                ? <video src={preview} className="story-editor-media" autoPlay loop muted playsInline />
-                : <img src={preview} alt="Prévia do story" className="story-editor-media" />}
-              {caption.trim() ? (
-                <div
-                  className="story-editor-text-overlay"
-                  style={{ left: `${captionPosition.x}%`, top: `${captionPosition.y}%` }}
-                  onPointerDown={iniciarArrasteLegenda}
-                  onPointerMove={moverLegenda}
-                  onPointerUp={encerrarArrasteLegenda}
-                  onPointerCancel={encerrarArrasteLegenda}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Arraste para posicionar o texto"
-                >
-                  {caption}
-                  <small>Arraste para mover</small>
-                </div>
-              ) : null}
-            </>
+            postCompartilhado ? (
+              <div className="story-repost-layout">
+                {postCompartilhado.tipo !== 'nota' ? (
+                  mediaKind === 'video'
+                    ? <video src={preview} className="story-repost-backdrop" autoPlay loop muted playsInline aria-hidden="true" />
+                    : <img src={preview} alt="" className="story-repost-backdrop" aria-hidden="true" />
+                ) : null}
+                <article className={`story-repost-card ${postCompartilhado.tipo === 'nota' ? 'is-note' : ''}`}>
+                  <header className="story-repost-card-header">
+                    {postCompartilhado.autorFoto ? <img src={postCompartilhado.autorFoto} alt="" /> : <span>{postCompartilhado.autorNome.charAt(0).toUpperCase()}</span>}
+                    <div><strong>{postCompartilhado.autorNome}</strong><small>@{postCompartilhado.autorUsername}</small></div>
+                    <b>•••</b>
+                  </header>
+                  {postCompartilhado.tipo === 'nota' ? (
+                    <div className="story-repost-note-content">{postCompartilhado.conteudo || 'Publicação no NEXO 11'}</div>
+                  ) : (
+                    <div className="story-repost-media-wrap">
+                      {mediaKind === 'video'
+                        ? <video src={preview} className="story-repost-media" autoPlay loop muted playsInline />
+                        : <img src={preview} alt="Prévia da publicação" className="story-repost-media" />}
+                    </div>
+                  )}
+                  {postCompartilhado.tipo !== 'nota' && postCompartilhado.conteudo ? <p className="story-repost-caption">{postCompartilhado.conteudo}</p> : null}
+                  <footer className="story-repost-card-actions"><span>♡</span><span>◯</span><span>↗</span><span>⌑</span></footer>
+                </article>
+                {caption.trim() ? <p className="story-repost-user-caption">{caption}</p> : null}
+              </div>
+            ) : (
+              <>
+                {mediaKind === 'video'
+                  ? <video src={preview} className="story-editor-media" autoPlay loop muted playsInline />
+                  : <img src={preview} alt="Prévia do story" className="story-editor-media" />}
+                {caption.trim() ? (
+                  <div
+                    className="story-editor-text-overlay"
+                    style={{ left: `${captionPosition.x}%`, top: `${captionPosition.y}%` }}
+                    onPointerDown={iniciarArrasteLegenda}
+                    onPointerMove={moverLegenda}
+                    onPointerUp={encerrarArrasteLegenda}
+                    onPointerCancel={encerrarArrasteLegenda}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Arraste para posicionar o texto"
+                  >
+                    {caption}
+                    <small>Arraste para mover</small>
+                  </div>
+                ) : null}
+              </>
+            )
           ) : (
             <div className="story-editor-empty">
               <div className="story-editor-empty-icon"><IconeCamera /></div>
@@ -504,7 +548,7 @@ export default function CreateStory() {
             ) : null}
             <section className="story-editor-compose">
               <label htmlFor="story-overlay-text">Aa</label>
-              <textarea id="story-overlay-text" placeholder="Adicione um texto..." value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 220))} rows={1} maxLength={220} />
+              <textarea id="story-overlay-text" placeholder={postCompartilhado ? 'Adicione uma legenda...' : 'Adicione um texto...'} value={caption} onChange={(e) => setCaption(e.target.value.slice(0, 220))} rows={1} maxLength={220} />
               <span>{caption.length}/220</span>
             </section>
           </>
