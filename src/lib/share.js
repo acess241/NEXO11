@@ -48,13 +48,15 @@ export async function compartilharPublicacao({
     ])
     if (arquivo && navigator.canShare?.({ files: [arquivo] })) {
       dados.files = [arquivo]
+    } else if (imageUrl) {
+      dados.text = `${text}\n${imageUrl}`
     }
 
     await navigator.share(dados)
     return { shared: true, url }
   }
 
-  const textoCompleto = `${text}\n${url}`
+  const textoCompleto = [text, url, imageUrl && imageUrl !== url ? imageUrl : ''].filter(Boolean).join('\n')
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(textoCompleto)
   }
