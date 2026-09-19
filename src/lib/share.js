@@ -42,7 +42,10 @@ export async function compartilharPublicacao({
   const dados = { title, text, url }
 
   if (navigator.share) {
-    const arquivo = await prepararArquivoDeMidia(imageUrl, id)
+    const arquivo = await Promise.race([
+      prepararArquivoDeMidia(imageUrl, id),
+      new Promise((resolve) => window.setTimeout(() => resolve(null), 350)),
+    ])
     if (arquivo && navigator.canShare?.({ files: [arquivo] })) {
       dados.files = [arquivo]
     }
