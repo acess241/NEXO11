@@ -10,6 +10,7 @@ import NotificationBridge from './components/NotificationBridge'
 import UpdateAnnouncement from './components/UpdateAnnouncement'
 import LegalAcceptanceGate from './components/LegalAcceptanceGate'
 import GlobalXpRanking from './components/GlobalXpRanking'
+import SocialMetaBridge from './components/SocialMetaBridge'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -157,6 +158,7 @@ export default function App() {
 
   return (
     <>
+      <SocialMetaBridge />
       <PullToRefresh />
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />

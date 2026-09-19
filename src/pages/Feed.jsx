@@ -6,6 +6,7 @@ import SocialLoader from '../components/SocialLoader'
 import StoryBar from '../components/StoryBar'
 import { supabase } from '../lib/supabase'
 import { dispararAtualizacaoChat } from '../lib/chat'
+import { compartilharPublicacao } from '../lib/share'
 import logoNexo from '/logo-novo.png'
 
 const INCENTIVOS_CRIACAO = [
@@ -726,15 +727,20 @@ export default function Feed() {
   }
 
   async function compartilharStory(story) {
-    const url = story?.media_url
-    if (!url) return
+    if (!story?.id) return
     const texto = `Veja o story de @${story.perfil?.username || 'usuario'} no NEXO`
-    if (navigator.share) {
-      await navigator.share({ title: 'Story no NEXO', text: texto, url })
-      return
+    try {
+      await compartilharPublicacao({
+        id: story.id,
+        tipo: 'story',
+        title: 'Story no NEXO',
+        text: texto,
+        imageUrl: story.media_url,
+        onCopied: () => window.alert('Link do story copiado.'),
+      })
+    } catch (error) {
+      if (error?.name !== 'AbortError') window.alert('Não foi possível compartilhar agora.')
     }
-    await navigator.clipboard.writeText(`${texto}\n${url}`)
-    window.alert('Link do story copiado.')
   }
 
   async function sair() {

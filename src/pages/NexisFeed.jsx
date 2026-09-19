@@ -5,6 +5,7 @@ import SocialLoader from '../components/SocialLoader'
 import VerifiedBadge from '../components/VerifiedBadge'
 import MentionText from '../components/MentionText'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
+import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
 
 function NexisVideo({ item, ativo, mudo, onMediaError, onProgress, onTogglePause }) {
@@ -149,9 +150,18 @@ export default function NexisFeed() {
 
   async function compartilhar(item) {
     const texto = `Veja este Nexis de @${item.autor.username}`
-    if (navigator.share) return navigator.share({ title: 'Nexis', text: texto, url: item.media_url })
-    await navigator.clipboard.writeText(`${texto}\n${item.media_url}`)
-    window.alert('Link copiado.')
+    try {
+      await compartilharPublicacao({
+        id: item.id,
+        tipo: 'nexis',
+        title: 'Nexis no NEXO',
+        text: texto,
+        imageUrl: item.media_url,
+        onCopied: () => window.alert('Link do Nexis copiado.'),
+      })
+    } catch (error) {
+      if (error?.name !== 'AbortError') window.alert('Não foi possível compartilhar agora.')
+    }
   }
 
   async function recuperarMidia(item) {

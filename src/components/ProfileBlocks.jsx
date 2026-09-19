@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { POST_TYPE_META, normalizarTipoPost, obterMediaKind } from '../lib/postTypes'
+import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
 
 function IconeNotas() {
@@ -423,14 +424,15 @@ export default function ProfileBlocks({
 
   async function compartilhar(post = postAberto) {
     if (!post) return
-    const url = `${window.location.origin}${window.location.pathname}#post-${post.id}`
-    const dados = { title: 'Publicação no NEXO', text: post.content || 'Veja esta publicação no NEXO', url }
     try {
-      if (navigator.share) await navigator.share(dados)
-      else {
-        await navigator.clipboard.writeText(url)
-        setAviso('Link da publicação copiado.')
-      }
+      await compartilharPublicacao({
+        id: post.id,
+        tipo: normalizarTipoPost(post.post_type) === 'nexis' ? 'nexis' : 'post',
+        title: post.content ? `Publicação de ${post.content.slice(0, 72)}` : 'Publicação no NEXO',
+        text: post.content || 'Veja esta publicação no NEXO',
+        imageUrl: obterMediaKind(post) === 'image' ? post.media_url : '',
+        onCopied: () => setAviso('Link da publicação copiado.'),
+      })
     } catch (error) {
       if (error?.name !== 'AbortError') setAviso('Não foi possível compartilhar agora.')
     }
