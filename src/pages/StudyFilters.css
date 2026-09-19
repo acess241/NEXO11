@@ -174,3 +174,23 @@
   .nc-review>header { padding-left: 12px; padding-right: 12px; }
   .nc-review>footer { padding-left: 14px; padding-right: 14px; }
 }
+
+/* Filtros em formato de carrossel: cada desafio tem uma identidade própria. */
+.nc-filter-empty { position: absolute; z-index: 2; left: 50%; top: 42%; transform: translate(-50%,-50%); display: grid; justify-items: center; gap: 7px; width: min(280px,calc(100% - 42px)); padding: 22px 18px; border: 1px solid #ffffff28; border-radius: 26px 10px; color: #effff1; background: linear-gradient(145deg,#10251ae8,#07100ce8); box-shadow: 0 18px 52px #0006, inset 0 1px #ffffff18; text-align: center; backdrop-filter: blur(14px); }
+.nc-filter-empty>span { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 18px; color: #071004; background: linear-gradient(145deg,#ddff91,#55ef7f); box-shadow: 0 0 30px #72ff8666; font-size: 25px; }
+.nc-filter-empty strong { font-size: 16px; letter-spacing: -.02em; }
+.nc-filter-empty small { color: #b7c9ba; font-size: 12px; line-height: 1.45; }
+.nc-tilt-hint { display: grid; place-items: center; min-height: 30px; padding: 6px 10px; border: 1px solid color-mix(in srgb,var(--game-color) 42%,transparent); border-radius: 999px; color: color-mix(in srgb,var(--game-color) 82%,white); background: color-mix(in srgb,var(--game-color) 10%,#07110b); font-size: 11px; font-weight: 800; text-align: center; }
+.nc-tilt-hint.loading { color: #dbe6df; border-style: dashed; }
+.nc-tilt-hint.fallback { color: #ffe5a7; border-color: #ffd16688; }
+.nc-effects { gap: 8px; padding: 8px 10px 12px; scroll-padding-inline: 14px; }
+.nc-effects>button { flex-basis: 94px; gap: 7px; padding: 4px 3px 3px; border-radius: 19px; transition: transform .2s ease,color .2s ease; }
+.nc-effects>button:hover { color: #fff; transform: translateY(-2px); }
+.nc-effects>button>span { width: 58px; height: 58px; border-radius: 20px 9px; box-shadow: 0 9px 22px #0005, inset 0 1px #ffffff24; transition: transform .2s ease,box-shadow .2s ease; }
+.nc-effects>button.selected>span { transform: translateY(-2px) scale(1.04); box-shadow: 0 0 0 2px var(--camera-green),0 10px 26px color-mix(in srgb,var(--thumb-color) 40%,transparent),inset 0 1px #ffffff36; }
+.nc-effects>button small { max-width: 92px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; font-weight: 800; letter-spacing: -.01em; }
+@media(max-width:480px) {
+  .nc-effects { gap: 7px; padding-inline: 8px; }
+  .nc-effects>button { flex-basis: 88px; }
+  .nc-effects>button>span { width: 54px; height: 54px; }
+}

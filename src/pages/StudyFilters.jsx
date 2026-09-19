@@ -27,6 +27,15 @@ function Icon({ name, ...props }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.play}</svg>
 }
 
+function shuffleQuestions(items) {
+  const copy = [...(items || [])]
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    ;[copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]]
+  }
+  return copy
+}
+
 export default function StudyFilters() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -35,6 +44,7 @@ export default function StudyFilters() {
   const mountedRef = useRef(false), operationRef = useRef(0), captureBusyRef = useRef(false), answerLockRef = useRef(false)
   const recordingStartRef = useRef(0), recordingDurationRef = useRef(0), fileInputRef = useRef(null)
   const lastDrawAtRef = useRef(0)
+  const faceLandmarkerRef = useRef(null), tiltRafRef = useRef(null), lastVideoTimeRef = useRef(-1)
   const requestedMode = searchParams.get('mode')?.toUpperCase()
   const initialMode = ['POST', 'NEXIS', 'STORY', 'FOTO'].includes(requestedMode) ? requestedMode : 'NEXIS'
   const [filter, setFilter] = useState(STUDY_FILTERS[0])
@@ -45,11 +55,12 @@ export default function StudyFilters() {
   const [notice, setNotice] = useState(''), [phase, setPhase] = useState('ready')
   const [round, setRound] = useState(0), [score, setScore] = useState(0), [timeLeft, setTimeLeft] = useState(25)
   const [feedback, setFeedback] = useState(null), [sequence, setSequence] = useState([])
+  const [questionSet, setQuestionSet] = useState([]), [tiltStatus, setTiltStatus] = useState('idle')
   const [friends, setFriends] = useState([]), [friendIndex, setFriendIndex] = useState(0)
   const [recording, setRecording] = useState(false), [starting, setStarting] = useState(false), [elapsed, setElapsed] = useState(0)
   const [capture, setCapture] = useState(null), [previewUrl, setPreviewUrl] = useState('')
   const hasGame = filter.id !== 'none'
-  const current = GAME_QUESTIONS[filter.id]?.[round % GAME_QUESTIONS[filter.id].length]
+  const current = questionSet.length ? questionSet[round % questionSet.length] : null
   const friend = friends[friendIndex % Math.max(1, friends.length)] || { nome: 'Seu parceiro', foto_url: '' }
   const wantsVideo = mode === 'NEXIS' || (mode === 'STORY' && storyVideo)
 
@@ -105,6 +116,72 @@ export default function StudyFilters() {
   }, [facing, cameraDeviceId, cameraRetry])
   useEffect(() => {
     let active = true
+
+    function stopTilt() {
+      cancelAnimationFrame(tiltRafRef.current)
+      tiltRafRef.current = null
+      faceLandmarkerRef.current?.close?.()
+      faceLandmarkerRef.current = null
+      lastVideoTimeRef.current = -1
+    }
+
+    if (filter.id !== 'vira' || phase !== 'playing' || capture || cameraState !== 'ready' || !current) {
+      stopTilt()
+      setTiltStatus(filter.id === 'vira' && phase === 'playing' ? 'fallback' : 'idle')
+      return undefined
+    }
+
+    async function startTilt() {
+      setTiltStatus('loading')
+      try {
+        const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
+        const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm')
+        const detector = await FaceLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+          },
+          runningMode: 'VIDEO',
+          numFaces: 1,
+        })
+        if (!active) { detector.close?.(); return }
+        faceLandmarkerRef.current = detector
+        setTiltStatus('ready')
+
+        const loop = (timestamp) => {
+          if (!active) return
+          const video = videoRef.current
+          if (video?.readyState >= 2 && video.currentTime !== lastVideoTimeRef.current && !answerLockRef.current) {
+            const result = detector.detectForVideo(video, timestamp)
+            const points = result.faceLandmarks?.[0]
+            if (points?.[33] && points?.[263]) {
+              const dx = points[263].x - points[33].x
+              const slope = (points[263].y - points[33].y) / Math.max(0.001, Math.abs(dx))
+              const direction = slope > 0.16 ? 'right' : slope < -0.16 ? 'left' : ''
+              if (direction) {
+                const adjustedDirection = facing === 'user'
+                  ? direction === 'right' ? 'left' : 'right'
+                  : direction
+                const choice = current.options.find(option => adjustedDirection === 'right'
+                  ? option.startsWith('Direita:')
+                  : option.startsWith('Esquerda:'))
+                if (choice) answer(choice)
+              }
+            }
+            lastVideoTimeRef.current = video.currentTime
+          }
+          tiltRafRef.current = requestAnimationFrame(loop)
+        }
+        tiltRafRef.current = requestAnimationFrame(loop)
+      } catch {
+        if (active) setTiltStatus('fallback')
+      }
+    }
+
+    void startTilt()
+    return () => { active = false; stopTilt() }
+  }, [cameraState, capture, current, facing, filter.id, phase, questionSet, round])
+  useEffect(() => {
+    let active = true
     async function load() {
       const { data: auth } = await supabase.auth.getUser()
       if (!auth?.user) return
@@ -146,8 +223,10 @@ export default function StudyFilters() {
     return () => window.removeEventListener('keydown', keydown)
   })
   function resetGame(start = false) {
+    const questions = GAME_QUESTIONS[filter.id] || []
     answerLockRef.current = false
-    setRound(0); setScore(0); setTimeLeft(25); setFeedback(null); setSequence([]); setPhase(start ? 'playing' : 'ready')
+    setQuestionSet(shuffleQuestions(questions))
+    setRound(0); setScore(0); setTimeLeft(filter.timeLimit || 25); setFeedback(null); setSequence([]); setPhase(start ? 'playing' : 'ready')
   }
   async function switchCamera() {
     if (recording || starting || cameraState === 'loading') return
@@ -174,7 +253,13 @@ export default function StudyFilters() {
     if (mode === 'STORY' || requestedMode === 'STORY') navigate(searchParams.get('restore') === '1' ? '/novo-story?camera=1' : '/novo-story?camera=cancel', { replace: true })
     else navigate('/')
   }
-  function chooseFilter(next, event) { setFilter(next); resetGame(); event?.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }) }
+  function chooseFilter(next, event) {
+    setFilter(next)
+    answerLockRef.current = false
+    setQuestionSet(shuffleQuestions(GAME_QUESTIONS[next.id] || []))
+    setRound(0); setScore(0); setTimeLeft(next.timeLimit || 25); setFeedback(null); setSequence([]); setPhase('ready')
+    event?.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
   function finishAnswer(ok, text) { answerLockRef.current = true; if (ok) setScore(value => value + 1); setFeedback({ ok, text }); setPhase('feedback') }
   function answer(option) {
     if (phase !== 'playing' || answerLockRef.current) return
@@ -186,9 +271,10 @@ export default function StudyFilters() {
     } else finishAnswer(option === current.answer, current.hint)
   }
   function nextRound() {
+    if (!feedback?.ok && (filter.streak || filter.survival)) { setPhase('finished'); return }
     if (round + 1 >= filter.rounds) { setPhase('finished'); return }
     answerLockRef.current = false
-    setRound(value => value + 1); setTimeLeft(25); setFeedback(null); setSequence([]); setPhase('playing')
+    setRound(value => value + 1); setTimeLeft(filter.timeLimit || 25); setFeedback(null); setSequence([]); setPhase('playing')
   }
   function prepareCanvas() {
     const bounds = stageRef.current.getBoundingClientRect(), canvas = canvasRef.current
@@ -279,7 +365,7 @@ export default function StudyFilters() {
     else setCapture({ file, duration: 0 })
   }
   return createPortal(
-    <main className="nexo-camera" style={{ '--game-color': filter.color }}>
+    <main className={`nexo-camera filter-${filter.id}`} style={{ '--game-color': filter.color }}>
       <section className="nc-stage" ref={stageRef} aria-label="Câmera e jogo">
         <video className={`nc-backdrop ${facing === 'user' ? 'mirrored' : ''}`} ref={backdropRef} muted playsInline autoPlay disablePictureInPicture aria-hidden="true" />
         <video className={`nc-video ${facing === 'user' ? 'mirrored' : ''}`} ref={videoRef} muted playsInline autoPlay disablePictureInPicture aria-label="Sua câmera ao vivo" />
@@ -288,6 +374,7 @@ export default function StudyFilters() {
         <header className="nc-header"><button className="nc-icon-button" aria-label="Fechar câmera" onClick={closeCamera}><Icon name="close" /></button><div className="nc-brand">NEXO<span>criar</span></div><div className="nc-tools"><button className={`nc-icon-button ${!micEnabled ? 'is-muted' : ''}`} disabled={recording || starting} aria-label={micEnabled ? 'Desativar microfone' : 'Ativar microfone'} aria-pressed={micEnabled} onClick={() => setMicEnabled(value => !value)}><Icon name="mic" /></button><button className="nc-icon-button" aria-label={cameraState === 'loading' ? 'Trocando câmera' : 'Trocar entre câmera frontal e traseira'} disabled={recording || starting || cameraState === 'loading'} onClick={switchCamera}><Icon name="flip" /></button></div></header>
         {notice && <div className="nc-notice" role="status">{notice}<button aria-label="Fechar aviso" onClick={() => setNotice('')}>×</button></div>}
         {recording && <div className="nc-recording-badge">● REC {String(Math.floor(elapsed / 60)).padStart(2, '0')}:{String(elapsed % 60).padStart(2, '0')} / 01:00</div>}
+        {!hasGame && <div className="nc-filter-empty" role="status"><span>✨</span><strong>Escolha um desafio</strong><small>Deslize a faixa de filtros lá embaixo para começar.</small></div>}
         {hasGame && <div className="nc-game">
           <div className="nc-game-head" data-capture><span>{filter.subject} · {filter.label}</span><b>{phase === 'ready' ? `${filter.rounds} desafios` : `${score} acertos · ${timeLeft}s`}</b></div>
           {phase !== 'ready' && phase !== 'finished' && <div className="nc-question" data-capture><small>DESAFIO {round + 1} DE {filter.rounds}</small><h1>{current.prompt}</h1></div>}
@@ -301,13 +388,14 @@ export default function StudyFilters() {
                 {filter.id === 'lab' && <div className="nc-capsules" data-capture>{[0, 1, 2].map(i => <span className={i < score ? 'open' : ''} key={i}><Icon name="lab" />{i < score ? 'Livre!' : '?'}</span>)}</div>}
               </div>}
               {filter.id === 'frase' && <div className="nc-sequence" data-capture>{sequence.join(' ') || 'Toque nas palavras abaixo, em ordem.'}</div>}
-              {phase === 'feedback' ? <section className={`nc-feedback ${feedback.ok ? 'correct' : 'incorrect'}`} data-capture role="status"><strong>{feedback.ok ? '✓ Acertou!' : 'Vamos aprender!'}</strong><p>{feedback.text}</p><button className="nc-primary" onClick={nextRound}>{round + 1 === filter.rounds ? 'Ver resultado' : 'Próxima pergunta'} →</button></section> : <div className={`nc-answers ${filter.id === 'conta' ? 'bubbles' : ''}`} style={{ '--answer-count': current.options.length }}>{current.options.map((option, index) => <button key={option} data-capture className="nc-answer" disabled={sequence.includes(option)} onClick={() => answer(option)}><small>{index + 1}</small><span>{option}</span></button>)}</div>}
+               {filter.id === 'vira' && phase === 'playing' && <div className={`nc-tilt-hint ${tiltStatus}`} role="status" aria-live="polite">{tiltStatus === 'loading' ? 'Preparando a leitura do rosto…' : tiltStatus === 'fallback' ? 'Incline a cabeça ou toque em uma resposta.' : 'Incline a cabeça para escolher.'}</div>}
+               {phase === 'feedback' ? <section className={`nc-feedback ${feedback.ok ? 'correct' : 'incorrect'}`} data-capture role="status"><strong>{feedback.ok ? '✓ Acertou!' : 'Vamos aprender!'}</strong><p>{feedback.text}</p><button className="nc-primary" onClick={nextRound}>{round + 1 === filter.rounds ? 'Ver resultado' : 'Próxima pergunta'} →</button></section> : <div className={`nc-answers ${filter.id === 'conta' ? 'bubbles' : ''}`} style={{ '--answer-count': current.options.length }}>{current.options.map((option, index) => <button key={option} data-capture className="nc-answer" disabled={sequence.includes(option)} onClick={() => answer(option)}><small>{index + 1}</small><span>{option}</span></button>)}</div>}
             </>}
           </div>
         </div>}
       </section>
       <footer className="nc-controls">
-        <div className="nc-effects" aria-label="Escolher efeito">{STUDY_FILTERS.map(item => <button key={item.id} disabled={recording || starting} aria-pressed={item.id === filter.id} className={item.id === filter.id ? 'selected' : ''} onClick={event => chooseFilter(item, event)} style={{ '--thumb-color': item.color }}><span><Icon name={item.icon} /></span><small>{item.label}</small></button>)}</div>
+        <div className="nc-effects" aria-label="Escolher desafio">{STUDY_FILTERS.map(item => <button key={item.id} title={item.description} disabled={recording || starting} aria-pressed={item.id === filter.id} className={item.id === filter.id ? 'selected' : ''} onClick={event => chooseFilter(item, event)} style={{ '--thumb-color': item.color }}><span><Icon name={item.icon} /></span><small>{item.label}</small></button>)}</div>
         <div className="nc-capture-row"><button className="nc-gallery" aria-label="Abrir galeria" disabled={recording || starting} onClick={() => fileInputRef.current?.click()}><Icon name="gallery" /><span>Galeria</span></button><div className="nc-shutter-wrap"><button className={`nc-shutter ${recording ? 'recording' : ''}`} disabled={cameraState !== 'ready' || starting} aria-label={recording ? 'Parar gravação' : wantsVideo ? 'Iniciar gravação' : 'Tirar foto'} onClick={recording ? stopRecording : wantsVideo ? startRecording : takePhoto}><span>{!recording && <Icon name={wantsVideo ? 'play' : 'camera'} />}</span></button><small>{starting ? 'Preparando…' : recording ? 'Toque para parar' : wantsVideo ? 'Gravar até 60 s' : 'Tirar foto'}</small></div><div className="nc-capture-extra">{mode === 'STORY' ? <button disabled={recording || starting} onClick={() => setStoryVideo(value => !value)}>{storyVideo ? 'Vídeo' : 'Foto'} ⇄</button> : hasGame && friends.length > 1 ? <button disabled={recording || starting} onClick={() => setFriendIndex(value => value + 1)}>Trocar<br />amigo ↻</button> : <span>1×<small>sem zoom</small></span>}</div></div>
         <nav className="nc-modes" aria-label="Tipo de publicação">{['POST', 'NEXIS', 'STORY', 'FOTO', 'NOTAS'].map(value => <button key={value} aria-pressed={value === mode} disabled={recording || starting} className={value === mode ? 'selected' : ''} onClick={() => selectMode(value)}>{value}</button>)}</nav>
       </footer>
