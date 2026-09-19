@@ -18581,6 +18581,45 @@ body[data-theme='verde'] .card {
   }
 }
 
+/* No chat, composer e navegação ocupam linhas próprias: nada fica por cima do campo. */
+@media (max-width: 767px) {
+  .chat-room-shell {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .chat-room-shell > .chat-room-page {
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 24px !important;
+  }
+
+  .chat-room-shell > .chat-composer-shell {
+    position: relative !important;
+    left: auto;
+    bottom: auto !important;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    padding: 8px max(9px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(9px, var(--safe-left));
+    z-index: 10;
+  }
+
+  .chat-room-shell > .bottom-nav {
+    position: relative !important;
+    left: auto;
+    bottom: auto !important;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    z-index: 20;
+  }
+}
+
 @media (max-width: 359px) {
   .feed-brand span {
     display: none;
