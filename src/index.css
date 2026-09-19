@@ -18831,3 +18831,39 @@ body[data-theme='verde'] .card {
     display: none;
   }
 }
+
+/* A navegação móvel usa células iguais, mesmo quando um rótulo é maior. */
+@media (max-width: 767px) {
+  .bottom-nav {
+    display: flex;
+    align-items: stretch;
+    gap: 3px;
+  }
+
+  .bottom-nav a {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    max-width: none;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .bottom-nav a > svg,
+  .bottom-nav .nav-icon-wrapper {
+    flex: 0 0 23px;
+    width: 23px;
+    height: 23px;
+  }
+
+  .bottom-nav-label {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+}
