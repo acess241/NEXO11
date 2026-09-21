@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { obterUrlRecuperacao } from '../lib/appUrl'
 import BottomNav from '../components/BottomNav'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ProfileBlocks from '../components/ProfileBlocks'
@@ -118,7 +119,10 @@ export default function Profile() {
     setSalvandoSenha(true)
 
     try {
-      const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/reset-senha` : undefined
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? obterUrlRecuperacao(window.location, import.meta.env.BASE_URL)
+          : undefined
 
       const { error } = await supabase.auth.resetPasswordForEmail(emailConta, { redirectTo })
       if (error) throw error

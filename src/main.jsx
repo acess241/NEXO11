@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
+import { restaurarRotaDoFallback } from './lib/appUrl'
 import { aplicarTema, obterTemaSalvo } from './lib/theme'
 import './index.css'
 
+restaurarRotaDoFallback(window.location, window.history, import.meta.env.BASE_URL)
 aplicarTema(obterTemaSalvo())
 
 window.addEventListener('beforeinstallprompt', (event) => {

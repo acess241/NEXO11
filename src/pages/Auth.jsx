@@ -7,6 +7,7 @@ import {
   normalizarMatricula,
 } from '../lib/education'
 import { salvarContaDaSessao } from '../lib/savedAccounts'
+import { criarUrlDoApp, obterUrlRecuperacao } from '../lib/appUrl'
 import {
   SCHOOL_CITY_OPTIONS,
   getCityKeyFromSchoolName,
@@ -91,7 +92,7 @@ function detectarModoRecuperacao() {
 
 function obterRedirectRecuperacao() {
   if (typeof window === 'undefined') return undefined
-  return `${window.location.origin}/reset-senha`
+  return obterUrlRecuperacao(window.location, import.meta.env.BASE_URL)
 }
 
 export default function Auth({ forceRecoveryMode = false, allowAddAccount = false }) {
@@ -443,7 +444,11 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
       setConfirmarSenha('')
 
       if (typeof window !== 'undefined') {
-        window.history.replaceState({}, '', '/auth')
+        window.history.replaceState(
+          {},
+          '',
+          criarUrlDoApp('auth', window.location, import.meta.env.BASE_URL)
+        )
       }
     } catch (err) {
       setErro(traduzirErro(err))

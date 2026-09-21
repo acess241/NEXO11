@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>NEXO 11</title>
+  </head>
+  <body>
+    <p>Carregando o NEXO 11...</p>
+    <script>
+      (function () {
+        var partes = window.location.pathname.split('/').filter(Boolean)
+        var base = partes.length > 0 ? '/' + partes[0] + '/' : '/'
+        var rota = '/' + partes.slice(1).join('/') + window.location.search
+        var destino = base + '?__nexo_path=' + encodeURIComponent(rota) + window.location.hash
+        window.location.replace(destino)
+      })()
+    </script>
+  </body>
+</html>
