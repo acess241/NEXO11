@@ -4,6 +4,7 @@ import { friendlyGroupError, getGroup, getMyProfile, listGroupMembers, notifyGro
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import AutoLinkText from '../components/AutoLinkText'
+import { moderateBeforeSend, moderationMessage, openReportDialog } from '../lib/moderation'
 
 function ComposerIcon({ name }) {
   const paths = {
@@ -101,6 +102,8 @@ export default function GroupRoom() {
     event.preventDefault()
     const content = text.trim()
     if (!content || !me || !canSend) return
+    const result = await moderateBeforeSend({ contentType: 'message', text: content, metadata: { group_id: groupId }, recentTexts: messages.filter((item) => item.sender_profile_id === me.id).slice(-5).map((item) => item.content) })
+    if (result.decision !== 'allow') { setError(moderationMessage(result, 'message')); return }
     setText('')
     const { error: sendError } = await supabase.from('nexo_group_messages').insert({
       group_id: groupId, sender_profile_id: me.id, content,
@@ -111,6 +114,10 @@ export default function GroupRoom() {
 
   async function uploadFile(file, kindOverride = '', sendOnce = false) {
     if (!file || !me) return
+    if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(file.type)) {
+      setError('Conteúdo aguardando análise. Este formato ainda não pode ser enviado.')
+      return
+    }
     try {
       setUploading(true)
       setError('')
@@ -292,7 +299,8 @@ export default function GroupRoom() {
                 {message.message_type === 'text' || !message.media_url ? <p><AutoLinkText text={message.content} /></p> : null}
               </>}
               {!message.deleted_at ? <div className="group-message-actions">
-                <button onClick={() => setDeleteTarget(message)}>Apagar</button>
+                {mine || isAdmin ? <button onClick={() => setDeleteTarget(message)}>Apagar</button> : null}
+                {!mine ? <button onClick={() => openReportDialog({ targetType: message.message_type === 'image' ? 'image' : message.message_type === 'video' ? 'video' : 'message', targetId: message.id, reportedProfileId: message.sender_profile_id, label: message.message_type === 'image' ? 'imagem' : message.message_type === 'video' ? 'vídeo' : 'mensagem' })}>Denunciar</button> : null}
               </div> : null}
               <time>{new Date(message.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</time>
             </article>

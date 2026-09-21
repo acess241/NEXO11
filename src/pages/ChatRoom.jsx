@@ -14,11 +14,12 @@ import {
   traduzirErroChat,
 } from '../lib/chat'
 import { traduzirErroAcademia } from '../lib/academy'
-import { estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
+import { bloquearPerfil, estaBloqueadoPorMim, traduzirErroBloqueio } from '../lib/blocks'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ProfileAvatar from '../components/ProfileAvatar'
+import { moderateBeforeSend, moderationMessage, openReportDialog } from '../lib/moderation'
 
 function IconeVoltar() {
   return (
@@ -520,6 +521,7 @@ export default function ChatRoom() {
   const [processandoAudio, setProcessandoAudio] = useState(false)
   const [erro, setErro] = useState('')
   const [mensagemParaApagar, setMensagemParaApagar] = useState(null)
+  const [avisosSegurancaOcultos, setAvisosSegurancaOcultos] = useState(new Set())
   const [detalhesConversaAbertos, setDetalhesConversaAbertos] = useState(false)
   const [apelidoConversa, setApelidoConversa] = useState('')
   const [salvandoApelido, setSalvandoApelido] = useState(false)
@@ -2050,6 +2052,17 @@ export default function ChatRoom() {
 
     if ((!conteudoDigitado && !temMidia) || !meuPerfil || !destinatario || enviando) return
 
+    const resultadoModeracao = await moderateBeforeSend({
+      contentType: 'message',
+      text: conteudoDigitado,
+      metadata: { recipient_profile_id: destinatario.id },
+      recentTexts: mensagens.filter((item) => item.sender_profile_id === meuPerfil.id).slice(-5).map((item) => item.content),
+    })
+    if (resultadoModeracao.decision !== 'allow') {
+      setErro(moderationMessage(resultadoModeracao, 'message'))
+      return
+    }
+
     setErro('')
     setEnviando(true)
 
@@ -2060,6 +2073,9 @@ export default function ChatRoom() {
       await enviarEventoDigitando(false)
 
       if (temMidia) {
+        if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(arquivoMidia.type)) {
+          throw new Error('Conteúdo aguardando análise. Este formato ainda não pode ser enviado.')
+        }
         mediaPayload = await uploadMidiaChat(arquivoMidia)
       }
 
@@ -2549,9 +2565,10 @@ export default function ChatRoom() {
                         {!mensagem.deleted_at && !deveOcultarTextoMensagem(mensagem) ? (
                           <p><AutoLinkText text={mensagem.content} /></p>
                         ) : null}
+                        {!ehMinha && (mensagem.moderation_status === 'blocked' || mensagem.content?.startsWith('Uma mensagem enviada para você foi removida')) && !avisosSegurancaOcultos.has(mensagem.id) ? <div className="chat-safety-card"><strong>Você deseja continuar conversando com esta pessoa?</strong><div><button type="button" onClick={() => setAvisosSegurancaOcultos((current) => new Set([...current, mensagem.id]))}>Continuar conversa</button><button type="button" onClick={async () => { try { await bloquearPerfil(meuPerfil.id, destinatario.id); navigate('/mensagens') } catch { setErro('Não foi possível bloquear agora.') } }}>Bloquear usuário</button><button type="button" onClick={() => openReportDialog({ targetType: 'message', targetId: mensagem.id, reportedProfileId: destinatario.id, label: 'mensagem' })}>Denunciar</button></div></div> : null}
                         {!mensagem.deleted_at ? (
                           <button type="button" className="chat-message-menu-btn"
-                            onClick={() => setMensagemParaApagar(mensagem)}>•••</button>
+                            onClick={() => ehMinha ? setMensagemParaApagar(mensagem) : openReportDialog({ targetType: mensagem.media_kind || 'message', targetId: mensagem.id, reportedProfileId: destinatario.id, label: mensagem.media_kind === 'image' ? 'imagem' : mensagem.media_kind === 'video' ? 'vídeo' : 'mensagem' })}>•••</button>
                         ) : null}
                         <div className="chat-bubble-meta">
                           <span>{formatarHoraMensagem(mensagem.created_at)}</span>

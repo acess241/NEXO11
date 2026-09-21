@@ -8,6 +8,7 @@ import {
   DEFAULT_INSTITUTION_ID,
   DEFAULT_INSTITUTION_NAME,
 } from '../lib/education'
+import { analyzeText } from '../lib/moderation'
 
 export default function EditProfile() {
   const [perfil, setPerfil] = useState(null)
@@ -184,6 +185,16 @@ export default function EditProfile() {
 
     if (erroUsername) {
       setErro(erroUsername)
+      return
+    }
+
+    if (analyzeText(`${nome} ${usernameLimpo} ${bio}`).decision !== 'allow') {
+      setErro('Seu nome, nome de usuário ou biografia pode violar as Regras da Comunidade. Revise o conteúdo.')
+      return
+    }
+
+    if (fotoArquivo && !['image/jpeg', 'image/png', 'image/webp'].includes(fotoArquivo.type)) {
+      setErro('Conteúdo aguardando análise. Escolha uma imagem JPG, PNG ou WebP.')
       return
     }
 

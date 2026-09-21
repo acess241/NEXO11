@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { LEGAL_VERSION, LEGAL_VERSION_LABEL } from '../lib/legal'
 
-const LEGAL_ROUTES = ['/privacidade', '/termos', '/seguranca-responsabilidade']
+const LEGAL_ROUTES = ['/privacidade', '/termos', '/seguranca-responsabilidade', '/regras-da-comunidade']
 
 export default function LegalAcceptanceGate({ session }) {
   const location = useLocation()
@@ -125,7 +125,7 @@ export default function LegalAcceptanceGate({ session }) {
             </label>
             <label>
               <input type="checkbox" checked={checks.safety} onChange={(event) => setChecks((value) => ({ ...value, safety: event.target.checked }))} />
-              <span>Li e aceito o <a href={`${base}seguranca-responsabilidade`} target="_blank" rel="noreferrer">Termo de Segurança e Responsabilidade</a>.</span>
+              <span>Li e aceito o <a href={`${base}seguranca-responsabilidade`} target="_blank" rel="noreferrer">Termo de Segurança e Responsabilidade</a> e as <a href={`${base}regras-da-comunidade`} target="_blank" rel="noreferrer">Regras da Comunidade</a>.</span>
             </label>
           </div>
 
@@ -145,4 +145,3 @@ export default function LegalAcceptanceGate({ session }) {
     </div>
   )
 }
-

@@ -9,6 +9,7 @@ import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
 import ShareMenu from '../components/ShareMenu'
 import ProfileAvatar from '../components/ProfileAvatar'
+import { moderateBeforeSend, moderationMessage } from '../lib/moderation'
 
 function NexisVideo({ item, ativo, mudo, onMediaError, onProgress, onTogglePause }) {
   const ref = useRef(null)
@@ -142,6 +143,8 @@ export default function NexisFeed() {
   async function publicarComentario(event) {
     event.preventDefault()
     if (!comentando || !comentario.trim() || !meuPerfil) return
+    const result = await moderateBeforeSend({ contentType: 'comment', text: comentario })
+    if (result.decision !== 'allow') return setErro(moderationMessage(result, 'comment'))
     const { data, error } = await supabase.from('comments').insert({ post_id: comentando.id, profile_id: meuPerfil.id, content: comentario.trim() }).select().single()
     if (error) return setErro(error.message)
     const novo = { ...data, autor: meuPerfil }

@@ -3,6 +3,7 @@ import { POST_TYPE_META, normalizarTipoPost, obterMediaKind } from '../lib/postT
 import { compartilharPublicacao } from '../lib/share'
 import { supabase } from '../lib/supabase'
 import ShareMenu from './ShareMenu'
+import { moderateBeforeSend, moderationMessage } from '../lib/moderation'
 
 function IconeNotas() {
   return (
@@ -400,6 +401,8 @@ export default function ProfileBlocks({
     event.preventDefault()
     const texto = comentario.trim()
     if (!texto || !meuPerfil || !postAbertoId || enviando) return
+    const result = await moderateBeforeSend({ contentType: 'comment', text: texto })
+    if (result.decision !== 'allow') { setAviso(moderationMessage(result, 'comment')); return }
     setEnviando(true)
     setAviso('')
     try {

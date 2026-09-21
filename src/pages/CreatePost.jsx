@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase'
 import InstantCameraSheet from '../components/InstantCameraSheet'
 import { criarNotificacaoSePermitido } from '../lib/notificationPreferences'
 import { clearCaptureDraft, getCaptureDraft } from '../lib/captureDraft'
+import { moderateBeforeSend, moderationMessage } from '../lib/moderation'
 
 function IconeNotas() {
   return (
@@ -322,6 +323,17 @@ export default function CreatePost() {
 
     if (!perfil) {
       setErro('Perfil não encontrado.')
+      return
+    }
+
+    const resultadoModeracao = await moderateBeforeSend({ contentType: 'post', text: texto })
+    if (resultadoModeracao.decision !== 'allow') {
+      setErro(moderationMessage(resultadoModeracao, 'post'))
+      return
+    }
+
+    if (arquivo && !['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'].includes(arquivo.type)) {
+      setErro('Conteúdo aguardando análise. Este formato ainda não pode ser publicado.')
       return
     }
 

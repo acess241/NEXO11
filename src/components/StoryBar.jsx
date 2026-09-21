@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { lerLegendaStory } from '../lib/storyRepost'
 import ProfileAvatar from './ProfileAvatar'
+import { moderateBeforeSend, moderationMessage, openReportDialog } from '../lib/moderation'
 
 function formatarTempoRelativo(dataIso) {
   const data = new Date(dataIso)
@@ -165,6 +166,8 @@ function StoryViewer({
   async function enviarResposta(event) {
     event.preventDefault()
     if (!resposta.trim() || !onReply || enviandoResposta) return
+    const result = await moderateBeforeSend({ contentType: 'message', text: resposta, metadata: { story_id: storyAtual.id, recipient_profile_id: storyAtual.profile_id } })
+    if (result.decision !== 'allow') { window.alert(moderationMessage(result, 'message')); return }
     setEnviandoResposta(true)
     try {
       await onReply(storyAtual, resposta)
@@ -404,6 +407,7 @@ function StoryViewer({
             {!ehMeuStory ? (
               <button type="button" className="story-share-button" onClick={() => onShare?.(storyAtual)} aria-label="Compartilhar story">⌁</button>
             ) : null}
+            {!ehMeuStory ? <button type="button" className="story-share-button" onClick={() => openReportDialog({ targetType: 'story', targetId: storyAtual.id, reportedProfileId: storyAtual.profile_id, label: 'story' })} aria-label="Denunciar story">!</button> : null}
           </div>
         </div>
         {visualizadores ? (

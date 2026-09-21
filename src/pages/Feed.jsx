@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase'
 import { dispararAtualizacaoChat } from '../lib/chat'
 import { compartilharPublicacao } from '../lib/share'
 import logoNexo from '/logo-novo.png'
+import { moderateBeforeSend, moderationMessage, openReportDialog } from '../lib/moderation'
 
 const INCENTIVOS_CRIACAO = [
   { titulo: 'Mostre o que você sabe fazer', texto: 'Uma ideia simples pode ensinar, inspirar ou divertir alguém hoje.' },
@@ -898,6 +899,8 @@ export default function Feed() {
 
     try {
       const texto = novoComentario[postId]
+      const result = await moderateBeforeSend({ contentType: 'comment', text: texto })
+      if (result.decision !== 'allow') { setErro(moderationMessage(result, 'comment')); return }
 
       const { data, error } = await supabase
         .from('comments')
@@ -937,6 +940,8 @@ export default function Feed() {
 
     try {
       const texto = respostaComentario[comentarioPaiId]
+      const result = await moderateBeforeSend({ contentType: 'comment', text: texto })
+      if (result.decision !== 'allow') { setErro(moderationMessage(result, 'comment')); return }
 
       const { data, error } = await supabase
         .from('comments')
@@ -1108,6 +1113,7 @@ export default function Feed() {
 
           <p className="comment-date">{formatarData(comentario.created_at)}</p>
           <p>{comentario.content}</p>
+          {!ehMeuComentario ? <button type="button" className="comment-report-btn" onClick={() => openReportDialog({ targetType: 'comment', targetId: comentario.id, reportedProfileId: comentario.profile_id, label: 'comentário' })}>Denunciar</button> : null}
 
           <div className="comment-actions">
             <button

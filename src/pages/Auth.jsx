@@ -8,6 +8,7 @@ import {
 } from '../lib/education'
 import { salvarContaDaSessao } from '../lib/savedAccounts'
 import { criarUrlDoApp, obterUrlRecuperacao } from '../lib/appUrl'
+import { analyzeText } from '../lib/moderation'
 import {
   SCHOOL_CITY_OPTIONS,
   getCityKeyFromSchoolName,
@@ -473,6 +474,11 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
         return
       }
 
+      if (analyzeText(`${nome} ${username}`).decision !== 'allow') {
+        setErro('Seu nome ou nome de usuário pode violar as Regras da Comunidade. Revise e tente novamente.')
+        return
+      }
+
       if (!faixaEtaria) {
         setErro('Informe sua faixa etária para continuar.')
         return
@@ -484,7 +490,7 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
       }
 
       if (!aceitouDocumentos) {
-        setErro('Leia e aceite a Política de Privacidade e os Termos de Uso para continuar.')
+        setErro('Leia e aceite a Política de Privacidade, os Termos de Uso e as Regras da Comunidade para continuar.')
         return
       }
 
@@ -578,6 +584,7 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
               age_range: faixaEtaria,
               privacy_policy_version: '1.0',
               terms_version: '1.0',
+              community_rules_version: '1.0',
               legal_accepted_at: new Date().toISOString(),
             },
           },
@@ -893,8 +900,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                         required
                       />
                       <span>
-                        Li e aceito a <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}privacidade`, '_blank')}>Política de Privacidade</button>
-                        {' '}e os <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}termos`, '_blank')}>Termos de Uso</button>.
+                        Para utilizar o NEXO 11, você precisa respeitar as regras. Li e aceito a <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}privacidade`, '_blank')}>Política de Privacidade</button>,
+                        {' '}os <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}termos`, '_blank')}>Termos de Uso</button> e as <button type="button" onClick={() => window.open(`${import.meta.env.BASE_URL}regras-da-comunidade`, '_blank')}>Regras da Comunidade</button>.
                       </span>
                     </label>
                   </>

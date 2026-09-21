@@ -11,6 +11,8 @@ import UpdateAnnouncement from './components/UpdateAnnouncement'
 import LegalAcceptanceGate from './components/LegalAcceptanceGate'
 import GlobalXpRanking from './components/GlobalXpRanking'
 import SocialMetaBridge from './components/SocialMetaBridge'
+import ReportDialog from './components/ReportDialog'
+import AccountSafetyGate from './components/AccountSafetyGate'
 
 const Auth = lazy(() => import('./pages/Auth'))
 const Feed = lazy(() => import('./pages/Feed'))
@@ -42,6 +44,8 @@ const PrivacyCenter = lazy(() => import('./pages/PrivacyCenter'))
 const PrivacyPolicy = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.PrivacyPolicy })))
 const TermsOfUse = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.TermsOfUse })))
 const SafetyResponsibilityTerms = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.SafetyResponsibilityTerms })))
+const CommunityRules = lazy(() => import('./pages/CommunityRules'))
+const ModerationDashboard = lazy(() => import('./pages/ModerationDashboard'))
 
 function PageLoader() {
   return <SocialLoader variant="feed" />
@@ -159,6 +163,8 @@ export default function App() {
   return (
     <>
       <SocialMetaBridge />
+      <ReportDialog />
+      <AccountSafetyGate session={session} />
       <PullToRefresh />
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />
@@ -177,6 +183,12 @@ export default function App() {
           <Route path="/privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos" element={<TermsOfUse />} />
           <Route path="/seguranca-responsabilidade" element={<SafetyResponsibilityTerms />} />
+          <Route path="/regras-da-comunidade" element={<CommunityRules />} />
+
+          <Route
+            path="/administracao/moderacao"
+            element={<ProtectedRoute session={session}><ModerationDashboard /></ProtectedRoute>}
+          />
 
           <Route
             path="/"

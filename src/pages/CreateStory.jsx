@@ -6,6 +6,7 @@ import { clearCaptureDraft, getCaptureDraft, saveCaptureDraft } from '../lib/cap
 import { criarUrlAssinadaParaMidia } from '../lib/storageMedia'
 import { obterMediaKind } from '../lib/postTypes'
 import { serializarLegendaStory } from '../lib/storyRepost'
+import { moderateBeforeSend, moderationMessage } from '../lib/moderation'
 
 function IconeCamera() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" /><circle cx="12" cy="13" r="4" /></svg>
@@ -401,6 +402,9 @@ export default function CreateStory() {
     setErro('')
     if (!arquivo) return setErro('Selecione uma foto ou um vídeo.')
     if (!perfil) return setErro('Perfil não encontrado.')
+    const resultadoModeracao = await moderateBeforeSend({ contentType: 'story', text: caption })
+    if (resultadoModeracao.decision !== 'allow') return setErro(moderationMessage(resultadoModeracao, 'post'))
+    if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'].includes(arquivo.type)) return setErro('Conteúdo aguardando análise. Este formato ainda não pode ser publicado.')
     setEnviando(true)
     try {
       const extensao = arquivo.name.split('.').pop() || (mediaKind === 'video' ? 'mp4' : 'jpg')
