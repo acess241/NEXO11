@@ -33,3 +33,12 @@ test('mensagem repetida vira spam somente depois de reincidencia', () => {
 test('normalizacao preserva palavras para analise contextual', () => {
   assert.deepEqual(normalizeModerationText('V0CÊ   É!'), { words: 'voce e', compact: 'vocee' })
 })
+
+test('remove invisiveis e reduz repeticoes usadas para burlar', () => {
+  assert.equal(analyzeText('p\u200boooooorr4').decision, 'edit')
+})
+
+test('novo dicionario reconhece insulto direto sem punir substring inocente', () => {
+  assert.equal(analyzeText('você é um imbecil').decision, 'block')
+  assert.equal(analyzeText('estudamos ocupação e paulistas').decision, 'allow')
+})

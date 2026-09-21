@@ -88,11 +88,11 @@ grant execute on function public.nexo_can_moderate(boolean) to authenticated;
 
 create or replace function public.nexo_moderation_normalize(p_text text)
 returns text language sql immutable as $$
-  select regexp_replace(
-    translate(lower(coalesce(p_text,'')),
+  select regexp_replace(regexp_replace(
+    translate(lower(replace(replace(replace(coalesce(p_text,''),chr(8203),''),chr(8288),''),chr(65279),'')),
       'áàâãäéèêëíìîïóòôõöúùûüçñ0@123456789$',
       'aaaaaeeeeiiiiooooouuuucnoaizeasgtbgs'),
-    '[^a-z0-9]+','','g')
+    '[^a-z0-9]+','','g'),'([a-z0-9])\1{2,}','\1','g')
 $$;
 
 create or replace function public.nexo_detect_text(p_text text)
@@ -104,9 +104,9 @@ begin
   if v ~ '(pornografiainfantil|nud(ez|es).*(crianca|menor)|exploracaosexual|aliciar.*(crianca|menor))' then return query select 'review',4::smallint,'critical_illegal',.98::numeric; return; end if;
   if v ~ '(voutematar|voumatarvoce|voutebater|vouacabarcomvoce|se[m]?ata|voumematar|automutil)' then return query select 'block',3::smallint,case when v ~ '(matar|bater|acabar)' then 'threat' else 'self_harm' end,.94::numeric; return; end if;
   if v ~ '(mandanude|fotopelad|sexocommenor|morteaos|temqueexterminar|comoroubar|comoinvadir|comohackear)' then return query select 'block',3::smallint,'dangerous_content',.92::numeric; return; end if;
-  if v ~ '(vaisefoder|vaitomarnocu|ninguemgostadevoce|vocee(burro|idiota|inutil|nojento))' then return query select 'block',2::smallint,'bullying_harassment',.90::numeric; return; end if;
+  if v ~ '(vaisefoder|vaitomarnocu|ninguemgostadevoce|filh[oa]daputa|fdp|voce(e|eum|euma|um|uma)?(babaca|idiota|imbecil|estupido|burro|otario|cretino|inutil|nojento|escroto|canalha|safado|vagabundo|miseravel|verme|palhaco|corno))' then return query select 'block',2::smallint,'bullying_harassment',.90::numeric; return; end if;
   if v ~ '(minhasenhae|meuenderecoe|bitly|tinyurl|discordgg)' then return query select 'review',2::smallint,'personal_data_or_link',.86::numeric; return; end if;
-  if v ~ '(porra|caralho|merda|foder|fodase)' then return query select 'edit',1::smallint,'inappropriate_language',.82::numeric; return; end if;
+  if v ~ '(bucet|cona|cuzinho|cuzao|fode|fuder|fudid|pica|pinto|piroca|punhet|siririca|merda|bosta|cagad|cagar|caguei|coco|mijo|porra|puta|puto|putaria|pqp|caralho|cacete|desgrac|maldit|demonio|babaca|imbecil|idiota|estupid|burro|otari|cretin|inutil|nojent|escrot|canalha|safad|vagabund|lazarent|miseravel|verme|traste|energumeno|paspalh|palhac|arrombad|cornud|vadia|piranha|rameir|prostitut)' then return query select 'edit',1::smallint,'inappropriate_language',.84::numeric; return; end if;
   return query select 'allow',0::smallint,null::text,.99::numeric;
 end $$;
 
