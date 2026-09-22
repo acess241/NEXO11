@@ -7,6 +7,15 @@ import { supabase } from '../lib/supabase'
 import { openReportDialog } from '../lib/moderation'
 import { TALENT_CATEGORIES } from '../lib/talents'
 
+const TALENT_ICONS = {
+  all: '✦', artes_visuais: '◐', musica: '♫', fotografia: '◉', escrita: '✎',
+  danca: '∿', tecnologia: '⌘', artesanato: '◇', outros: '✷',
+}
+
+function MessageIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 9h8M8 13h5"/></svg>
+}
+
 export default function Talents() {
   const [items, setItems] = useState([])
   const [me, setMe] = useState(null)
@@ -57,6 +66,8 @@ export default function Talents() {
   }
 
   const visible = useMemo(() => category === 'all' ? items : items.filter((item) => item.talent_category === category), [items, category])
+  const creators = useMemo(() => new Set(items.map((item) => item.profile_id)).size, [items])
+  const activeCategories = useMemo(() => new Set(items.map((item) => item.talent_category).filter(Boolean)).size, [items])
   const labelFor = (value) => TALENT_CATEGORIES.find(([key]) => key === value)?.[1] || 'Talento'
 
   if (loading) return <SocialLoader variant="feed" showBottomNav />
@@ -66,23 +77,35 @@ export default function Talents() {
       <header className="topbar talents-topbar">
         <button type="button" onClick={() => navigate('/')} aria-label="Voltar">←</button>
         <div><span>EXPRESSÃO NEXO</span><h1>Talentos</h1></div>
-        <button type="button" className="talents-create" onClick={() => navigate('/talentos/criar')}>Publicar</button>
+        <div className="talents-top-actions">
+          <button type="button" className="talents-message" onClick={() => navigate('/conversas')} aria-label="Abrir mensagens"><MessageIcon /></button>
+          <button type="button" className="talents-create" onClick={() => navigate('/talentos/criar')} aria-label="Publicar talento"><span>✦</span><b>Publicar</b></button>
+        </div>
       </header>
       <main className="talents-page">
         <section className="talents-hero">
-          <div><span>FEITO POR QUEM ESTÁ AQUI</span><h2>Um palco para o que cada pessoa sabe criar.</h2><p>Descubra desenhos, músicas, textos, fotografias, tecnologia e outras formas de expressão da comunidade escolar.</p></div>
-          <button type="button" onClick={() => navigate('/talentos/criar')}>Mostrar meu talento <b>＋</b></button>
+          <div className="talents-aurora" aria-hidden="true"><i /><i /><i /></div>
+          <div className="talents-hero-copy"><span>FEITO POR QUEM ESTÁ AQUI</span><h2>O talento da escola<br/><em>ganha palco.</em></h2><p>Uma galeria viva para desenhos, músicas, textos, fotografias, tecnologia e tudo que ainda não ganhou nome.</p></div>
+          <div className="talents-live-panel"><span><i /> PALCO VIVO</span><strong>{items.length || '00'}</strong><small>criações compartilhadas</small><button type="button" onClick={() => navigate('/talentos/criar')}>Abrir meu espaço <b>↗</b></button></div>
         </section>
+        <section className="talents-pulse" aria-label="Pulso criativo da comunidade">
+          <div><span>CRIAÇÕES</span><b>{items.length}</b></div><i />
+          <div><span>CRIADORES</span><b>{creators}</b></div><i />
+          <div><span>LINGUAGENS ATIVAS</span><b>{activeCategories}</b></div>
+          <p>Todo mundo tem algo que merece ser visto.</p>
+        </section>
+        <div className="talents-marquee" aria-hidden="true"><div>ARTE ✦ MÚSICA ✦ IDEIAS ✦ MOVIMENTO ✦ CÓDIGO ✦ PALAVRA ✦ IMAGEM ✦ ARTE ✦ MÚSICA ✦ IDEIAS ✦</div></div>
         <nav className="talents-categories" aria-label="Categorias de talentos">
-          {TALENT_CATEGORIES.map(([key, label]) => <button key={key} type="button" className={category === key ? 'active' : ''} onClick={() => setCategory(key)}>{label}</button>)}
+          {TALENT_CATEGORIES.map(([key, label]) => <button key={key} type="button" data-category={key} className={category === key ? 'active' : ''} onClick={() => setCategory(key)}><i>{TALENT_ICONS[key]}</i><span>{label}</span></button>)}
         </nav>
         {notice ? <div className="alert-box sucesso-box talent-notice">{notice}</div> : null}
         {error ? <div className="alert-box erro-box">{error}</div> : null}
         {!visible.length ? <section className="talents-empty"><b>✦</b><h3>Ainda não há talentos aqui</h3><p>Seja a primeira pessoa a abrir este espaço.</p><button type="button" onClick={() => navigate('/talentos/criar')}>Criar publicação</button></section> : null}
         <section className="talents-grid">
-          {visible.map((item) => (
-            <article className={`talent-card ${item.media_kind === 'video' ? 'is-video' : ''}`} key={item.id}>
-              {item.media_url ? <div className="talent-media">{item.media_kind === 'video' ? <video src={item.media_url} controls preload="metadata" /> : <img src={item.media_url} alt={item.talent_title || 'Talento publicado'} />}</div> : <div className="talent-written-mark">“</div>}
+          {visible.map((item, index) => (
+            <article className={`talent-card talent-${item.talent_category || 'outros'} ${item.media_kind === 'video' ? 'is-video' : ''}`} style={{ '--talent-order': index % 9 }} key={item.id}>
+              <span className="talent-index">Nº {String(index + 1).padStart(2, '0')}</span>
+              {item.media_url ? <div className="talent-media">{item.media_kind === 'video' ? <video src={item.media_url} controls preload="metadata" /> : <img src={item.media_url} alt={item.talent_title || 'Talento publicado'} />}</div> : <div className="talent-written-mark"><span>{TALENT_ICONS[item.talent_category] || '✷'}</span><small>criação em palavras</small></div>}
               <div className="talent-card-body">
                 {item.moderation_status === 'pending' ? <span className="talent-review-badge">Aguardando análise</span> : null}
                 <span className="talent-category">{labelFor(item.talent_category)}</span>

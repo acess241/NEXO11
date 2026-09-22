@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useRef } from 'react'
 import BottomNav from '../components/BottomNav'
 import PostCard from '../components/PostCard'
 import SocialLoader from '../components/SocialLoader'
@@ -88,6 +89,15 @@ function IconeMensagem() {
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
       <path d="M8 9h8M8 13h5" />
+    </svg>
+  )
+}
+
+function IconeTalento() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="m12 2 1.8 5.1L19 9l-5.2 1.9L12 16l-1.8-5.1L5 9l5.2-1.9L12 2Z" />
+      <path d="m19 15 .9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9L19 15ZM5 14l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z" />
     </svg>
   )
 }
@@ -227,6 +237,7 @@ export default function Feed() {
   const [postParaApagar, setPostParaApagar] = useState(null)
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0)
   const [linkStatus, setLinkStatus] = useState('idle')
+  const swipeStartRef = useRef(null)
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -238,6 +249,23 @@ export default function Feed() {
     const indice = (hoje.getFullYear() * 372 + hoje.getMonth() * 31 + hoje.getDate()) % INCENTIVOS_CRIACAO.length
     return INCENTIVOS_CRIACAO[indice]
   }, [])
+
+  function iniciarGestoLateral(event) {
+    if (event.target.closest('button,a,input,textarea,video,.insta-stories-bar')) return
+    const toque = event.touches?.[0]
+    if (toque) swipeStartRef.current = { x: toque.clientX, y: toque.clientY, time: Date.now() }
+  }
+
+  function finalizarGestoLateral(event) {
+    const inicio = swipeStartRef.current
+    const toque = event.changedTouches?.[0]
+    swipeStartRef.current = null
+    if (!inicio || !toque) return
+    const deltaX = toque.clientX - inicio.x
+    const deltaY = toque.clientY - inicio.y
+    const gestoHorizontal = Math.abs(deltaX) > 72 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35
+    if (gestoHorizontal && deltaX < 0 && Date.now() - inicio.time < 900) navigate('/conversas')
+  }
 
   useEffect(() => {
     carregarTudo()
@@ -1263,6 +1291,10 @@ export default function Feed() {
         </button>
 
         <div className="nexo-top-actions">
+          <button type="button" onClick={() => navigate('/talentos')} className="feed-top-notifications feed-top-talents" aria-label="Abrir palco de talentos" title="Talentos">
+            <IconeTalento />
+          </button>
+
           <button type="button" onClick={() => navigate('/conversas')} className="feed-top-notifications" aria-label="Abrir conversas">
             <IconeMensagem />
           </button>
@@ -1296,14 +1328,13 @@ export default function Feed() {
         </div>
       </div>
 
-      <div className="page nexo-social-page">
+      <div className="page nexo-social-page" onTouchStart={iniciarGestoLateral} onTouchEnd={finalizarGestoLateral}>
         <section className="nexo-welcome is-compact" aria-labelledby="nexo-welcome-title">
           <div>
             <span className="nexo-eyebrow">SUA COMUNIDADE</span>
             <h1 id="nexo-welcome-title">Oi, {meuPerfil?.nome?.split(' ')[0] || 'estudante'}.</h1>
             <p>Veja o que está acontecendo no seu NEXO.</p>
           </div>
-          <button type="button" onClick={() => navigate('/talentos')}>Explorar talentos <span>→</span></button>
         </section>
 
         <div className="nexo-social-grid is-simple">
