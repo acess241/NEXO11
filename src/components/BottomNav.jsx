@@ -1,286 +1,36 @@
 import { NavLink } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import {
-  CHAT_UPDATED_EVENT,
-  contarMensagensNaoLidas,
-  traduzirErroChat,
-} from '../lib/chat'
-import {
-  LIVE_CHAT_UPDATED_EVENT,
-  countUnreadLiveMessages,
-  ensureClassroomGroupsForProfile,
-} from '../lib/liveConversations'
-import { supabase } from '../lib/supabase'
 
-function IconHome() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 10L12 3L21 10V21H3V10Z" />
-    </svg>
-  )
+function Icon({ type }) {
+  if (type === 'home') return <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z"/><path d="M9 20v-6h6v6"/></svg>
+  if (type === 'nexis') return <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="5"/><path d="m10 9 5 3-5 3V9Z"/></svg>
+  if (type === 'create') return <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  if (type === 'oxente') return <svg viewBox="0 0 24 24"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H20v16H7.5A2.5 2.5 0 0 0 5 21.5v-16Z"/><path d="M8 7h8M8 11h6"/></svg>
+  return <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c.7-4.2 3.2-6.3 7.5-6.3s6.8 2.1 7.5 6.3"/></svg>
 }
 
-function IconSearch() {
+const ITEMS = [
+  { to: '/', label: 'Início', icon: 'home', end: true },
+  { to: '/nexis', label: 'NEXIS', icon: 'nexis' },
+  { to: '/novo-post', label: 'Criar', icon: 'create', create: true },
+  { to: '/oxente', label: 'OXENTE', icon: 'oxente' },
+  { to: '/perfil', label: 'Perfil', icon: 'profile' },
+]
+
+export default function BottomNav() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  )
-}
-
-function IconBell() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
-      <path d="M9 17a3 3 0 0 0 6 0" />
-    </svg>
-  )
-}
-
-function IconNexis() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="4" width="18" height="16" rx="4" />
-      <path d="m10 9 5 3-5 3V9Z" />
-      <path d="M7 4 9 7M15 4l2 3" />
-    </svg>
-  )
-}
-
-function IconMessage() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-      <path d="M8 9h8" />
-      <path d="M8 13h5" />
-    </svg>
-  )
-}
-
-function IconUser() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="7" r="4" />
-      <path d="M5.5 21C5.5 16.5 18.5 16.5 18.5 21" />
-    </svg>
-  )
-}
-
-export default function BottomNav({ hideNotifications = false }) {
-  const [quantidadeNaoLidas, setQuantidadeNaoLidas] = useState(0)
-  const [quantidadeMensagens, setQuantidadeMensagens] = useState(0)
-
-  useEffect(() => {
-    let channel
-    let requestsChannel
-    let chatChannel
-    let removerEvento = () => {}
-    let intervaloSync = null
-
-    async function iniciar() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) return
-
-      const { data: meuPerfil, error: perfilError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('account_id', user.id)
-        .limit(1)
-        .maybeSingle()
-
-      if (perfilError || !meuPerfil) return
-
-      ensureClassroomGroupsForProfile(meuPerfil)
-      await carregarNaoLidas(meuPerfil.id)
-      await carregarMensagens(meuPerfil.id)
-
-      channel = supabase
-        .channel(`badge-notificacoes-${meuPerfil.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'notifications',
-            filter: `receiver_profile_id=eq.${meuPerfil.id}`,
-          },
-          async () => {
-            await carregarNaoLidas(meuPerfil.id)
-            await carregarMensagens(meuPerfil.id)
-          }
-        )
-        .subscribe()
-
-      requestsChannel = supabase
-        .channel(`badge-follow-requests-${meuPerfil.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'follow_requests',
-            filter: `receiver_profile_id=eq.${meuPerfil.id}`,
-          },
-          async () => {
-            await carregarNaoLidas(meuPerfil.id)
-          }
-        )
-        .subscribe()
-
-      chatChannel = supabase
-        .channel(`badge-chat-${meuPerfil.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'chat_messages',
-          },
-          async () => {
-            await carregarMensagens(meuPerfil.id)
-          }
-        )
-        .subscribe()
-
-      const aoAtualizarChat = async () => {
-        await carregarMensagens(meuPerfil.id)
-      }
-
-      const aoAtualizarAoVivo = async () => {
-        await carregarMensagens(meuPerfil.id)
-      }
-
-      intervaloSync = window.setInterval(async () => {
-        await carregarNaoLidas(meuPerfil.id)
-        await carregarMensagens(meuPerfil.id)
-      }, 5000)
-
-      window.addEventListener(CHAT_UPDATED_EVENT, aoAtualizarChat)
-      window.addEventListener(LIVE_CHAT_UPDATED_EVENT, aoAtualizarAoVivo)
-
-      removerEvento = () => {
-        window.removeEventListener(CHAT_UPDATED_EVENT, aoAtualizarChat)
-        window.removeEventListener(LIVE_CHAT_UPDATED_EVENT, aoAtualizarAoVivo)
-      }
-    }
-
-    async function carregarNaoLidas(profileId) {
-      const { count: countNotificacoes } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_profile_id', profileId)
-        .is('read_at', null)
-
-      const { count: countSolicitacoes } = await supabase
-        .from('follow_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('receiver_profile_id', profileId)
-        .eq('status', 'pending')
-
-      setQuantidadeNaoLidas((countNotificacoes || 0) + (countSolicitacoes || 0))
-    }
-
-    async function carregarMensagens(profileId) {
-      try {
-        const { total } = await contarMensagensNaoLidas(profileId)
-        const live = countUnreadLiveMessages(profileId)
-        setQuantidadeMensagens(Number(total || 0) + Number(live.total || 0))
-      } catch (error) {
-        traduzirErroChat(error, '')
-        setQuantidadeMensagens(0)
-      }
-    }
-
-    iniciar()
-
-    return () => {
-      removerEvento()
-
-      if (intervaloSync) {
-        window.clearInterval(intervaloSync)
-      }
-
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
-
-      if (requestsChannel) {
-        supabase.removeChannel(requestsChannel)
-      }
-
-      if (chatChannel) {
-        supabase.removeChannel(chatChannel)
-      }
-    }
-  }, [])
-
-  return (
-    <nav className="bottom-nav" aria-label="Navegação principal">
-      <NavLink to="/" aria-label="Início" className={({ isActive }) => (isActive ? 'active' : '')}>
-        <IconHome />
-        <span className="bottom-nav-label">Início</span>
-      </NavLink>
-
-      <NavLink
-        to="/pesquisar"
-        aria-label="Pesquisar"
-        className={({ isActive }) => (isActive ? 'active' : '')}
-      >
-        <IconSearch />
-        <span className="bottom-nav-label">Buscar</span>
-      </NavLink>
-
-      <NavLink
-        to="/mensagens"
-        aria-label="Mensagens"
-        className={({ isActive }) => (isActive ? 'active' : '')}
-      >
-        <div className="nav-icon-wrapper">
-          <IconMessage />
-          {quantidadeMensagens > 0 && (
-            <span className="nav-badge chat">
-              {quantidadeMensagens > 9 ? '9+' : quantidadeMensagens}
-            </span>
-          )}
-        </div>
-        <span className="bottom-nav-label">Conversas</span>
-      </NavLink>
-
-      <NavLink to="/nexis" className={({ isActive }) => (isActive ? 'active' : '')} aria-label="Nexis">
-        <IconNexis />
-        <span className="bottom-nav-label">Nexis</span>
-      </NavLink>
-
-      {!hideNotifications ? (
+    <nav className="bottom-nav nexo-main-nav" aria-label="Navegação principal">
+      {ITEMS.map((item) => (
         <NavLink
-          to="/notificacoes"
-          aria-label="Notificações"
-          className={({ isActive }) => (isActive ? 'active' : '')}
+          key={item.to}
+          to={item.to}
+          end={item.end}
+          aria-label={item.label}
+          className={({ isActive }) => `${isActive ? 'active' : ''}${item.create ? ' nexo-create-nav' : ''}`.trim()}
         >
-          <div className="nav-icon-wrapper">
-            <IconBell />
-            {quantidadeNaoLidas > 0 && (
-              <span className="nav-badge">
-                {quantidadeNaoLidas > 9 ? '9+' : quantidadeNaoLidas}
-              </span>
-            )}
-          </div>
-          <span className="bottom-nav-label">Alertas</span>
+          <span className="nexo-nav-icon"><Icon type={item.icon} /></span>
+          <span className="bottom-nav-label">{item.label}</span>
         </NavLink>
-      ) : null}
-
-      <NavLink
-        to="/perfil"
-        aria-label="Perfil"
-        className={({ isActive }) => (isActive ? 'active' : '')}
-      >
-        <IconUser />
-        <span className="bottom-nav-label">Perfil</span>
-      </NavLink>
+      ))}
     </nav>
   )
 }

@@ -502,7 +502,7 @@ export default function StoryBar({
             <ProfileAvatar
               src={meuPerfil?.foto_url}
               name={meuPerfil?.nome}
-              alt={meuPerfil?.nome || 'Meu story'}
+              alt={meuPerfil?.nome || 'Meu momento'}
               className="story-avatar"
               fallbackClassName="story-avatar-fallback"
             />
@@ -515,7 +515,7 @@ export default function StoryBar({
               +
             </button>
           </div>
-          <span className="story-name">Seu story</span>
+          <span className="story-name">Seu momento</span>
         </div>
 
         {grupos.map((grupo, index) => {
@@ -533,7 +533,7 @@ export default function StoryBar({
                   <ProfileAvatar
                     src={grupo.perfil?.foto_url}
                     name={grupo.perfil?.nome}
-                    alt={grupo.perfil?.nome || 'Story'}
+                    alt={grupo.perfil?.nome || 'Momento'}
                     className="story-avatar"
                     fallbackClassName="story-avatar-fallback"
                   />
@@ -549,7 +549,7 @@ export default function StoryBar({
                   }
                 }}
                 disabled={!usernameGrupo}
-                aria-label={`Abrir perfil de ${usernameGrupo || 'usuario'}`}
+                aria-label={`Abrir perfil de ${usernameGrupo || 'usuário'}`}
               >
                 @{usernameGrupo || 'story'}
               </button>

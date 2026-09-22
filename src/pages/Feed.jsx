@@ -83,6 +83,15 @@ function IconeSino() {
   )
 }
 
+function IconeMensagem() {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+      <path d="M8 9h8M8 13h5" />
+    </svg>
+  )
+}
+
 function formatarData(dataIso) {
   const data = new Date(dataIso)
 
@@ -1234,9 +1243,9 @@ export default function Feed() {
   }
 
   return (
-    <div className="container">
+    <div className="container nexo-social-shell">
       <div
-        className="topbar"
+        className="topbar nexo-social-topbar"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -1250,15 +1259,12 @@ export default function Feed() {
           aria-label="Ir para o início"
         >
           <img src={logoNexo} alt="Logo NEXO" />
-          <span>NEXO</span>
+          <span><b>NEXO</b><small>rede escolar</small></span>
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={() => navigate('/filtros')}
-            className="feed-create-btn"
-          >
-            Criar
+        <div className="nexo-top-actions">
+          <button type="button" onClick={() => navigate('/mensagens')} className="feed-top-notifications" aria-label="Abrir conversas">
+            <IconeMensagem />
           </button>
 
           <button
@@ -1287,16 +1293,44 @@ export default function Feed() {
             />
           </button>
 
-          <button
-            onClick={sair}
-            className="feed-logout-btn"
-          >
-            Sair
-          </button>
         </div>
       </div>
 
-      <div className="page">
+      <div className="page nexo-social-page">
+        <section className="nexo-welcome" aria-labelledby="nexo-welcome-title">
+          <div>
+            <span className="nexo-eyebrow">SEU NEXO AGORA</span>
+            <h1 id="nexo-welcome-title">Oi, {meuPerfil?.nome?.split(' ')[0] || 'estudante'}.</h1>
+            <p>Aprenda, crie e encontre sua comunidade em um só lugar.</p>
+          </div>
+          <div className="nexo-welcome-mark" aria-hidden="true"><span>N</span></div>
+          <div className="nexo-welcome-stats">
+            <span><b>{posts.length}</b> vozes no seu mural</span>
+            <span><b>{stories.length}</b> momentos agora</span>
+            <span><b>{Number(meuPerfil?.xp_total || 0)}</b> XP na jornada</span>
+          </div>
+        </section>
+
+        <div className="nexo-social-grid">
+          <aside className="nexo-social-aside" aria-label="Espaços do NEXO">
+            <section className="nexo-orbit-card">
+              <span className="nexo-eyebrow">SUA ÓRBITA</span>
+              <h2>Escolha o que quer viver agora</h2>
+              <div className="nexo-orbit-links">
+                <button type="button" onClick={() => navigate('/academia')}><i>01</i><span><b>Academia</b><small>Atividades e conquistas</small></span><em>→</em></button>
+                <button type="button" onClick={() => navigate('/oxente')}><i>02</i><span><b>OXENTE</b><small>Estude do seu jeito</small></span><em>→</em></button>
+                <button type="button" onClick={() => navigate('/conexoes')}><i>03</i><span><b>Conexões</b><small>Pessoas da comunidade</small></span><em>→</em></button>
+                <button type="button" onClick={() => navigate('/mensagens')}><i>04</i><span><b>Conversas</b><small>Duplas, grupos e Nexinho</small></span><em>→</em></button>
+              </div>
+            </section>
+            <section className="nexo-community-note">
+              <strong>Uma rede com propósito</strong>
+              <p>Aqui, uma publicação pode virar conversa, colaboração ou descoberta.</p>
+              <button type="button" onClick={() => navigate('/regras-da-comunidade')}>Como cuidamos do NEXO</button>
+            </section>
+          </aside>
+
+          <main className="nexo-social-stream">
         {erro && <div className="alert-box erro-box">{erro}</div>}
         {linkStatus === 'unavailable' ? (
           <div className="alert-box erro-box" role="alert">
@@ -1304,6 +1338,8 @@ export default function Feed() {
           </div>
         ) : null}
 
+        <section className="nexo-moments-section">
+          <header className="nexo-section-title"><div><span className="nexo-eyebrow">AGORA</span><h2>Momentos da comunidade</h2></div><button type="button" onClick={() => navigate('/novo-story')}>Criar momento</button></header>
         <StoryBar
           grupos={gruposStories}
           meuPerfil={meuPerfil}
@@ -1318,6 +1354,7 @@ export default function Feed() {
           onLoadViewers={carregarVisualizadoresStory}
           onOpenPost={(postId, tipo) => navigate(`/?${tipo === 'nexis' ? 'nexis' : 'post'}=${encodeURIComponent(postId)}`)}
         />
+        </section>
 
         <section className="feed-creation-incentive" aria-labelledby="feed-creation-title">
           <div className="feed-creation-heading">
@@ -1329,18 +1366,23 @@ export default function Feed() {
               />
             </div>
             <div>
-              <span className="feed-creation-kicker">CRIE NO NEXO</span>
+              <span className="feed-creation-kicker">ABRA UMA CONVERSA</span>
               <h2 id="feed-creation-title">{incentivoCriacao.titulo}</h2>
               <p>{incentivoCriacao.texto}</p>
             </div>
           </div>
           <div className="feed-creation-actions">
-            <button type="button" onClick={() => navigate('/novo-post')}>✎ <span>Postagem</span></button>
+            <button type="button" onClick={() => navigate('/novo-post')}>✎ <span>Ideia</span></button>
             <button type="button" onClick={() => navigate('/novo-post?tipo=foto')}>▣ <span>Foto</span></button>
             <button type="button" onClick={() => navigate('/filtros')} className="is-primary">▶ <span>Gravar Nexis</span></button>
-            <button type="button" onClick={() => navigate('/novo-story')}>＋ <span>Story</span></button>
+            <button type="button" onClick={() => navigate('/novo-story')}>＋ <span>Momento</span></button>
           </div>
         </section>
+
+        <header className="nexo-stream-heading">
+          <div><span className="nexo-eyebrow">COMUNIDADE</span><h2>Vozes no seu NEXO</h2></div>
+          <button type="button" onClick={() => navigate('/pesquisar')}>Encontrar pessoas</button>
+        </header>
 
         {posts.length === 0 ? (
           <div className="empty-state">
@@ -1379,6 +1421,8 @@ export default function Feed() {
             ))}
           </div>
         )}
+          </main>
+        </div>
       </div>
 
       {postParaApagar && (
@@ -1406,7 +1450,7 @@ export default function Feed() {
         </div>
       )}
 
-      <BottomNav hideNotifications />
+      <BottomNav />
     </div>
   )
 }
