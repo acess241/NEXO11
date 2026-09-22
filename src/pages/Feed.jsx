@@ -1329,14 +1329,6 @@ export default function Feed() {
       </div>
 
       <div className="page nexo-social-page" onTouchStart={iniciarGestoLateral} onTouchEnd={finalizarGestoLateral}>
-        <section className="nexo-welcome is-compact" aria-labelledby="nexo-welcome-title">
-          <div>
-            <span className="nexo-eyebrow">SUA COMUNIDADE</span>
-            <h1 id="nexo-welcome-title">Oi, {meuPerfil?.nome?.split(' ')[0] || 'estudante'}.</h1>
-            <p>Veja o que está acontecendo no seu NEXO.</p>
-          </div>
-        </section>
-
         <div className="nexo-social-grid is-simple">
           <main className="nexo-social-stream">
         {erro && <div className="alert-box erro-box">{erro}</div>}
