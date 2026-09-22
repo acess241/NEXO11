@@ -14,6 +14,11 @@ export const POST_TYPE_META = {
     subtitle: 'videos curtos',
     accept: 'video/*',
   },
+  talent: {
+    label: 'Talento',
+    subtitle: 'arte e criatividade',
+    accept: 'image/*,video/*',
+  },
 }
 
 export function normalizarTipoPost(valor) {
@@ -33,6 +38,7 @@ export function obterMediaKind(post) {
 
   if (tipo === 'foto') return 'image'
   if (tipo === 'nexis') return 'video'
+  if (tipo === 'talent') return post?.media_kind || null
 
   return null
 }
@@ -48,6 +54,8 @@ export function placeholderPorTipo(tipo) {
     return 'Escreva uma legenda para a foto...'
   }
 
+  if (tipoNormalizado === 'talent') return 'Conte a história por trás do seu talento...'
+
   return 'Escreva algo para acompanhar o video curto...'
 }
 
@@ -56,5 +64,6 @@ export function tituloCurtoPorTipo(tipo) {
 
   if (tipoNormalizado === 'nota') return 'Nota'
   if (tipoNormalizado === 'foto') return 'Post'
-  return 'Nexis'
+  if (tipoNormalizado === 'nexis') return 'Nexis'
+  return 'Talento'
 }

@@ -46,6 +46,8 @@ const TermsOfUse = lazy(() => import('./pages/LegalDocuments').then((module) => 
 const SafetyResponsibilityTerms = lazy(() => import('./pages/LegalDocuments').then((module) => ({ default: module.SafetyResponsibilityTerms })))
 const CommunityRules = lazy(() => import('./pages/CommunityRules'))
 const ModerationDashboard = lazy(() => import('./pages/ModerationDashboard'))
+const Talents = lazy(() => import('./pages/Talents'))
+const CreateTalent = lazy(() => import('./pages/CreateTalent'))
 
 function PageLoader() {
   return <SocialLoader variant="feed" />
@@ -251,6 +253,25 @@ export default function App() {
                 <NotificationSettings />
               </ProtectedRoute>
             }
+          />
+
+          <Route
+            path="/conversas"
+            element={
+              <ProtectedRoute session={session}>
+                <MessagesInbox />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/talentos"
+            element={<ProtectedRoute session={session}><Talents /></ProtectedRoute>}
+          />
+
+          <Route
+            path="/talentos/criar"
+            element={<ProtectedRoute session={session}><CreateTalent /></ProtectedRoute>}
           />
 
           <Route

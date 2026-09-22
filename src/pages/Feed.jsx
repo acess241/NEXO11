@@ -1263,7 +1263,7 @@ export default function Feed() {
         </button>
 
         <div className="nexo-top-actions">
-          <button type="button" onClick={() => navigate('/mensagens')} className="feed-top-notifications" aria-label="Abrir conversas">
+          <button type="button" onClick={() => navigate('/conversas')} className="feed-top-notifications" aria-label="Abrir conversas">
             <IconeMensagem />
           </button>
 
@@ -1297,39 +1297,16 @@ export default function Feed() {
       </div>
 
       <div className="page nexo-social-page">
-        <section className="nexo-welcome" aria-labelledby="nexo-welcome-title">
+        <section className="nexo-welcome is-compact" aria-labelledby="nexo-welcome-title">
           <div>
-            <span className="nexo-eyebrow">SEU NEXO AGORA</span>
+            <span className="nexo-eyebrow">SUA COMUNIDADE</span>
             <h1 id="nexo-welcome-title">Oi, {meuPerfil?.nome?.split(' ')[0] || 'estudante'}.</h1>
-            <p>Aprenda, crie e encontre sua comunidade em um só lugar.</p>
+            <p>Veja o que está acontecendo no seu NEXO.</p>
           </div>
-          <div className="nexo-welcome-mark" aria-hidden="true"><span>N</span></div>
-          <div className="nexo-welcome-stats">
-            <span><b>{posts.length}</b> vozes no seu mural</span>
-            <span><b>{stories.length}</b> momentos agora</span>
-            <span><b>{Number(meuPerfil?.xp_total || 0)}</b> XP na jornada</span>
-          </div>
+          <button type="button" onClick={() => navigate('/talentos')}>Explorar talentos <span>→</span></button>
         </section>
 
-        <div className="nexo-social-grid">
-          <aside className="nexo-social-aside" aria-label="Espaços do NEXO">
-            <section className="nexo-orbit-card">
-              <span className="nexo-eyebrow">SUA ÓRBITA</span>
-              <h2>Escolha o que quer viver agora</h2>
-              <div className="nexo-orbit-links">
-                <button type="button" onClick={() => navigate('/academia')}><i>01</i><span><b>Academia</b><small>Atividades e conquistas</small></span><em>→</em></button>
-                <button type="button" onClick={() => navigate('/oxente')}><i>02</i><span><b>OXENTE</b><small>Estude do seu jeito</small></span><em>→</em></button>
-                <button type="button" onClick={() => navigate('/conexoes')}><i>03</i><span><b>Conexões</b><small>Pessoas da comunidade</small></span><em>→</em></button>
-                <button type="button" onClick={() => navigate('/mensagens')}><i>04</i><span><b>Conversas</b><small>Duplas, grupos e Nexinho</small></span><em>→</em></button>
-              </div>
-            </section>
-            <section className="nexo-community-note">
-              <strong>Uma rede com propósito</strong>
-              <p>Aqui, uma publicação pode virar conversa, colaboração ou descoberta.</p>
-              <button type="button" onClick={() => navigate('/regras-da-comunidade')}>Como cuidamos do NEXO</button>
-            </section>
-          </aside>
-
+        <div className="nexo-social-grid is-simple">
           <main className="nexo-social-stream">
         {erro && <div className="alert-box erro-box">{erro}</div>}
         {linkStatus === 'unavailable' ? (
