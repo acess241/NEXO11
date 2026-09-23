@@ -203,11 +203,6 @@ export default function EditProfile() {
       return
     }
 
-    if (fotoArquivo && !['image/jpeg', 'image/png', 'image/webp'].includes(fotoArquivo.type)) {
-      setErro('Conteúdo aguardando análise. Escolha uma imagem JPG, PNG ou WebP.')
-      return
-    }
-
     setSalvando(true)
 
     try {
@@ -223,7 +218,16 @@ export default function EditProfile() {
         return
       }
 
-      const fotoFinal = await uploadFoto(perfil.id)
+      let fotoFinal = perfil.foto_url || null
+      let erroUploadFoto = ''
+      if (fotoArquivo) {
+        try {
+          fotoFinal = await uploadFoto(perfil.id)
+        } catch (uploadError) {
+          // Um problema na foto não deve impedir que os outros dados do perfil sejam salvos.
+          erroUploadFoto = uploadError?.message || 'Não foi possível enviar a foto.'
+        }
+      }
 
       const payloadBase = {
         nome: nome.trim(),
@@ -272,10 +276,10 @@ export default function EditProfile() {
 
         setPerfil(perfilFallback)
         setPreviewFoto(perfilFallback.foto_url || '')
-        setSucesso(
-          'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e instituição.'
-        )
-        setFotoArquivo(null)
+        setSucesso(erroUploadFoto
+          ? `Dados do perfil salvos. A foto não foi enviada: ${erroUploadFoto}`
+          : 'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e instituição.')
+        if (!erroUploadFoto) setFotoArquivo(null)
         return
       }
 
@@ -286,8 +290,10 @@ export default function EditProfile() {
 
       setPerfil(perfilSalvo)
       setPreviewFoto(perfilSalvo.foto_url || '')
-      setSucesso('Perfil atualizado com sucesso.')
-      setFotoArquivo(null)
+      setSucesso(erroUploadFoto
+        ? `Dados do perfil salvos. A foto não foi enviada: ${erroUploadFoto}`
+        : 'Perfil atualizado com sucesso.')
+      if (!erroUploadFoto) setFotoArquivo(null)
     } catch (error) {
       const mensagem = error?.message || ''
 
