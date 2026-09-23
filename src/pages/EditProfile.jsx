@@ -219,6 +219,7 @@ export default function EditProfile() {
     setSalvando(true)
     let novaFotoEnviada = null
     let erroUploadFoto = ''
+    let fotoSalvaSeparadamente = false
 
     try {
       const { data: existente } = await supabase
@@ -236,8 +237,37 @@ export default function EditProfile() {
       if (fotoArquivo) {
         try {
           novaFotoEnviada = await uploadFoto(perfil.id)
+          const { data: fotoAtualizada, error: erroFotoPerfil } = await supabase
+            .from('profiles')
+            .update({ foto_url: novaFotoEnviada.url })
+            .eq('id', perfil.id)
+            .eq('account_id', perfil.account_id)
+            .select('foto_url')
+            .maybeSingle()
+
+          if (erroFotoPerfil) throw erroFotoPerfil
+          if (!fotoAtualizada) {
+            throw new Error('O banco não confirmou a atualização da foto.')
+          }
+
+          const fotoUrlSalva = fotoAtualizada.foto_url || novaFotoEnviada.url
+          fotoSalvaSeparadamente = true
+          novaFotoEnviada = null
+          setPerfil((atual) => ({ ...atual, foto_url: fotoUrlSalva }))
+          if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+          fotoPreviewUrlRef.current = ''
+          setPreviewFoto(fotoUrlSalva)
+          setFotoArquivo(null)
         } catch (uploadError) {
-          erroUploadFoto = uploadError?.message || 'Não foi possível enviar a foto.'
+          const detalheFoto = `${uploadError?.message || ''}`
+          if (novaFotoEnviada?.path) {
+            const { error: erroRemocao } = await supabase.storage.from('stories').remove([novaFotoEnviada.path])
+            if (erroRemocao) console.warn('[Nexo11 Profile] Não foi possível remover o upload que falhou', erroRemocao)
+          }
+          novaFotoEnviada = null
+          erroUploadFoto = /institution|institui[cç][aã]o|education_institutions/i.test(detalheFoto)
+            ? 'O vínculo com a instituição impediu a atualização da foto. Fale com a coordenação para conferir o cadastro escolar.'
+            : detalheFoto || 'Não foi possível enviar a foto.'
         }
       }
 
@@ -245,7 +275,6 @@ export default function EditProfile() {
         nome: nome.trim(),
         username: usernameLimpo,
         bio: bio.trim(),
-        foto_url: novaFotoEnviada?.url || perfil.foto_url || null,
         course_area: curso,
       }
 
@@ -272,7 +301,6 @@ export default function EditProfile() {
             nome: nome.trim(),
             username: usernameLimpo,
             bio: bio.trim(),
-            foto_url: novaFotoEnviada?.url || perfil.foto_url || null,
           })
           .eq('id', perfil.id)
           .eq('account_id', perfil.account_id)
@@ -285,11 +313,11 @@ export default function EditProfile() {
         }
 
         setPerfil(perfilFallback)
-        if (!erroUploadFoto) {
-          if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
-          fotoPreviewUrlRef.current = ''
-          setPreviewFoto(perfilFallback.foto_url || '')
-          setFotoArquivo(null)
+      if (!erroUploadFoto) {
+        if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+        fotoPreviewUrlRef.current = ''
+        setPreviewFoto(perfilFallback.foto_url || '')
+        setFotoArquivo(null)
         }
         setSucesso([
           `Nome, usuário e bio salvos${erroUploadFoto ? `; a foto não foi enviada: ${erroUploadFoto}` : `, ${fotoArquivo ? 'foto' : 'avatar atual'} confirmada`}.`,
@@ -323,7 +351,16 @@ export default function EditProfile() {
       if (/duplicate key|profiles_username_key/i.test(mensagem)) {
         setErro('Username ja em uso.')
       } else if (/storage|bucket/i.test(mensagem)) {
-        setErro('Erro no upload da foto. Tente novamente em instantes.')
+        setErro(fotoSalvaSeparadamente
+          ? 'A foto foi salva; o serviço de imagem apresentou um problema ao concluir os outros dados.'
+          : 'Erro no upload da foto. Tente novamente em instantes.')
+      } else if (fotoSalvaSeparadamente && /(institution|institui[cç][aã]o|education_institutions)/i.test(mensagem)) {
+        setSucesso('Foto de perfil salva. Os outros dados não foram alterados porque o vínculo com a instituição foi recusado pelo banco.')
+        setErro('Fale com a coordenação para conferir o cadastro escolar e depois tente salvar os outros dados.')
+      } else if (fotoSalvaSeparadamente && mensagem) {
+        setErro(`A foto de perfil foi salva, mas os outros dados não foram atualizados: ${mensagem}`)
+      } else if (/(institution|institui[cç][aã]o|education_institutions)/i.test(mensagem)) {
+        setErro('Não foi possível salvar os dados por causa do vínculo com a instituição. Fale com a coordenação para conferir o cadastro escolar.')
       } else if (mensagem) {
         setErro(`Erro ao salvar perfil: ${mensagem}`)
       } else {
@@ -334,7 +371,7 @@ export default function EditProfile() {
     }
   }
 
-  async function salvarFotoOficial() {
+async function salvarFotoOficial() {
     if (!perfil || !fotoArquivo || salvando) return
 
     setErro('')

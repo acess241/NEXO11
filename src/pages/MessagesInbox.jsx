@@ -530,7 +530,11 @@ export default function MessagesInbox() {
       if (action.type === 'leave-group') {
         result = await supabase.rpc('nexo_leave_group', { p_group_id: item.sourceId })
       } else if (action.type === 'delete-chat') {
-        result = await supabase.rpc('chat_hide_conversation', { p_conversation_id: item.sourceId })
+        result = await supabase.from('chat_conversation_hidden').insert({
+          conversation_id: item.sourceId,
+          profile_id: perfil.id,
+        })
+        if (result.error?.code === '23505') result = { error: null }
       }
       if (result?.error) throw result.error
       setConversas((current) => current.filter((conversation) => conversation.id !== item.id))

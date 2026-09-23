@@ -81,31 +81,7 @@ function IconeRepublicado() {
   )
 }
 
-function IconeFeed() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 6h16M4 12h16M4 18h16" />
-      <circle cx="2.5" cy="6" r=".5" />
-      <circle cx="2.5" cy="12" r=".5" />
-      <circle cx="2.5" cy="18" r=".5" />
-    </svg>
-  )
-}
-
 const TABS = [
-  {
-    key: 'tudo',
-    icon: IconeFeed,
-  },
   {
     key: 'nota',
     icon: IconeNotas,
@@ -232,28 +208,6 @@ export default function ProfileBlocks({
   const [enviando, setEnviando] = useState(false)
   const [aviso, setAviso] = useState('')
 
-  const feedUnificado = useMemo(() => {
-    const republicadosPorId = new Set((republicados || []).map((post) => post.id))
-    const porId = new Map()
-
-    for (const post of posts || []) {
-      porId.set(post.id, {
-        ...post,
-        __republicadoNoPerfil: republicadosPorId.has(post.id),
-      })
-    }
-
-    for (const post of republicados || []) {
-      if (!porId.has(post.id)) {
-        porId.set(post.id, { ...post, __republicadoNoPerfil: true })
-      }
-    }
-
-    return [...porId.values()].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )
-  }, [posts, republicados])
-
   const contagens = useMemo(() => {
     return (posts || []).reduce(
       (acc, post) => {
@@ -261,9 +215,9 @@ export default function ProfileBlocks({
         acc[tipo] += 1
         return acc
       },
-      { tudo: feedUnificado.length, nota: 0, foto: 0, nexis: 0, republicados: republicados.length }
+      { nota: 0, foto: 0, nexis: 0, republicados: republicados.length }
     )
-  }, [posts, republicados.length, feedUnificado.length])
+  }, [posts, republicados.length])
 
   useEffect(() => {
     if (contagens[blocoAtivo] > 0) return
@@ -278,16 +232,10 @@ export default function ProfileBlocks({
   }, [blocoAtivo, contagens])
 
   const postsFiltrados = useMemo(() => {
-    if (blocoAtivo === 'tudo') return feedUnificado
     if (blocoAtivo === 'republicados') return republicados || []
 
     return (posts || []).filter((post) => normalizarTipoPost(post.post_type) === blocoAtivo)
-  }, [blocoAtivo, posts, republicados, feedUnificado])
-
-  function abrirFeedUnico() {
-    setBlocoAtivo('tudo')
-    setPostAbertoId(feedUnificado[0]?.id || null)
-  }
+  }, [blocoAtivo, posts, republicados])
 
   useEffect(() => {
     if (!postAbertoId) return
@@ -503,19 +451,14 @@ export default function ProfileBlocks({
           <h3>{titulo}</h3>
         </div>
         <span>{descricao}</span>
-        <button type="button" className="profile-unified-feed-button" onClick={abrirFeedUnico}>
-          Abrir feed único <strong>{feedUnificado.length}</strong>
-        </button>
       </section>
 
       <div className="profile-block-tabs profile-ig-tabs" role="tablist">
         {TABS.map((tab) => {
           const Icone = tab.icon
-          const meta = tab.key === 'tudo'
-            ? { label: 'Tudo' }
-            : tab.key === 'republicados'
-              ? { label: 'Republicados' }
-              : POST_TYPE_META[tab.key]
+          const meta = tab.key === 'republicados'
+            ? { label: 'Republicados' }
+            : POST_TYPE_META[tab.key]
           const ativo = blocoAtivo === tab.key
 
           return (
@@ -557,7 +500,7 @@ export default function ProfileBlocks({
         <div className="profile-ig-modal-overlay" onClick={() => setPostAbertoId(null)} role="dialog" aria-modal="true">
           <article className="profile-ig-modal profile-ig-feed-modal profile-post-detail" onClick={(event) => event.stopPropagation()}>
             <div className="profile-ig-feed-head">
-              <strong>Feed do perfil</strong>
+              <strong>Publicação do perfil</strong>
               <button
                 type="button"
                 className="profile-ig-modal-close"
@@ -569,40 +512,34 @@ export default function ProfileBlocks({
             </div>
 
             <div className="profile-personal-feed">
-              {postsFiltrados.map((post) => {
-                const ativo = post.id === postAbertoId
-                return (
-                  <section className={`profile-personal-feed-entry ${ativo ? 'active' : ''}`} key={`feed-${post.id}`}>
-                    {renderPostFeedCard(post, blocoAtivo, formatarData, ativo)}
-
-                    {ativo ? (
-                      <>
-                        <div className="profile-post-actions" aria-label="Interações da publicação">
-                          <button type="button" className={interacoes[post.id]?.euCurti ? 'active' : ''} onClick={() => alternarCurtida(post.id)} disabled={!meuPerfil || enviando}>
+              <section className="profile-personal-feed-entry active" key={`feed-${postAberto.id}`}>
+                {renderPostFeedCard(postAberto, blocoAtivo, formatarData, true)}
+                <div className="profile-post-actions" aria-label="Interações da publicação">
+                  <button type="button" className={interacoes[postAberto.id]?.euCurti ? 'active' : ''} onClick={() => alternarCurtida(postAberto.id)} disabled={!meuPerfil || enviando}>
                             <span aria-hidden="true">♡</span>
-                            <strong>{interacoes[post.id]?.curtidas || 0}</strong>
+                            <strong>{interacoes[postAberto.id]?.curtidas || 0}</strong>
                             <span>Curtidas</span>
                           </button>
-                          <button type="button" onClick={() => document.getElementById('profile-post-comment-input')?.focus()}>
+                  <button type="button" onClick={() => document.getElementById('profile-post-comment-input')?.focus()}>
                             <span aria-hidden="true">◯</span>
-                            <strong>{interacoes[post.id]?.comentarios?.length || 0}</strong>
+                            <strong>{interacoes[postAberto.id]?.comentarios?.length || 0}</strong>
                             <span>Comentários</span>
                           </button>
-                          <ShareMenu post={post} meuPerfil={meuPerfil} onExternalShare={compartilhar} onAddToStory={onAddToStory} />
-                          <button type="button" className={interacoes[post.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(post.id)} disabled={!meuPerfil || enviando}>
+                  <ShareMenu post={postAberto} meuPerfil={meuPerfil} onExternalShare={compartilhar} onAddToStory={onAddToStory} />
+                  <button type="button" className={interacoes[postAberto.id]?.euRepostei ? 'active' : ''} onClick={() => alternarRepublicacao(postAberto.id)} disabled={!meuPerfil || enviando}>
                             <span aria-hidden="true">⇄</span>
-                            <strong>{interacoes[post.id]?.reposts || 0}</strong>
-                            <span>{interacoes[post.id]?.euRepostei ? 'Republicado' : 'Republicar'}</span>
+                            <strong>{interacoes[postAberto.id]?.reposts || 0}</strong>
+                            <span>{interacoes[postAberto.id]?.euRepostei ? 'Republicado' : 'Republicar'}</span>
                           </button>
                         </div>
 
-                        <section className="profile-post-comments">
+                <section className="profile-post-comments">
                           <h4>Comentários</h4>
                           {carregandoInteracoes ? <p className="profile-post-comments-state">Carregando comentários...</p> : null}
-                          {!carregandoInteracoes && !(interacoes[post.id]?.comentarios?.length) ? (
+                          {!carregandoInteracoes && !(interacoes[postAberto.id]?.comentarios?.length) ? (
                             <p className="profile-post-comments-state">Seja a primeira pessoa a comentar.</p>
                           ) : null}
-                          {(interacoes[post.id]?.comentarios || []).map((item) => (
+                          {(interacoes[postAberto.id]?.comentarios || []).map((item) => (
                             <article className="profile-post-comment" key={item.id}>
                               <div className="profile-post-comment-avatar">
                                 {item.autor?.avatar_url ? <img src={item.autor.avatar_url} alt="" /> : <span>{(item.autor?.nome || '?').charAt(0).toUpperCase()}</span>}
@@ -615,7 +552,7 @@ export default function ProfileBlocks({
                           ))}
                         </section>
 
-                        <form className="profile-post-comment-form" onSubmit={enviarComentario}>
+                <form className="profile-post-comment-form" onSubmit={enviarComentario}>
                           <input
                             id="profile-post-comment-input"
                             value={comentario}
@@ -627,16 +564,8 @@ export default function ProfileBlocks({
                           <button type="submit" disabled={!comentario.trim() || !meuPerfil || enviando}>
                             {enviando ? 'Enviando...' : 'Publicar'}
                           </button>
-                        </form>
-                      </>
-                    ) : (
-                      <button type="button" className="profile-personal-feed-open" onClick={() => setPostAbertoId(post.id)}>
-                        Ver curtidas e comentários
-                      </button>
-                    )}
-                  </section>
-                )
-              })}
+                </form>
+              </section>
             </div>
             {aviso ? <p className="profile-post-feedback" role="status">{aviso}</p> : null}
           </article>
@@ -647,7 +576,7 @@ export default function ProfileBlocks({
 }
 
 function renderItem(post, blocoAtivo, aoAbrir) {
-  const tipoBase = blocoAtivo === 'republicados' || blocoAtivo === 'tudo'
+  const tipoBase = blocoAtivo === 'republicados'
     ? normalizarTipoPost(post.post_type)
     : blocoAtivo
   const metaBase = POST_TYPE_META[tipoBase]

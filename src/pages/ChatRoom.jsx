@@ -523,6 +523,8 @@ export default function ChatRoom() {
   const [mensagemParaApagar, setMensagemParaApagar] = useState(null)
   const [avisosSegurancaOcultos, setAvisosSegurancaOcultos] = useState(new Set())
   const [detalhesConversaAbertos, setDetalhesConversaAbertos] = useState(false)
+  const [confirmarApagarConversa, setConfirmarApagarConversa] = useState(false)
+  const [apagandoConversa, setApagandoConversa] = useState(false)
   const [apelidoConversa, setApelidoConversa] = useState('')
   const [salvandoApelido, setSalvandoApelido] = useState(false)
 
@@ -581,6 +583,25 @@ export default function ChatRoom() {
     })
     if (error) setErro(montarMensagemErroChat(error, 'Não foi possível salvar o apelido.'))
     setSalvandoApelido(false)
+  }
+
+  async function apagarConversaParaMim() {
+    if (!conversa?.id || !meuPerfil?.id || apagandoConversa) return
+    setApagandoConversa(true)
+    try {
+      const { error } = await supabase.from('chat_conversation_hidden').insert({
+        conversation_id: conversa.id,
+        profile_id: meuPerfil.id,
+      })
+      if (error && error.code !== '23505') throw error
+      setConfirmarApagarConversa(false)
+      setDetalhesConversaAbertos(false)
+      navigate('/mensagens', { replace: true })
+    } catch (error) {
+      setErro(montarMensagemErroChat(error, 'Não foi possível apagar esta conversa.'))
+    } finally {
+      setApagandoConversa(false)
+    }
   }
 
   useEffect(() => {
@@ -2622,6 +2643,22 @@ export default function ChatRoom() {
           }] : []),
         ]}
       />
+      <ConfirmDialog
+        open={confirmarApagarConversa}
+        title="Apagar conversa?"
+        description="Ela será removida da sua lista. A outra pessoa continuará vendo as mensagens."
+        onClose={() => setConfirmarApagarConversa(false)}
+        options={[
+          {
+            id: 'hide-conversation',
+            label: apagandoConversa ? 'Apagando...' : 'Apagar para mim',
+            hint: 'Você poderá iniciar outra conversa depois.',
+            danger: true,
+            disabled: apagandoConversa,
+            onClick: apagarConversaParaMim,
+          },
+        ]}
+      />
       {detalhesConversaAbertos ? (
         <div className="chat-details-overlay" onClick={() => setDetalhesConversaAbertos(false)}>
           <aside className="chat-details-drawer" onClick={(event) => event.stopPropagation()}>
@@ -2642,6 +2679,9 @@ export default function ChatRoom() {
               </button>
               <button onClick={() => navigate(`/usuario/${destinatario?.username}`)}>
                 <span>◎</span><span><strong>Ver perfil</strong><small>Abrir o perfil completo</small></span>
+              </button>
+              <button className="danger" onClick={() => setConfirmarApagarConversa(true)}>
+                <span>⌫</span><span><strong>Apagar conversa</strong><small>Remover da sua lista de mensagens</small></span>
               </button>
             </section>
             <section className="chat-details-section">

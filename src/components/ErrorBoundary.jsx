@@ -14,14 +14,18 @@ export default class ErrorBoundary extends Component {
     console.error('[Nexo11 ErrorBoundary]', error, info?.componentStack)
   }
 
+  tentarRecuperar = () => {
+    this.setState({ hasError: false, error: null })
+  }
+
   render() {
     if (this.state.hasError) {
       return (
         <div className="error-boundary-fallback">
           <h1>Algo deu errado</h1>
-          <p>O app encontrou um erro inesperado. Tente recarregar a pagina.</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            Recarregar
+          <p>O app encontrou um erro inesperado. Tente abrir a tela novamente.</p>
+          <button type="button" onClick={this.tentarRecuperar}>
+            Tentar novamente
           </button>
         </div>
       )

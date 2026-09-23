@@ -4,7 +4,6 @@ import { supabase } from './lib/supabase'
 import { aplicarTema, obterTemaSalvo } from './lib/theme'
 
 import ProtectedRoute from './components/ProtectedRoute'
-import PullToRefresh from './components/PullToRefresh'
 import SocialLoader from './components/SocialLoader'
 import NotificationBridge from './components/NotificationBridge'
 import UpdateAnnouncement from './components/UpdateAnnouncement'
@@ -167,7 +166,6 @@ export default function App() {
       <SocialMetaBridge />
       <ReportDialog />
       <AccountSafetyGate session={session} />
-      <PullToRefresh />
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />
       <UpdateAnnouncement session={session} />
