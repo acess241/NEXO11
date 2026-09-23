@@ -20149,6 +20149,292 @@ body[data-theme='claro'] .bottom-nav .nexo-create-nav.active { color:#fff; backg
 @media(max-width:767px) { .profile-unified-feed-button { width:100%; } }
 
 .bottom-nav.nexo-main-nav { box-sizing:border-box; }
+
+/* Tema claro NEXO: superfícies claras, contraste confortável e verde da marca. */
+body[data-theme='claro'] {
+  color-scheme: light;
+  --bg: #f4f7f3;
+  --card: #ffffff;
+  --border: #dfe7dd;
+  --text: #172218;
+  --muted: #667367;
+  --primary: #16c42b;
+  --primary-rgb: 22, 196, 43;
+  --primary-contrast: #102014;
+  --primary-gradient: linear-gradient(135deg, #16c42b 0%, #6be678 100%);
+  --surface-1: #f8faf7;
+  --surface-2: #edf3eb;
+  --input-border: #d4dfd2;
+  --shell-border: #e2e9e0;
+  --topbar-bg: rgba(255, 255, 255, .9);
+  --topbar-border: #e2e9e0;
+  --shadow-sm: 0 3px 12px rgba(30, 55, 32, .055);
+  --shadow-md: 0 10px 28px rgba(30, 55, 32, .09);
+  --shadow-lg: 0 22px 54px rgba(30, 55, 32, .13);
+  --form-placeholder-color: #7b887c;
+  --chat-card-bg: #fff;
+  --chat-card-border: #dfe7dd;
+  --chat-strong: #172218;
+  --chat-body: #39483b;
+  --chat-muted: #667367;
+  --chat-surface-bg: #f8faf7;
+  --chat-surface-border: #dfe7dd;
+  --ox-card-bg: #fff;
+  --ox-card-border: #dfe7dd;
+  --ox-strong: #172218;
+  --ox-body: #39483b;
+  --ox-muted: #667367;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 50% -15%, rgba(40, 190, 62, .09), transparent 38rem);
+}
+
+body[data-theme='claro'] .app-shell,
+body[data-theme='claro'] .container,
+body[data-theme='claro'] .nexo-social-shell,
+body[data-theme='claro'] .settings-page,
+body[data-theme='claro'] .academy-page,
+body[data-theme='claro'] .connections-page,
+body[data-theme='claro'] .chat-list-page,
+body[data-theme='claro'] .chat-room-shell,
+body[data-theme='claro'] .chat-room-page,
+body[data-theme='claro'] .search-page,
+body[data-theme='claro'] .notifications-page {
+  color: var(--text);
+  background: var(--bg) !important;
+}
+
+body[data-theme='claro'] .container {
+  border-inline-color: var(--shell-border);
+  box-shadow: 0 0 70px rgba(30, 55, 32, .045);
+}
+
+body[data-theme='claro'] .topbar,
+body[data-theme='claro'] .profile-topbar,
+body[data-theme='claro'] .chat-list-topbar,
+body[data-theme='claro'] .chat-room-topbar,
+body[data-theme='claro'] .search-topbar,
+body[data-theme='claro'] .notifications-topbar,
+body[data-theme='claro'] .academy-topbar,
+body[data-theme='claro'] .settings-topbar {
+  color: var(--text);
+  border-color: var(--topbar-border) !important;
+  background: var(--topbar-bg) !important;
+  box-shadow: 0 6px 22px rgba(30, 55, 32, .045);
+  backdrop-filter: blur(18px);
+}
+
+body[data-theme='claro'] .card,
+body[data-theme='claro'] .user-card,
+body[data-theme='claro'] .post-card,
+body[data-theme='claro'] .create-post-card,
+body[data-theme='claro'] .profile-card,
+body[data-theme='claro'] .profile-hero-card,
+body[data-theme='claro'] .profile-summary-card,
+body[data-theme='claro'] .profile-stat-card,
+body[data-theme='claro'] .connections-summary-card,
+body[data-theme='claro'] .settings-list-card,
+body[data-theme='claro'] .notification-card,
+body[data-theme='claro'] .notification-card.request,
+body[data-theme='claro'] .chat-list-item,
+body[data-theme='claro'] .chat-pet-card,
+body[data-theme='claro'] .chat-typing-card,
+body[data-theme='claro'] .chat-empty-state.first-message,
+body[data-theme='claro'] .search-shell,
+body[data-theme='claro'] .search-results-list,
+body[data-theme='claro'] .modal-box,
+body[data-theme='claro'] .profile-ig-modal,
+body[data-theme='claro'] .profile-sidepanel,
+body[data-theme='claro'] .profile-note-grid-card,
+body[data-theme='claro'] .profile-grid-item,
+body[data-theme='claro'] .academy-summary-card,
+body[data-theme='claro'] .academy-block,
+body[data-theme='claro'] .academy-v2-card,
+body[data-theme='claro'] .academy-admin-panel,
+body[data-theme='claro'] .notification-settings-card,
+body[data-theme='claro'] .chat-live-menu-popover,
+body[data-theme='claro'] .chat-live-error-card,
+body[data-theme='claro'] .chat-live-access-card,
+body[data-theme='claro'] .chat-live-modal-card,
+body[data-theme='claro'] .chat-live-attach-menu {
+  color: var(--text);
+  border-color: var(--border) !important;
+  background: var(--card) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+body[data-theme='claro'] .nexo-moments-section,
+body[data-theme='claro'] .feed-creation-incentive,
+body[data-theme='claro'] .profile-hero-card {
+  border-color: rgba(var(--primary-rgb), .2) !important;
+  background: linear-gradient(135deg, #fff 0%, #f4fbf3 100%) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+body[data-theme='claro'] .post-card::before { background: linear-gradient(90deg, #16c42b, #9be9a3 72%, transparent) !important; }
+body[data-theme='claro'] .feed-creation-kicker,
+body[data-theme='claro'] .nexo-eyebrow,
+body[data-theme='claro'] .profile-kicker,
+body[data-theme='claro'] .profile-section-kicker,
+body[data-theme='claro'] .academy-kicker { color: #258236 !important; }
+
+body[data-theme='claro'] .profile-stat-card strong,
+body[data-theme='claro'] .connections-summary-card strong,
+body[data-theme='claro'] .connections-summary-card p,
+body[data-theme='claro'] .profile-hero-copy h1,
+body[data-theme='claro'] .profile-topbar h2,
+body[data-theme='claro'] .profile-section-header h3,
+body[data-theme='claro'] .profile-ig-feed-head strong,
+body[data-theme='claro'] .settings-topbar h1,
+body[data-theme='claro'] .academy-summary-card h2,
+body[data-theme='claro'] .academy-block h3,
+body[data-theme='claro'] .chat-list-head strong,
+body[data-theme='claro'] .chat-room-head-copy strong,
+body[data-theme='claro'] .chat-pet-head h3,
+body[data-theme='claro'] .chat-pet-title,
+body[data-theme='claro'] .chat-quiz-question,
+body[data-theme='claro'] .chat-quiz-head h3,
+body[data-theme='claro'] .notification-content p,
+body[data-theme='claro'] .search-profile-copy strong,
+body[data-theme='claro'] .post-card strong,
+body[data-theme='claro'] .post-content,
+body[data-theme='claro'] .post-caption,
+body[data-theme='claro'] .profile-note-grid-text { color: var(--text) !important; }
+
+body[data-theme='claro'] .profile-stat-card span,
+body[data-theme='claro'] .profile-handle,
+body[data-theme='claro'] .profile-school-chip,
+body[data-theme='claro'] .profile-bio-modern,
+body[data-theme='claro'] .profile-section-header span,
+body[data-theme='claro'] .connections-section-head span,
+body[data-theme='claro'] .connections-user-copy span,
+body[data-theme='claro'] .post-date,
+body[data-theme='claro'] .post-username,
+body[data-theme='claro'] .comment-date,
+body[data-theme='claro'] .comment-empty,
+body[data-theme='claro'] .chat-topbar-subtitle,
+body[data-theme='claro'] .chat-room-head-copy span,
+body[data-theme='claro'] .chat-list-head span,
+body[data-theme='claro'] .chat-list-copy small,
+body[data-theme='claro'] .chat-pet-description,
+body[data-theme='claro'] .notification-content span,
+body[data-theme='claro'] .search-profile-copy p { color: var(--muted) !important; }
+
+body[data-theme='claro'] input,
+body[data-theme='claro'] textarea,
+body[data-theme='claro'] select,
+body[data-theme='claro'] .input,
+body[data-theme='claro'] .edit-input,
+body[data-theme='claro'] .chat-composer-input,
+body[data-theme='claro'] .small-comment-input {
+  color: var(--text);
+  border-color: var(--input-border);
+  background-color: var(--surface-1);
+}
+
+body[data-theme='claro'] input:focus,
+body[data-theme='claro'] textarea:focus,
+body[data-theme='claro'] select:focus,
+body[data-theme='claro'] .input:focus,
+body[data-theme='claro'] .edit-input:focus {
+  border-color: #42b94f !important;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .14) !important;
+}
+
+body[data-theme='claro'] .action-btn,
+body[data-theme='claro'] .icon-action-btn,
+body[data-theme='claro'] .feed-create-btn,
+body[data-theme='claro'] .feed-logout-btn,
+body[data-theme='claro'] .edit-back-btn,
+body[data-theme='claro'] .edit-save-link,
+body[data-theme='claro'] .btn-secondary,
+body[data-theme='claro'] .profile-secondary-btn,
+body[data-theme='claro'] .profile-top-action-btn,
+body[data-theme='claro'] .profile-settings-btn,
+body[data-theme='claro'] .chat-back-btn,
+body[data-theme='claro'] .chat-back-icon-btn,
+body[data-theme='claro'] .chat-list-profile-link,
+body[data-theme='claro'] .feed-top-notifications,
+body[data-theme='claro'] .feed-profile-btn {
+  border-color: var(--border) !important;
+  color: #344437 !important;
+  background: #fff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+body[data-theme='claro'] .feed-create-btn:hover,
+body[data-theme='claro'] .profile-secondary-btn:hover,
+body[data-theme='claro'] .chat-list-profile-link:hover,
+body[data-theme='claro'] .profile-settings-btn:hover { border-color: #90cf96 !important; background: #f3fbf2 !important; }
+body[data-theme='claro'] .feed-creation-actions button.is-primary,
+body[data-theme='claro'] .bottom-nav .nexo-create-nav,
+body[data-theme='claro'] .bottom-nav .nexo-create-nav.active,
+body[data-theme='claro'] .profile-primary-btn,
+body[data-theme='claro'] .edit-submit-btn,
+body[data-theme='claro'] .official-photo-save-btn { color: #102014 !important; background: var(--primary-gradient) !important; }
+
+body[data-theme='claro'] .bottom-nav {
+  border-color: #dfe7dd !important;
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: 0 12px 34px rgba(29,55,31,.12) !important;
+  backdrop-filter: blur(18px);
+}
+body[data-theme='claro'] .bottom-nav a { color: #667367 !important; }
+body[data-theme='claro'] .bottom-nav a.active { color: #237c31 !important; background: #edf8ec !important; }
+body[data-theme='claro'] .bottom-nav .nexo-create-nav,
+body[data-theme='claro'] .bottom-nav .nexo-create-nav.active { box-shadow: 0 8px 20px rgba(var(--primary-rgb), .24) !important; }
+
+body[data-theme='claro'] .profile-settings-popover,
+body[data-theme='claro'] .profile-sidepanel-section,
+body[data-theme='claro'] .profile-saved-account-btn,
+body[data-theme='claro'] .profile-ig-feed-card,
+body[data-theme='claro'] .profile-ig-feed-head,
+body[data-theme='claro'] .connections-row,
+body[data-theme='claro'] .academy-list-row,
+body[data-theme='claro'] .academy-points-grid div,
+body[data-theme='claro'] .academy-trade-preview,
+body[data-theme='claro'] .academy-trade-package,
+body[data-theme='claro'] .notification-pref-row,
+body[data-theme='claro'] .chat-pet-live-zone,
+body[data-theme='claro'] .chat-pet-meta span,
+body[data-theme='claro'] .chat-quiz-option,
+body[data-theme='claro'] .chat-quiz-meta span {
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  background: var(--surface-1) !important;
+}
+body[data-theme='claro'] .profile-block-btn.active,
+body[data-theme='claro'] .profile-block-btn.active .profile-block-icon,
+body[data-theme='claro'] .profile-top-action-btn,
+body[data-theme='claro'] .profile-academy-chip,
+body[data-theme='claro'] .notification-username-btn,
+body[data-theme='claro'] .search-section-action,
+body[data-theme='claro'] .chat-pet-kicker,
+body[data-theme='claro'] .chat-pet-scope { color: #287e36 !important; }
+body[data-theme='claro'] .profile-block-btn.active { border-bottom-color: #36b647 !important; }
+body[data-theme='claro'] .profile-academy-chip { border-color: rgba(var(--primary-rgb), .25) !important; background: rgba(var(--primary-rgb), .09) !important; }
+
+body[data-theme='claro'] .profile-sidepanel,
+body[data-theme='claro'] .profile-settings-popover,
+body[data-theme='claro'] .chat-live-menu-popover,
+body[data-theme='claro'] .chat-live-modal-card { color: var(--text) !important; }
+body[data-theme='claro'] .profile-settings-popover h4,
+body[data-theme='claro'] .profile-sidepanel-head strong,
+body[data-theme='claro'] .profile-sidepanel-section h4 { color: var(--text) !important; }
+body[data-theme='claro'] .profile-settings-popover p,
+body[data-theme='claro'] .profile-sidepanel-section p,
+body[data-theme='claro'] .profile-sidepanel-kicker { color: var(--muted) !important; }
+body[data-theme='claro'] .profile-sidepanel-item { color: #344437 !important; border-color: var(--border) !important; background: #fff !important; }
+body[data-theme='claro'] .profile-sidepanel-item:hover { color: #237c31 !important; border-color: #90cf96 !important; background: #f3fbf2 !important; }
+body[data-theme='claro'] .profile-ig-feed-head { border-bottom-color: var(--border) !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  body[data-theme='claro'] .card,
+  body[data-theme='claro'] .post-card,
+  body[data-theme='claro'] .profile-hero-card,
+  body[data-theme='claro'] .notification-card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  body[data-theme='claro'] .post-card:hover,
+  body[data-theme='claro'] .notification-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md) !important; }
+}
 @media(min-width:1024px) and (min-height:701px) {
   .container > .bottom-nav.nexo-main-nav { position:fixed; left:16px; right:auto; top:50%; bottom:auto; width:72px; max-width:72px; min-height:0; height:auto; display:flex; flex-direction:column; align-items:stretch; gap:2px; padding:8px; transform:translateY(-50%); }
   .container > .bottom-nav.nexo-main-nav a { flex:0 0 58px; width:56px; min-width:56px; height:58px; min-height:58px; margin:2px 0; padding:5px 2px; flex-direction:column; overflow:visible; }
