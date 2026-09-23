@@ -29,10 +29,14 @@ export default function EditProfile() {
   const [sucesso, setSucesso] = useState('')
 
   const inputFotoRef = useRef(null)
+  const fotoPreviewUrlRef = useRef('')
   const navigate = useNavigate()
 
   useEffect(() => {
     carregarPerfil()
+    return () => {
+      if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+    }
   }, [])
 
   function validarUsername(valor) {
@@ -134,8 +138,13 @@ export default function EditProfile() {
     setErro('')
     setSucesso('')
 
-    if (!arquivo.type.startsWith('image/')) {
-      setErro('Escolha um arquivo de imagem.')
+    const extensao = arquivo.name.split('.').pop()?.toLowerCase()
+    const tipoSuportado = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(arquivo.type)
+      || ((!arquivo.type || arquivo.type === 'application/octet-stream')
+        && ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensao))
+
+    if (!tipoSuportado) {
+      setErro('Use uma imagem JPG, PNG, WebP ou GIF. Fotos HEIC precisam ser convertidas antes.')
       event.target.value = ''
       return
     }
@@ -146,28 +155,36 @@ export default function EditProfile() {
       return
     }
 
+    if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+    fotoPreviewUrlRef.current = URL.createObjectURL(arquivo)
     setFotoArquivo(arquivo)
-    setPreviewFoto(URL.createObjectURL(arquivo))
+    setPreviewFoto(fotoPreviewUrlRef.current)
     event.target.value = ''
   }
 
   async function uploadFoto(profileId) {
-    if (!fotoArquivo) return perfil?.foto_url || null
+    if (!fotoArquivo) return { url: perfil?.foto_url || null, path: null }
 
     const extensaoPorTipo = {
       'image/jpeg': 'jpg',
       'image/png': 'png',
       'image/webp': 'webp',
+      'image/gif': 'gif',
     }
+    const extensaoPorNome = fotoArquivo.name.split('.').pop()?.toLowerCase()
     const extensao = extensaoPorTipo[fotoArquivo.type]
-    if (!extensao) throw new Error('Formato inválido. Use JPG, PNG ou WebP.')
-    const nomeArquivo = `${profileId}-${Date.now()}.${extensao}`
+      || (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensaoPorNome) ? extensaoPorNome : null)
+    if (!extensao) throw new Error('Formato inválido. Use JPG, PNG, WebP ou GIF.')
+    const contentType = extensao === 'jpg' || extensao === 'jpeg'
+      ? 'image/jpeg'
+      : `image/${extensao}`
+    const caminho = `profile-${profileId}-${Date.now()}.${extensao === 'jpeg' ? 'jpg' : extensao}`
 
     const { error } = await supabase.storage
       .from('stories')
-      .upload(`profile-${nomeArquivo}`, fotoArquivo, {
+      .upload(caminho, fotoArquivo, {
         upsert: false,
-        contentType: fotoArquivo.type,
+        contentType,
         cacheControl: '3600',
       })
 
@@ -175,9 +192,9 @@ export default function EditProfile() {
 
     const { data } = supabase.storage
       .from('stories')
-      .getPublicUrl(`profile-${nomeArquivo}`)
+      .getPublicUrl(caminho)
 
-    return data.publicUrl
+    return { url: data.publicUrl, path: caminho }
   }
 
   async function salvarPerfil(event) {
@@ -189,10 +206,6 @@ export default function EditProfile() {
 
     const usernameLimpo = username.toLowerCase().trim()
     const erroUsername = validarUsername(usernameLimpo)
-    const instituicaoSelecionada = instituicoes.find((item) => item.id === instituicaoId)
-    const instituicaoNomeFinal =
-      instituicaoSelecionada?.official_name || perfil?.institution_name || DEFAULT_INSTITUTION_NAME
-
     if (erroUsername) {
       setErro(erroUsername)
       return
@@ -204,6 +217,8 @@ export default function EditProfile() {
     }
 
     setSalvando(true)
+    let novaFotoEnviada = null
+    let erroUploadFoto = ''
 
     try {
       const { data: existente } = await supabase
@@ -218,13 +233,10 @@ export default function EditProfile() {
         return
       }
 
-      let fotoFinal = perfil.foto_url || null
-      let erroUploadFoto = ''
       if (fotoArquivo) {
         try {
-          fotoFinal = await uploadFoto(perfil.id)
+          novaFotoEnviada = await uploadFoto(perfil.id)
         } catch (uploadError) {
-          // Um problema na foto não deve impedir que os outros dados do perfil sejam salvos.
           erroUploadFoto = uploadError?.message || 'Não foi possível enviar a foto.'
         }
       }
@@ -233,10 +245,8 @@ export default function EditProfile() {
         nome: nome.trim(),
         username: usernameLimpo,
         bio: bio.trim(),
-        foto_url: fotoFinal,
+        foto_url: novaFotoEnviada?.url || perfil.foto_url || null,
         course_area: curso,
-        institution_id: instituicaoSelecionada?.id || DEFAULT_INSTITUTION_ID,
-        institution_name: instituicaoNomeFinal,
       }
 
       let { data: perfilSalvo, error } = await supabase
@@ -262,7 +272,7 @@ export default function EditProfile() {
             nome: nome.trim(),
             username: usernameLimpo,
             bio: bio.trim(),
-            foto_url: fotoFinal,
+            foto_url: novaFotoEnviada?.url || perfil.foto_url || null,
           })
           .eq('id', perfil.id)
           .eq('account_id', perfil.account_id)
@@ -275,11 +285,16 @@ export default function EditProfile() {
         }
 
         setPerfil(perfilFallback)
-        setPreviewFoto(perfilFallback.foto_url || '')
-        setSucesso(erroUploadFoto
-          ? `Dados do perfil salvos. A foto não foi enviada: ${erroUploadFoto}`
-          : 'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e instituição.')
-        if (!erroUploadFoto) setFotoArquivo(null)
+        if (!erroUploadFoto) {
+          if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+          fotoPreviewUrlRef.current = ''
+          setPreviewFoto(perfilFallback.foto_url || '')
+          setFotoArquivo(null)
+        }
+        setSucesso([
+          `Nome, usuário e bio salvos${erroUploadFoto ? `; a foto não foi enviada: ${erroUploadFoto}` : `, ${fotoArquivo ? 'foto' : 'avatar atual'} confirmada`}.`,
+          'Curso e privacidade não foram aceitos pelo esquema atual do banco.',
+        ].join(' '))
         return
       }
 
@@ -289,12 +304,20 @@ export default function EditProfile() {
       }
 
       setPerfil(perfilSalvo)
-      setPreviewFoto(perfilSalvo.foto_url || '')
+      if (!erroUploadFoto) {
+        if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+        fotoPreviewUrlRef.current = ''
+        setPreviewFoto(perfilSalvo.foto_url || '')
+        setFotoArquivo(null)
+      }
       setSucesso(erroUploadFoto
         ? `Dados do perfil salvos. A foto não foi enviada: ${erroUploadFoto}`
-        : 'Perfil atualizado com sucesso.')
-      if (!erroUploadFoto) setFotoArquivo(null)
+        : 'Perfil atualizado e confirmado no banco.')
     } catch (error) {
+      if (novaFotoEnviada?.path) {
+        const { error: remocaoErro } = await supabase.storage.from('stories').remove([novaFotoEnviada.path])
+        if (remocaoErro) console.warn('[Nexo11 Profile] Não foi possível remover o upload que falhou ao salvar', remocaoErro)
+      }
       const mensagem = error?.message || ''
 
       if (/duplicate key|profiles_username_key/i.test(mensagem)) {
@@ -317,12 +340,13 @@ export default function EditProfile() {
     setErro('')
     setSucesso('')
     setSalvando(true)
+    let fotoEnviada = null
 
     try {
-      const fotoFinal = await uploadFoto(perfil.id)
+      fotoEnviada = await uploadFoto(perfil.id)
       const { data: perfilAtualizado, error } = await supabase
         .from('profiles')
-        .update({ foto_url: fotoFinal })
+        .update({ foto_url: fotoEnviada.url })
         .eq('id', perfil.id)
         .eq('account_id', perfil.account_id)
         .select('*')
@@ -330,14 +354,18 @@ export default function EditProfile() {
 
       if (error) throw error
       if (!perfilAtualizado) {
+        if (fotoEnviada.path) await supabase.storage.from('stories').remove([fotoEnviada.path])
         throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
       }
 
       setPerfil(perfilAtualizado)
+      if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
+      fotoPreviewUrlRef.current = ''
       setPreviewFoto(perfilAtualizado.foto_url || '')
       setFotoArquivo(null)
       setSucesso('Foto oficial atualizada com sucesso.')
     } catch (error) {
+      if (fotoEnviada?.path) await supabase.storage.from('stories').remove([fotoEnviada.path])
       const mensagem = `${error?.message || ''}`.trim()
       setErro(mensagem
         ? `Não foi possível atualizar a foto: ${mensagem}`
@@ -381,6 +409,11 @@ export default function EditProfile() {
       <div className="page">
         {erro ? <div className="alert-box erro-box">{erro}</div> : null}
         {sucesso ? <div className="alert-box ok-box">{sucesso}</div> : null}
+        {sucesso ? (
+          <button type="button" className="edit-profile-saved-link" onClick={() => navigate('/perfil')}>
+            Ver meu perfil atualizado
+          </button>
+        ) : null}
 
         <section className="edit-profile-card">
           <div className="edit-avatar-area">
@@ -430,7 +463,7 @@ export default function EditProfile() {
             <input
               ref={inputFotoRef}
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
               onChange={selecionarFoto}
               style={{ display: 'none' }}
             />
@@ -462,12 +495,12 @@ export default function EditProfile() {
             </div>
 
             <div className="edit-field">
-              <label htmlFor="edit-institution">Instituição</label>
+              <label htmlFor="edit-institution">Instituição vinculada</label>
               <select
                 id="edit-institution"
                 className="story-duration-select"
                 value={instituicaoId}
-                onChange={(event) => setInstituicaoId(event.target.value)}
+                disabled
               >
                 {instituicoes.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -475,6 +508,7 @@ export default function EditProfile() {
                   </option>
                 ))}
               </select>
+              <small>A instituição é vinculada ao cadastro escolar. Para alterá-la, fale com a coordenação.</small>
             </div>
 
             <div className="edit-field">

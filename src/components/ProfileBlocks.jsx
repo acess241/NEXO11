@@ -81,7 +81,31 @@ function IconeRepublicado() {
   )
 }
 
+function IconeFeed() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 6h16M4 12h16M4 18h16" />
+      <circle cx="2.5" cy="6" r=".5" />
+      <circle cx="2.5" cy="12" r=".5" />
+      <circle cx="2.5" cy="18" r=".5" />
+    </svg>
+  )
+}
+
 const TABS = [
+  {
+    key: 'tudo',
+    icon: IconeFeed,
+  },
   {
     key: 'nota',
     icon: IconeNotas,
@@ -208,6 +232,28 @@ export default function ProfileBlocks({
   const [enviando, setEnviando] = useState(false)
   const [aviso, setAviso] = useState('')
 
+  const feedUnificado = useMemo(() => {
+    const republicadosPorId = new Set((republicados || []).map((post) => post.id))
+    const porId = new Map()
+
+    for (const post of posts || []) {
+      porId.set(post.id, {
+        ...post,
+        __republicadoNoPerfil: republicadosPorId.has(post.id),
+      })
+    }
+
+    for (const post of republicados || []) {
+      if (!porId.has(post.id)) {
+        porId.set(post.id, { ...post, __republicadoNoPerfil: true })
+      }
+    }
+
+    return [...porId.values()].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  }, [posts, republicados])
+
   const contagens = useMemo(() => {
     return (posts || []).reduce(
       (acc, post) => {
@@ -215,9 +261,9 @@ export default function ProfileBlocks({
         acc[tipo] += 1
         return acc
       },
-      { nota: 0, foto: 0, nexis: 0, republicados: republicados.length }
+      { tudo: feedUnificado.length, nota: 0, foto: 0, nexis: 0, republicados: republicados.length }
     )
-  }, [posts, republicados.length])
+  }, [posts, republicados.length, feedUnificado.length])
 
   useEffect(() => {
     if (contagens[blocoAtivo] > 0) return
@@ -232,10 +278,16 @@ export default function ProfileBlocks({
   }, [blocoAtivo, contagens])
 
   const postsFiltrados = useMemo(() => {
+    if (blocoAtivo === 'tudo') return feedUnificado
     if (blocoAtivo === 'republicados') return republicados || []
 
     return (posts || []).filter((post) => normalizarTipoPost(post.post_type) === blocoAtivo)
-  }, [blocoAtivo, posts, republicados])
+  }, [blocoAtivo, posts, republicados, feedUnificado])
+
+  function abrirFeedUnico() {
+    setBlocoAtivo('tudo')
+    setPostAbertoId(feedUnificado[0]?.id || null)
+  }
 
   useEffect(() => {
     if (!postAbertoId) return
@@ -451,12 +503,19 @@ export default function ProfileBlocks({
           <h3>{titulo}</h3>
         </div>
         <span>{descricao}</span>
+        <button type="button" className="profile-unified-feed-button" onClick={abrirFeedUnico}>
+          Abrir feed único <strong>{feedUnificado.length}</strong>
+        </button>
       </section>
 
       <div className="profile-block-tabs profile-ig-tabs" role="tablist">
         {TABS.map((tab) => {
           const Icone = tab.icon
-          const meta = tab.key === 'republicados' ? { label: 'Republicados' } : POST_TYPE_META[tab.key]
+          const meta = tab.key === 'tudo'
+            ? { label: 'Tudo' }
+            : tab.key === 'republicados'
+              ? { label: 'Republicados' }
+              : POST_TYPE_META[tab.key]
           const ativo = blocoAtivo === tab.key
 
           return (
@@ -588,9 +647,12 @@ export default function ProfileBlocks({
 }
 
 function renderItem(post, blocoAtivo, aoAbrir) {
-  const tipoBase = blocoAtivo === 'republicados' ? normalizarTipoPost(post.post_type) : blocoAtivo
+  const tipoBase = blocoAtivo === 'republicados' || blocoAtivo === 'tudo'
+    ? normalizarTipoPost(post.post_type)
+    : blocoAtivo
   const metaBase = POST_TYPE_META[tipoBase]
   const ehNota = tipoBase === 'nota'
+  const ehRepublicado = blocoAtivo === 'republicados' || Boolean(post.__republicadoNoPerfil)
 
   if (ehNota) {
     return (
@@ -605,7 +667,7 @@ function renderItem(post, blocoAtivo, aoAbrir) {
             <span className="profile-note-grid-icon">
               <IconeNotas />
             </span>
-            {blocoAtivo === 'republicados' ? (
+            {ehRepublicado ? (
               <span className="profile-grid-repost-badge note-badge">
                 <IconeRepublicado />
               </span>
@@ -637,7 +699,7 @@ function renderItem(post, blocoAtivo, aoAbrir) {
         </span>
       ) : null}
 
-      {blocoAtivo === 'republicados' ? (
+      {ehRepublicado ? (
         <span className="profile-grid-repost-badge">
           <IconeRepublicado />
         </span>
@@ -653,7 +715,7 @@ function renderItem(post, blocoAtivo, aoAbrir) {
 function renderPostFeedCard(post, blocoAtivo, formatarDataFn, focado = false) {
   const tipo = normalizarTipoPost(post.post_type)
   const meta = POST_TYPE_META[tipo]
-  const ehRepublicado = blocoAtivo === 'republicados'
+  const ehRepublicado = blocoAtivo === 'republicados' || Boolean(post.__republicadoNoPerfil)
 
   return (
     <article
