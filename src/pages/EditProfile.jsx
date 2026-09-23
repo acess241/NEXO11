@@ -154,12 +154,22 @@ export default function EditProfile() {
   async function uploadFoto(profileId) {
     if (!fotoArquivo) return perfil?.foto_url || null
 
-    const extensao = fotoArquivo.name.split('.').pop()
+    const extensaoPorTipo = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    }
+    const extensao = extensaoPorTipo[fotoArquivo.type]
+    if (!extensao) throw new Error('Formato inválido. Use JPG, PNG ou WebP.')
     const nomeArquivo = `${profileId}-${Date.now()}.${extensao}`
 
     const { error } = await supabase.storage
       .from('stories')
-      .upload(`profile-${nomeArquivo}`, fotoArquivo, { upsert: true })
+      .upload(`profile-${nomeArquivo}`, fotoArquivo, {
+        upsert: false,
+        contentType: fotoArquivo.type,
+        cacheControl: '3600',
+      })
 
     if (error) throw error
 
@@ -225,13 +235,16 @@ export default function EditProfile() {
         institution_name: instituicaoNomeFinal,
       }
 
-      let { error } = await supabase
+      let { data: perfilSalvo, error } = await supabase
         .from('profiles')
         .update({
           ...payloadBase,
           is_private: contaPrivada,
         })
         .eq('id', perfil.id)
+        .eq('account_id', perfil.account_id)
+        .select('*')
+        .maybeSingle()
 
       if (
         error &&
@@ -239,7 +252,7 @@ export default function EditProfile() {
           error.message || ''
         )
       ) {
-        const { error: fallbackError } = await supabase
+        const { data: perfilFallback, error: fallbackError } = await supabase
           .from('profiles')
           .update({
             nome: nome.trim(),
@@ -248,9 +261,17 @@ export default function EditProfile() {
             foto_url: fotoFinal,
           })
           .eq('id', perfil.id)
+          .eq('account_id', perfil.account_id)
+          .select('*')
+          .maybeSingle()
 
         if (fallbackError) throw fallbackError
+        if (!perfilFallback) {
+          throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
+        }
 
+        setPerfil(perfilFallback)
+        setPreviewFoto(perfilFallback.foto_url || '')
         setSucesso(
           'Perfil atualizado. Rode o SQL de perfil escolar para liberar curso, privacidade e instituição.'
         )
@@ -259,7 +280,12 @@ export default function EditProfile() {
       }
 
       if (error) throw error
+      if (!perfilSalvo) {
+        throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
+      }
 
+      setPerfil(perfilSalvo)
+      setPreviewFoto(perfilSalvo.foto_url || '')
       setSucesso('Perfil atualizado com sucesso.')
       setFotoArquivo(null)
     } catch (error) {
@@ -288,25 +314,28 @@ export default function EditProfile() {
 
     try {
       const fotoFinal = await uploadFoto(perfil.id)
-      const { error } = await supabase
+      const { data: perfilAtualizado, error } = await supabase
         .from('profiles')
         .update({ foto_url: fotoFinal })
         .eq('id', perfil.id)
         .eq('account_id', perfil.account_id)
+        .select('*')
+        .maybeSingle()
 
       if (error) throw error
+      if (!perfilAtualizado) {
+        throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
+      }
 
-      setPerfil((atual) => ({ ...atual, foto_url: fotoFinal }))
-      setPreviewFoto(fotoFinal)
+      setPerfil(perfilAtualizado)
+      setPreviewFoto(perfilAtualizado.foto_url || '')
       setFotoArquivo(null)
       setSucesso('Foto oficial atualizada com sucesso.')
     } catch (error) {
       const mensagem = `${error?.message || ''}`.trim()
-      setErro(
-        mensagem
-          ? `Não foi possível atualizar a foto oficial: ${mensagem}`
-          : 'Não foi possível atualizar a foto oficial.'
-      )
+      setErro(mensagem
+        ? `Não foi possível atualizar a foto: ${mensagem}`
+        : 'Não foi possível atualizar a foto.')
     } finally {
       setSalvando(false)
     }
