@@ -481,7 +481,7 @@ export default function UserProfile() {
         <ProfileBlocks
           posts={posts}
           republicados={republicados}
-          titulo="Feed do perfil"
+          titulo="Publicações"
           descricao={
             podeVerConteudo
               ? seguindo
@@ -500,7 +500,7 @@ export default function UserProfile() {
             podeVerConteudo
               ? 'Quando este usuário publicar, as postagens vão aparecer na grade.'
               : bloqueadoPorMim
-                ? 'Desbloqueie para voltar a seguir, mandar mensagem e ver o feed deste perfil.'
+                ? 'Desbloqueie para voltar a seguir, mandar mensagem e ver as publicações deste perfil.'
                 : 'Somente seguidores aceitos podem ver stories e postagens deste perfil.'
           }
           onAddToStory={(post) => navigate(`/novo-story?post=${encodeURIComponent(post.id)}`)}
