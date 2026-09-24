@@ -251,20 +251,31 @@ export default function Feed() {
   }, [])
 
   function iniciarGestoLateral(event) {
-    if (event.target.closest('button,a,input,textarea,video,.insta-stories-bar')) return
-    const toque = event.touches?.[0]
-    if (toque) swipeStartRef.current = { x: toque.clientX, y: toque.clientY, time: Date.now() }
+    if (event.target.closest('button,a,input,textarea,select,video,[contenteditable="true"],.insta-stories-bar,.stories-bar,.nexo-welcome-stats')) return
+    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return
+    swipeStartRef.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId }
   }
 
-  function finalizarGestoLateral(event) {
+  function concluirGestoLateral(event) {
     const inicio = swipeStartRef.current
-    const toque = event.changedTouches?.[0]
+    if (!inicio || inicio.pointerId !== event.pointerId) return
     swipeStartRef.current = null
-    if (!inicio || !toque) return
-    const deltaX = toque.clientX - inicio.x
-    const deltaY = toque.clientY - inicio.y
-    const gestoHorizontal = Math.abs(deltaX) > 72 && Math.abs(deltaX) > Math.abs(deltaY) * 1.35
-    if (gestoHorizontal && deltaX < 0 && Date.now() - inicio.time < 900) navigate('/conversas')
+    const deltaX = event.clientX - inicio.x
+    const deltaY = event.clientY - inicio.y
+    const gestoHorizontal = Math.abs(deltaX) > 64 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25
+    if (gestoHorizontal && deltaX < 0) navigate('/conversas')
+  }
+
+  function acompanharGestoLateral(event) {
+    const inicio = swipeStartRef.current
+    if (!inicio || inicio.pointerId !== event.pointerId) return
+    const deltaX = event.clientX - inicio.x
+    const deltaY = event.clientY - inicio.y
+    const gestoHorizontal = deltaX < -64 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25
+    if (gestoHorizontal) {
+      swipeStartRef.current = null
+      navigate('/conversas')
+    }
   }
 
   useEffect(() => {
@@ -1328,7 +1339,13 @@ export default function Feed() {
         </div>
       </div>
 
-      <div className="page nexo-social-page" onTouchStart={iniciarGestoLateral} onTouchEnd={finalizarGestoLateral}>
+      <div
+        className="page nexo-social-page"
+        onPointerDown={iniciarGestoLateral}
+        onPointerMove={acompanharGestoLateral}
+        onPointerUp={concluirGestoLateral}
+        onPointerCancel={() => { swipeStartRef.current = null }}
+      >
         <div className="nexo-social-grid is-simple">
           <main className="nexo-social-stream">
         {erro && <div className="alert-box erro-box">{erro}</div>}
