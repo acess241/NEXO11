@@ -20522,3 +20522,60 @@ body[data-theme='claro'] .nexo-social-shell .post-card.is-talent-post:hover {
 }
 body[data-theme='claro'] .post-type-chip.talent { border-color: rgba(132, 53, 183, .32); color: #5e267c; background: linear-gradient(110deg, rgba(186, 111, 255, .18), rgba(255, 98, 192, .15)); box-shadow: 0 2px 12px rgba(151, 62, 204, .12); }
 body[data-theme='claro'] .post-type-chip.talent::before { color: #a46b00; }
+
+
+
+/* Indicador de atualizacao por gesto no topo da tela. */
+.auth-photo-field { display: none !important; }
+.pull-refresh {
+  position: fixed;
+  top: calc(10px + var(--safe-top));
+  left: 50%;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+  color: #f6fbff;
+  background: rgba(8, 10, 14, .94);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-50%, calc(-28px + (52px * var(--pull-progress, 0))), 0) scale(.96);
+  transition: opacity .16s ease, transform .16s ease;
+}
+.pull-refresh.active,
+.pull-refresh.refreshing { opacity: 1; }
+.pull-refresh.refreshing { transform: translate3d(-50%, 0, 0) scale(1); }
+.pull-refresh.ready { border-color: rgba(0, 227, 140, .52); box-shadow: 0 18px 50px rgba(0, 227, 140, .18); }
+.pull-refresh-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 2px solid rgba(255, 255, 255, .3);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  transform: rotate(calc(220deg * var(--pull-progress, 0)));
+}
+.pull-refresh.refreshing .pull-refresh-icon { animation: pull-refresh-spin .76s linear infinite; }
+@keyframes pull-refresh-spin { to { transform: rotate(360deg); } }
+body[data-theme='claro'] .pull-refresh {
+  border-color: rgba(151, 62, 204, .24);
+  color: #382747;
+  background: rgba(255, 250, 255, .96);
+  box-shadow: 0 15px 40px rgba(82, 40, 103, .16);
+}
+body[data-theme='claro'] .pull-refresh.ready {
+  border-color: rgba(151, 62, 204, .5);
+  box-shadow: 0 15px 40px rgba(151, 62, 204, .2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh { transition: none; }
+  .pull-refresh.refreshing .pull-refresh-icon { animation-duration: 1.5s; }
+}
