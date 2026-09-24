@@ -34,11 +34,12 @@ export default function Talents() {
       if (savedNotice) { setNotice(savedNotice); sessionStorage.removeItem('nexo:talent-notice') }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { navigate('/auth'); return }
-      const { data: profile } = await supabase.from('profiles').select('id,nome,username,foto_url').eq('account_id', user.id).single()
+      const { data: profile, error: profileError } = await supabase.from('profiles').select('id,nome,username,foto_url').eq('account_id', user.id).single()
+      if (profileError || !profile?.id) throw profileError || new Error('Não foi possível localizar seu perfil.')
       setMe(profile)
       const { data: posts, error: postsError } = await supabase.from('posts')
         .select('id,profile_id,content,media_url,media_kind,talent_title,talent_category,moderation_status,created_at')
-        .eq('post_type', 'talent').or(`moderation_status.eq.approved,profile_id.eq.${profile.id}`).order('created_at', { ascending: false }).limit(80)
+        .eq('post_type', 'talent').order('created_at', { ascending: false }).limit(80)
       if (postsError) throw postsError
       const ids = [...new Set((posts || []).map((post) => post.profile_id))]
       const postIds = (posts || []).map((post) => post.id)

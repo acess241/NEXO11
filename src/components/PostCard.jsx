@@ -82,7 +82,7 @@ export default function PostCard({
   const labelFallback = mediaKind === 'video' ? 'Vídeo indisponível' : 'Mídia indisponível'
 
   return (
-    <div id={`post-${post.id}`} className={`post-card ${destacado ? 'is-shared-target' : ''}`}>
+    <div id={`post-${post.id}`} className={`post-card ${tipo === 'talent' ? 'is-talent-post' : ''} ${destacado ? 'is-shared-target' : ''}`}>
       <button
         type="button"
         className={`post-header post-author-btn ${podeAbrirPerfilAutor ? 'is-clickable' : ''}`}

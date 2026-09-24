@@ -1322,6 +1322,21 @@ img {
 .nexo-social-shell .feed-list { display: grid; gap: 14px; }
 .nexo-social-shell .post-card { overflow: hidden; margin: 0; border-color: var(--border); border-radius: 24px 24px 24px 8px; background: var(--card); background: linear-gradient(145deg, var(--card), color-mix(in srgb, var(--card) 92%, var(--primary) 8%)); box-shadow: var(--shadow-sm); }
 .nexo-social-shell .post-card::before { content: ''; display: block; width: 100%; height: 3px; background: linear-gradient(90deg, var(--primary), transparent 70%); opacity: .7; }
+.nexo-social-shell .post-card.is-talent-post {
+  border-color: rgba(190, 117, 255, .58);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card) 95%, #b967ff 5%), color-mix(in srgb, var(--card) 97%, #ff62c0 3%));
+  box-shadow: var(--shadow-sm), 0 0 0 1px rgba(190, 117, 255, .14), 0 0 24px rgba(190, 117, 255, .16);
+}
+.nexo-social-shell .post-card.is-talent-post::before {
+  height: 4px;
+  background: linear-gradient(90deg, #ffe36e 0%, #ff62c0 42%, #a66bff 72%, #29dfd6 100%);
+  box-shadow: 0 0 15px rgba(220, 116, 255, .55);
+  opacity: .95;
+}
+.nexo-social-shell .post-card.is-talent-post:hover {
+  border-color: rgba(220, 150, 255, .82);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(190, 117, 255, .23), 0 0 34px rgba(190, 117, 255, .24), 0 0 48px rgba(255, 98, 192, .11);
+}
 
 .nexo-main-nav { max-width: min(100%, 720px); bottom: max(10px, var(--safe-bottom)); padding: 6px; border: 1px solid rgba(var(--primary-rgb), .16); border-radius: 22px; background: color-mix(in srgb, var(--topbar-bg) 92%, transparent); box-shadow: 0 14px 45px rgba(0,0,0,.45); }
 .nexo-main-nav a { min-height: 54px; padding: 6px 10px; flex-direction: column; gap: 3px; border-radius: 16px; }
