@@ -20495,3 +20495,30 @@ body[data-theme='claro'] .profile-ig-feed-head { border-bottom-color: var(--bord
   }
   .container > .bottom-nav.nexo-main-nav .nexo-create-nav { transform:translateY(-6px); }
 }
+
+
+/* Talentos mantem o destaque no feed em ambos os temas. */
+.nexo-social-shell .post-card.is-talent-post {
+  border-color: rgba(190, 117, 255, .78);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card) 91%, #b967ff 9%), color-mix(in srgb, var(--card) 94%, #ff62c0 6%));
+  box-shadow: var(--shadow-sm), inset 4px 0 0 rgba(190, 117, 255, .72), 0 0 0 1px rgba(190, 117, 255, .2), 0 0 28px rgba(190, 117, 255, .22);
+}
+.nexo-social-shell .post-card.is-talent-post::before { height: 5px; opacity: 1; box-shadow: 0 0 18px rgba(220, 116, 255, .68); }
+.nexo-social-shell .post-card.is-talent-post:hover {
+  border-color: rgba(220, 150, 255, .96);
+  box-shadow: var(--shadow-md), inset 4px 0 0 rgba(190, 117, 255, .9), 0 0 0 1px rgba(190, 117, 255, .3), 0 0 38px rgba(190, 117, 255, .32), 0 0 52px rgba(255, 98, 192, .15);
+}
+.post-type-chip.talent { gap: 5px; padding-inline: 10px; border: 1px solid rgba(186, 111, 255, .46); color: #efd8ff; background: linear-gradient(110deg, rgba(186, 111, 255, .23), rgba(255, 98, 192, .18)); box-shadow: 0 2px 12px rgba(186, 111, 255, .17); }
+.post-type-chip.talent::before { content: '✦'; color: #ffdc76; font-size: 12px; }
+body[data-theme='claro'] .nexo-social-shell .post-card.is-talent-post {
+  border-color: rgba(151, 62, 204, .68) !important;
+  background: linear-gradient(145deg, #fffafd 0%, #fbf1ff 54%, #fff3f8 100%) !important;
+  box-shadow: 0 15px 36px rgba(73, 37, 81, .12), inset 4px 0 0 rgba(151, 62, 204, .7), 0 0 0 1px rgba(151, 62, 204, .18), 0 0 25px rgba(178, 93, 229, .19) !important;
+}
+body[data-theme='claro'] .nexo-social-shell .post-card.is-talent-post::before { background: linear-gradient(90deg, #ffe36e 0%, #ff62c0 42%, #a66bff 72%, #29cfc8 100%) !important; box-shadow: 0 0 18px rgba(177, 84, 221, .48) !important; }
+body[data-theme='claro'] .nexo-social-shell .post-card.is-talent-post:hover {
+  border-color: rgba(134, 44, 193, .9) !important;
+  box-shadow: 0 20px 44px rgba(73, 37, 81, .16), inset 4px 0 0 rgba(151, 62, 204, .86), 0 0 0 1px rgba(151, 62, 204, .27), 0 0 33px rgba(178, 93, 229, .26), 0 0 42px rgba(255, 98, 192, .12) !important;
+}
+body[data-theme='claro'] .post-type-chip.talent { border-color: rgba(132, 53, 183, .32); color: #5e267c; background: linear-gradient(110deg, rgba(186, 111, 255, .18), rgba(255, 98, 192, .15)); box-shadow: 0 2px 12px rgba(151, 62, 204, .12); }
+body[data-theme='claro'] .post-type-chip.talent::before { color: #a46b00; }
