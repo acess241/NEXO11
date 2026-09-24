@@ -15200,6 +15200,42 @@ body[data-theme='claro'] .notification-settings-status.warn {
   margin-bottom: 12px;
 }
 
+.auth-photo-field {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 2px 0 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 18px 6px;
+  background: var(--surface-1);
+}
+
+.auth-photo-picker {
+  position: relative;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+  border: 2px dashed rgba(var(--primary-rgb), .55);
+  border-radius: 18px 18px 18px 5px;
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), .08);
+  font-size: 1.35rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.auth-photo-picker img { width: 100%; height: 100%; object-fit: cover; }
+.auth-photo-picker i { position: absolute; right: 1px; bottom: 1px; width: 21px; height: 21px; display: grid; place-items: center; border: 2px solid var(--surface-1); border-radius: 50%; color: var(--primary-contrast); background: var(--primary); font-size: 15px; font-style: normal; line-height: 1; }
+.auth-photo-field > div { min-width: 0; display: grid; gap: 3px; }
+.auth-photo-field strong { color: var(--text); font-size: .82rem; }
+.auth-photo-field small { color: var(--muted); font-size: .68rem; line-height: 1.35; }
+.auth-photo-field > div > button { justify-self: start; padding: 2px 0; border: 0; color: var(--primary); background: transparent; font: inherit; font-size: .74rem; font-weight: 800; cursor: pointer; }
+
 .auth-role-btn {
   min-height: 42px;
   border: 1px solid var(--input-border);

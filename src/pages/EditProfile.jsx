@@ -271,6 +271,16 @@ export default function EditProfile() {
         }
       }
 
+      const outrosCamposAlterados = nome.trim() !== (perfil.nome || '')
+        || usernameLimpo !== `${perfil.username || ''}`.toLowerCase().trim()
+        || bio.trim() !== (perfil.bio || '')
+        || contaPrivada !== Boolean(perfil.is_private)
+        || curso !== normalizarCurso(perfil.course_area)
+
+      if (fotoSalvaSeparadamente && !outrosCamposAlterados) {
+        setSucesso('Foto de perfil atualizada com sucesso.')
+        return
+      }
       const payloadBase = {
         nome: nome.trim(),
         username: usernameLimpo,
@@ -355,8 +365,7 @@ export default function EditProfile() {
           ? 'A foto foi salva; o serviço de imagem apresentou um problema ao concluir os outros dados.'
           : 'Erro no upload da foto. Tente novamente em instantes.')
       } else if (fotoSalvaSeparadamente && /(institution|institui[cç][aã]o|education_institutions)/i.test(mensagem)) {
-        setSucesso('Foto de perfil salva. Os outros dados não foram alterados porque o vínculo com a instituição foi recusado pelo banco.')
-        setErro('Fale com a coordenação para conferir o cadastro escolar e depois tente salvar os outros dados.')
+        setSucesso('Foto de perfil salva. Os outros dados não foram alterados porque o vínculo com a instituição precisa ser conferido pela coordenação escolar.')
       } else if (fotoSalvaSeparadamente && mensagem) {
         setErro(`A foto de perfil foi salva, mas os outros dados não foram atualizados: ${mensagem}`)
       } else if (/(institution|institui[cç][aã]o|education_institutions)/i.test(mensagem)) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
@@ -106,6 +106,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
   const [tipoConta, setTipoConta] = useState('student')
   const [nome, setNome] = useState('')
   const [username, setUsername] = useState('')
+  const [fotoCadastro, setFotoCadastro] = useState(null)
+  const [fotoCadastroPreview, setFotoCadastroPreview] = useState('')
   const [cidadeEscola, setCidadeEscola] = useState('')
   const [escolaProfessor, setEscolaProfessor] = useState('')
   const [materiaProfessor, setMateriaProfessor] = useState('')
@@ -118,6 +120,8 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const inputFotoCadastroRef = useRef(null)
+  const fotoCadastroPreviewRef = useRef('')
 
   const navigate = useNavigate()
   const escolasDaCidade = useMemo(
@@ -145,6 +149,94 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => () => {
+    if (fotoCadastroPreviewRef.current) URL.revokeObjectURL(fotoCadastroPreviewRef.current)
+  }, [])
+
+  function selecionarFotoCadastro(event) {
+    const arquivo = event.target.files?.[0]
+    event.target.value = ''
+    if (!arquivo) return
+
+    const extensao = arquivo.name.split('.').pop()?.toLowerCase()
+    const tipoSuportado = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(arquivo.type)
+      || ((!arquivo.type || arquivo.type === 'application/octet-stream')
+        && ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensao))
+
+    if (!tipoSuportado) {
+      setErro('Use uma imagem JPG, PNG, WebP ou GIF. Fotos HEIC precisam ser convertidas antes.')
+      return
+    }
+    if (arquivo.size > 8 * 1024 * 1024) {
+      setErro('A foto deve ter no máximo 8 MB.')
+      return
+    }
+
+    setErro('')
+    if (fotoCadastroPreviewRef.current) URL.revokeObjectURL(fotoCadastroPreviewRef.current)
+    fotoCadastroPreviewRef.current = URL.createObjectURL(arquivo)
+    setFotoCadastro(arquivo)
+    setFotoCadastroPreview(fotoCadastroPreviewRef.current)
+  }
+
+  function limparFotoCadastro() {
+    if (fotoCadastroPreviewRef.current) URL.revokeObjectURL(fotoCadastroPreviewRef.current)
+    fotoCadastroPreviewRef.current = ''
+    setFotoCadastro(null)
+    setFotoCadastroPreview('')
+  }
+
+  async function salvarFotoCadastro(userId) {
+    if (!fotoCadastro || !userId) return false
+
+    const { data: perfil, error: erroPerfil } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('account_id', userId)
+      .maybeSingle()
+    if (erroPerfil) throw erroPerfil
+    if (!perfil?.id) throw new Error('O cadastro foi criado, mas o perfil ainda não ficou disponível para receber a foto.')
+
+    const extensoesPorTipo = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    }
+    const extensaoPorNome = fotoCadastro.name.split('.').pop()?.toLowerCase()
+    const extensao = extensoesPorTipo[fotoCadastro.type]
+      || (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extensaoPorNome) ? extensaoPorNome : null)
+    if (!extensao) throw new Error('Formato de imagem inválido.')
+    const contentType = extensao === 'jpg' || extensao === 'jpeg' ? 'image/jpeg' : `image/${extensao}`
+    const caminho = `profile-${perfil.id}-${Date.now()}.${extensao === 'jpeg' ? 'jpg' : extensao}`
+    const storage = supabase.storage.from('stories')
+
+    const { error: erroUpload } = await storage.upload(caminho, fotoCadastro, {
+      upsert: false,
+      contentType,
+      cacheControl: '3600',
+    })
+    if (erroUpload) throw erroUpload
+
+    const { data: urlPublica } = storage.getPublicUrl(caminho)
+    const { data: perfilAtualizado, error: erroAtualizacao } = await supabase
+      .from('profiles')
+      .update({ foto_url: urlPublica.publicUrl })
+      .eq('id', perfil.id)
+      .eq('account_id', userId)
+      .select('id')
+      .maybeSingle()
+
+    if (erroAtualizacao || !perfilAtualizado) {
+      const { error: erroRemocao } = await storage.remove([caminho])
+      if (erroRemocao) console.warn('[Nexo11 Auth] Não foi possível remover a foto de cadastro que falhou', erroRemocao)
+      if (erroAtualizacao) throw erroAtualizacao
+      throw new Error('O banco não confirmou a foto do perfil.')
+    }
+
+    return true
+  }
 
   function selecionarCidadeEscola(cityKey) {
     setCidadeEscola(cityKey)
@@ -607,15 +699,31 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
           teacherDepartment: null,
         })
 
+        let avisoFoto = ''
+        if (fotoCadastro) {
+          if (!data.session) {
+            avisoFoto = ' Confirme seu email e, depois de entrar, adicione a foto em Editar perfil.'
+          } else {
+            try {
+              await salvarFotoCadastro(data.user.id)
+              avisoFoto = ' A foto do perfil também foi salva.'
+            } catch (erroFoto) {
+              console.warn('[Nexo11 Auth] Não foi possível salvar a foto durante o cadastro', erroFoto)
+              avisoFoto = ' A conta foi criada, mas não conseguimos salvar a foto agora. Depois de entrar, tente novamente em Editar perfil.'
+            }
+          }
+        }
+
         if (data.session) {
           await salvarContaAtualNoDispositivo()
         }
 
         setSucesso(
-          salvouEducacao
+          (salvouEducacao
             ? 'Cadastro realizado com sucesso!'
-            : 'Cadastro realizado. Rode o SQL de instituição/matrícula para salvar os novos campos.'
+            : 'Cadastro realizado. Rode o SQL de instituição/matrícula para salvar os novos campos.') + avisoFoto
         )
+        limparFotoCadastro()
         setIsLogin(true)
         setMostrarSenha(false)
         setMateriaProfessor('')
@@ -826,6 +934,36 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
                       required
                     />
+
+                    <div className="auth-photo-field">
+                      <button
+                        type="button"
+                        className="auth-photo-picker"
+                        onClick={() => inputFotoCadastroRef.current?.click()}
+                        aria-label={fotoCadastro ? 'Trocar foto do perfil' : 'Escolher foto do perfil'}
+                      >
+                        {fotoCadastroPreview ? (
+                          <img src={fotoCadastroPreview} alt="Prévia da foto do perfil" />
+                        ) : (
+                          <span>{nome.trim().charAt(0).toUpperCase() || 'N'}</span>
+                        )}
+                        <i aria-hidden="true">＋</i>
+                      </button>
+                      <div>
+                        <strong>{fotoCadastro ? 'Foto escolhida' : 'Adicione uma foto ao perfil'}</strong>
+                        <small>Opcional · JPG, PNG, WebP ou GIF · até 8 MB</small>
+                        <button type="button" onClick={() => inputFotoCadastroRef.current?.click()}>
+                          {fotoCadastro ? 'Trocar foto' : 'Escolher foto'}
+                        </button>
+                      </div>
+                      <input
+                        ref={inputFotoCadastroRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+                        onChange={selecionarFotoCadastro}
+                        hidden
+                      />
+                    </div>
 
                     <select
                       className="input"
