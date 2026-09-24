@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import PullToRefresh from './components/PullToRefresh'
 import { supabase } from './lib/supabase'
 import { aplicarTema, obterTemaSalvo } from './lib/theme'
 
@@ -166,6 +167,7 @@ export default function App() {
       <SocialMetaBridge />
       <ReportDialog />
       <AccountSafetyGate session={session} />
+      <PullToRefresh />
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />
       <UpdateAnnouncement session={session} />
