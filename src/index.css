@@ -20917,3 +20917,76 @@ body[data-theme='claro'] .pull-refresh.ready {
 }
 .nexo-install-dialog > .nexo-fullscreen-action,
 .nexo-install-dialog .nexo-fullscreen-error { display: none !important; }
+
+.error-boundary-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(20px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom));
+  color: var(--text, #fff);
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(var(--primary-rgb, 22, 255, 0), .12), transparent 48%),
+    var(--bg, #050505);
+}
+.error-boundary-card {
+  width: min(100%, 470px);
+  padding: clamp(26px, 7vw, 40px);
+  border: 1px solid color-mix(in srgb, var(--primary, #16ff00) 20%, var(--border, #242424));
+  border-radius: 30px;
+  background: color-mix(in srgb, var(--card, #0d0d0d) 94%, transparent);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .35), 0 0 50px rgba(var(--primary-rgb, 22, 255, 0), .07);
+  text-align: center;
+  animation: errorCardArrive .55s cubic-bezier(.2, .8, .2, 1) both;
+}
+.error-boundary-scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 170px;
+  height: 148px;
+  margin: 0 auto 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(81, 217, 255, .12), transparent 68%);
+}
+.error-boundary-mascot { transform: scale(1.55); transform-origin: center; }
+.error-boundary-mascot .chat-pet-aura { background: radial-gradient(circle, rgba(93, 216, 255, .26), rgba(93, 216, 255, 0) 72%); }
+.error-boundary-mascot .chat-pet-tail { animation: errorTailDroop 2.2s ease-in-out infinite; }
+.error-boundary-star { position: absolute; color: var(--primary, #16ff00); opacity: .8; animation: errorStarFloat 2.8s ease-in-out infinite; }
+.error-boundary-star.star-one { top: 22px; left: 23px; font-size: 19px; }
+.error-boundary-star.star-two { top: 43px; right: 15px; font-size: 16px; animation-delay: .6s; }
+.error-boundary-teardrop { position: absolute; right: 43px; top: 76px; font-size: 15px; animation: errorTear 1.8s ease-in-out infinite; }
+.error-boundary-brand { margin: 2px 0 10px; color: var(--primary, #16ff00); font-size: 11px; font-weight: 900; letter-spacing: .22em; }
+.error-boundary-card h1 { max-width: 360px; margin: 0 auto 11px; font-size: clamp(25px, 6vw, 32px); line-height: 1.14; letter-spacing: -.035em; }
+.error-boundary-copy { max-width: 340px; margin: 0 auto 22px; color: var(--muted, #a1a1a1); font-size: 15px; line-height: 1.6; }
+.error-boundary-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--primary-contrast, #020202);
+  background: var(--primary-gradient, linear-gradient(135deg, #16ff00, #8bff7f));
+  box-shadow: 0 8px 26px rgba(var(--primary-rgb, 22, 255, 0), .2);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+.error-boundary-card button:hover { filter: brightness(1.06); transform: translateY(-2px); }
+.error-boundary-card button:focus-visible { outline: 3px solid var(--text, #fff); outline-offset: 3px; }
+.error-boundary-card button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.error-boundary-card small { display: block; margin-top: 16px; color: var(--muted, #a1a1a1); font-size: 12px; line-height: 1.5; }
+@keyframes errorCardArrive { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes errorStarFloat { 50% { opacity: .35; transform: translateY(-6px) rotate(10deg); } }
+@keyframes errorTear { 50% { transform: translate(3px, 7px) rotate(10deg); } }
+@keyframes errorTailDroop { 50% { transform: rotate(18deg) translateY(3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .error-boundary-card, .error-boundary-mascot, .error-boundary-star, .error-boundary-teardrop,
+  .error-boundary-mascot .chat-pet-tail { animation: none !important; }
+  .error-boundary-card button { transition: none; }
+}
