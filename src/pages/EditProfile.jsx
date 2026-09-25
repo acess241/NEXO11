@@ -220,6 +220,7 @@ export default function EditProfile() {
     let novaFotoEnviada = null
     let erroUploadFoto = ''
     let fotoSalvaSeparadamente = false
+    let perfilAtualizadoComFoto = null
 
     try {
       const { data: existente } = await supabase
@@ -253,6 +254,7 @@ export default function EditProfile() {
           const fotoUrlSalva = fotoAtualizada.foto_url || novaFotoEnviada.url
           fotoSalvaSeparadamente = true
           novaFotoEnviada = null
+          perfilAtualizadoComFoto = { ...perfil, foto_url: fotoUrlSalva }
           setPerfil((atual) => ({ ...atual, foto_url: fotoUrlSalva }))
           if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
           fotoPreviewUrlRef.current = ''
@@ -271,74 +273,108 @@ export default function EditProfile() {
         }
       }
 
-      const outrosCamposAlterados = nome.trim() !== (perfil.nome || '')
-        || usernameLimpo !== `${perfil.username || ''}`.toLowerCase().trim()
-        || bio.trim() !== (perfil.bio || '')
-        || contaPrivada !== Boolean(perfil.is_private)
-        || curso !== normalizarCurso(perfil.course_area)
-
-      if (fotoSalvaSeparadamente && !outrosCamposAlterados) {
-        setSucesso('Foto de perfil atualizada com sucesso.')
-        return
+      const camposBasicos = {}
+      if (nome.trim() !== (perfil.nome || '')) camposBasicos.nome = nome.trim()
+      if (usernameLimpo !== `${perfil.username || ''}`.toLowerCase().trim()) {
+        camposBasicos.username = usernameLimpo
       }
-      const payloadBase = {
-        nome: nome.trim(),
-        username: usernameLimpo,
-        bio: bio.trim(),
-        course_area: curso,
+      if (bio.trim() !== (perfil.bio || '')) camposBasicos.bio = bio.trim()
+
+      const camposComplementares = []
+      if (curso !== normalizarCurso(perfil.course_area)) {
+        camposComplementares.push({ campo: 'course_area', valor: curso, nome: 'curso' })
+      }
+      if (contaPrivada !== Boolean(perfil.is_private)) {
+        camposComplementares.push({ campo: 'is_private', valor: contaPrivada, nome: 'privacidade' })
       }
 
-      let { data: perfilSalvo, error } = await supabase
-        .from('profiles')
-        .update({
-          ...payloadBase,
-          is_private: contaPrivada,
-        })
-        .eq('id', perfil.id)
-        .eq('account_id', perfil.account_id)
-        .select('*')
-        .maybeSingle()
+      let perfilSalvo = perfilAtualizadoComFoto || perfil
+      let houveSalvamento = fotoSalvaSeparadamente
+      const avisosSalvamento = []
+      const camposBasicosAlterados = Object.entries(camposBasicos)
 
-      if (
-        error &&
-        /(is_private|course_area|institution_|enrollment_number|schema cache|column)/i.test(
-          error.message || ''
-        )
-      ) {
-        const { data: perfilFallback, error: fallbackError } = await supabase
+      if (camposBasicosAlterados.length > 0) {
+        const { data, error } = await supabase
           .from('profiles')
-          .update({
-            nome: nome.trim(),
-            username: usernameLimpo,
-            bio: bio.trim(),
-          })
+          .update(camposBasicos)
           .eq('id', perfil.id)
           .eq('account_id', perfil.account_id)
           .select('*')
           .maybeSingle()
 
-        if (fallbackError) throw fallbackError
-        if (!perfilFallback) {
-          throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
+        if (error && /(institution|institui[cç][aã]o|education_institutions)/i.test(error.message || '')) {
+          let algumCampoSalvo = false
+          const nomesCamposSalvos = []
+          for (const [campo, valor] of camposBasicosAlterados) {
+            const { data: campoSalvo, error: erroCampo } = await supabase
+              .from('profiles')
+              .update({ [campo]: valor })
+              .eq('id', perfil.id)
+              .eq('account_id', perfil.account_id)
+              .select('*')
+              .maybeSingle()
+
+            if (erroCampo || !campoSalvo) {
+              const detalheCampo = erroCampo?.message || ''
+              if (/(institution|institui[cç][aã]o|education_institutions)/i.test(detalheCampo)) {
+                avisosSalvamento.push(`${campo} não foi atualizado por causa do vínculo escolar.`)
+              } else if (/duplicate key|profiles_username_key/i.test(detalheCampo)) {
+                avisosSalvamento.push('Username já em uso.')
+              } else {
+                avisosSalvamento.push(`${campo} não foi atualizado${detalheCampo ? `: ${detalheCampo}` : '.'}`)
+              }
+              continue
+            }
+
+            perfilSalvo = campoSalvo
+            algumCampoSalvo = true
+            houveSalvamento = true
+            nomesCamposSalvos.push(campo)
+          }
+
+          if (nomesCamposSalvos.length > 0) {
+            avisosSalvamento.unshift(`Campos básicos atualizados: ${nomesCamposSalvos.join(', ')}.`)
+          }
+          if (!algumCampoSalvo && !fotoSalvaSeparadamente) throw error
+        } else {
+          if (error) throw error
+          if (!data) {
+            throw new Error('O banco não confirmou a atualização dos dados. Entre novamente e tente salvar.')
+          }
+          perfilSalvo = data
+          houveSalvamento = true
+        }
+      }
+
+      for (const item of camposComplementares) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({ [item.campo]: item.valor })
+          .eq('id', perfil.id)
+          .eq('account_id', perfil.account_id)
+          .select('*')
+          .maybeSingle()
+
+        if (error || !data) {
+          const bloqueioInstitucional = /(institution|institui[cç][aã]o|education_institutions)/i.test(error?.message || '')
+          avisosSalvamento.push(bloqueioInstitucional
+            ? `O ${item.nome} não foi alterado porque o cadastro escolar precisa ser conferido pela coordenação.`
+            : `O ${item.nome} não foi atualizado${error ? `: ${error.message}` : '.'}`)
+          continue
         }
 
-        setPerfil(perfilFallback)
-      if (!erroUploadFoto) {
-        if (fotoPreviewUrlRef.current) URL.revokeObjectURL(fotoPreviewUrlRef.current)
-        fotoPreviewUrlRef.current = ''
-        setPreviewFoto(perfilFallback.foto_url || '')
-        setFotoArquivo(null)
-        }
-        setSucesso([
-          `Nome, usuário e bio salvos${erroUploadFoto ? `; a foto não foi enviada: ${erroUploadFoto}` : `, ${fotoArquivo ? 'foto' : 'avatar atual'} confirmada`}.`,
-          'Curso e privacidade não foram aceitos pelo esquema atual do banco.',
-        ].join(' '))
+        perfilSalvo = data
+        houveSalvamento = true
+      }
+
+      if (!houveSalvamento && erroUploadFoto) {
+        setErro(`Os dados não foram alterados. A foto não foi enviada: ${erroUploadFoto}`)
         return
       }
 
-      if (error) throw error
-      if (!perfilSalvo) {
-        throw new Error('O banco não confirmou a atualização. Entre novamente e tente salvar.')
+      if (!houveSalvamento) {
+        setSucesso('Nenhuma alteração para salvar.')
+        return
       }
 
       setPerfil(perfilSalvo)
@@ -348,9 +384,15 @@ export default function EditProfile() {
         setPreviewFoto(perfilSalvo.foto_url || '')
         setFotoArquivo(null)
       }
-      setSucesso(erroUploadFoto
-        ? `Dados do perfil salvos. A foto não foi enviada: ${erroUploadFoto}`
-        : 'Perfil atualizado e confirmado no banco.')
+
+      const mensagensSalvas = []
+      if (camposBasicosAlterados.length > 0 && !avisosSalvamento.some((aviso) => aviso.startsWith('Campos básicos atualizados:'))) {
+        mensagensSalvas.push('Dados do perfil atualizados.')
+      }
+      if (fotoSalvaSeparadamente) mensagensSalvas.push('Foto de perfil atualizada.')
+      if (avisosSalvamento.length > 0) mensagensSalvas.push(...avisosSalvamento)
+      if (erroUploadFoto) mensagensSalvas.push(`A foto não foi enviada: ${erroUploadFoto}`)
+      setSucesso(mensagensSalvas.join(' '))
     } catch (error) {
       if (novaFotoEnviada?.path) {
         const { error: remocaoErro } = await supabase.storage.from('stories').remove([novaFotoEnviada.path])
