@@ -18,25 +18,6 @@ import {
 import { formatDisplayName } from '../lib/textFormat'
 import logo from '/logo-novo.png'
 
-const ENOVA_STUDENT_DOMAIN = '@aluno.enova.educacao.ba.gov.br'
-const ENOVA_TEACHER_DOMAIN = '@enova.educacao.ba.gov.br'
-
-function emailEnovaPermitido(emailValue) {
-  const value = String(emailValue || '').trim().toLowerCase()
-  return value.endsWith(ENOVA_STUDENT_DOMAIN) || value.endsWith(ENOVA_TEACHER_DOMAIN)
-}
-
-function erroEmailEnova(emailValue, role) {
-  const value = String(emailValue || '').trim().toLowerCase()
-  const expected = role === 'teacher' ? ENOVA_TEACHER_DOMAIN : ENOVA_STUDENT_DOMAIN
-  if (!value.endsWith(expected)) {
-    return role === 'teacher'
-      ? `Professores devem utilizar o email institucional ${ENOVA_TEACHER_DOMAIN}.`
-      : `Alunos devem utilizar o email institucional ${ENOVA_STUDENT_DOMAIN}.`
-  }
-  return ''
-}
-
 function IconeOlhoAberto() {
   return (
     <svg
@@ -477,17 +458,6 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
       setErro('Informe um email valido.')
       return
     }
-    if (isLogin && !emailEnovaPermitido(emailNormalizado)) {
-      setErro('Entre com seu email institucional e-Nova Bahia.')
-      return
-    }
-    if (!isLogin) {
-      const emailError = erroEmailEnova(emailNormalizado, tipoConta)
-      if (emailError) {
-        setErro(emailError)
-        return
-      }
-    }
 
     setCarregando(true)
 
@@ -872,7 +842,7 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
               <input
                 className="input"
                 type="email"
-                placeholder="Seu email institucional e-Nova"
+                placeholder="seuemail@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -1048,7 +1018,7 @@ export default function Auth({ forceRecoveryMode = false, allowAddAccount = fals
                 <input
                   className="input"
                   type="email"
-                  placeholder={isLogin ? 'Seu email institucional e-Nova' : tipoConta === 'teacher' ? `nome${ENOVA_TEACHER_DOMAIN}` : `matricula${ENOVA_STUDENT_DOMAIN}`}
+                  placeholder="seuemail@exemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
