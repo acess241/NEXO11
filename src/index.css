@@ -20890,3 +20890,30 @@ body[data-theme='claro'] .pull-refresh.ready {
 .nexo-fullscreen-exit:focus-visible { opacity: 1; }
 .nexo-fullscreen-exit:focus-visible { outline: 2px solid #1bff00; outline-offset: 2px; }
 .nexo-fullscreen-exit svg { width: 17px; height: 17px; }
+
+/* Atalho secreto: aparece somente apos sete toques em Instalar NEXO. */
+.nexo-fullscreen-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid rgba(27, 255, 0, 0.35);
+  border-radius: 14px;
+  background: rgba(27, 255, 0, 0.11);
+  color: #dfffd9;
+  font-weight: 800;
+  cursor: pointer;
+}
+.nexo-fullscreen-unlocked { margin-top: 8px; }
+.nexo-fullscreen-unavailable {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+.nexo-install-dialog > .nexo-fullscreen-action,
+.nexo-install-dialog .nexo-fullscreen-error { display: none !important; }
