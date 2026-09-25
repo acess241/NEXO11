@@ -686,7 +686,7 @@ function buildDefaultRoutineData() {
         type: 'revisão',
         dueDate: toIsoDate(hoje),
         estimatedMinutes: 15,
-        status: 'overdue',
+        status: 'pending',
         source: 'manual',
         sourceId: '',
         createdAt: new Date().toISOString(),
@@ -2707,10 +2707,6 @@ async function compartilharCodigoSala(grupo = grupoSalaSelecionado) {
               aria-selected={tab === item.id}
               className={`oxente-hub-icon-btn ${tab === item.id ? 'active' : ''}`}
               onClick={() => {
-                if (item.id === 'sala') {
-                  navigate('/mensagens/grupos/novo')
-                  return
-                }
                 setTab(item.id)
                 if (item.id === 'laboratorio') {
                   setEtapa(1)
