@@ -237,7 +237,12 @@ export default function Feed() {
   const [postParaApagar, setPostParaApagar] = useState(null)
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0)
   const [linkStatus, setLinkStatus] = useState('idle')
+  const [profileSearch, setProfileSearch] = useState('')
+  const [profileSuggestions, setProfileSuggestions] = useState([])
+  const [profileSearchLoading, setProfileSearchLoading] = useState(false)
+  const [profileSearchOpen, setProfileSearchOpen] = useState(false)
   const swipeStartRef = useRef(null)
+  const profileSearchRequestRef = useRef(0)
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -249,6 +254,35 @@ export default function Feed() {
     const indice = (hoje.getFullYear() * 372 + hoje.getMonth() * 31 + hoje.getDate()) % INCENTIVOS_CRIACAO.length
     return INCENTIVOS_CRIACAO[indice]
   }, [])
+
+  useEffect(() => {
+    const term = profileSearch.trim().replace(/[,%()]/g, '')
+    if (term.length < 2) {
+      profileSearchRequestRef.current += 1
+      setProfileSuggestions([])
+      setProfileSearchLoading(false)
+      return undefined
+    }
+
+    const requestId = profileSearchRequestRef.current + 1
+    profileSearchRequestRef.current = requestId
+    const timeoutId = window.setTimeout(async () => {
+      setProfileSearchLoading(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nome, username, foto_url, is_verified')
+        .or(`nome.ilike.${term}%,username.ilike.${term}%`)
+        .order('is_verified', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (profileSearchRequestRef.current !== requestId) return
+      setProfileSuggestions(error ? [] : data || [])
+      setProfileSearchLoading(false)
+    }, 180)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [profileSearch])
 
   function iniciarGestoLateral(event) {
     if (event.target.closest('button,a,input,textarea,select,video,[contenteditable="true"],.insta-stories-bar,.stories-bar,.nexo-welcome-stats')) return
@@ -1306,12 +1340,56 @@ export default function Feed() {
           aria-label="Pesquisar perfis"
           onSubmit={(event) => {
             event.preventDefault()
-            const term = new FormData(event.currentTarget).get('profile-search')?.toString().trim() || ''
-            navigate(term ? '/pesquisar?q=' + encodeURIComponent(term) : '/pesquisar')
+            const term = profileSearch.trim()
+            navigate(term ? `/pesquisar?q=${encodeURIComponent(term)}` : '/pesquisar')
           }}
+          onBlur={() => window.setTimeout(() => setProfileSearchOpen(false), 160)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-          <input name="profile-search" type="search" placeholder="Pesquisar perfis" aria-label="Pesquisar perfis" />
+          <input
+            name="profile-search"
+            type="search"
+            placeholder="Pesquisar perfis"
+            aria-label="Pesquisar perfis"
+            aria-autocomplete="list"
+            aria-expanded={profileSearchOpen && profileSearch.trim().length >= 2}
+            value={profileSearch}
+            onFocus={() => setProfileSearchOpen(true)}
+            onChange={(event) => {
+              setProfileSearch(event.target.value)
+              setProfileSearchOpen(true)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') setProfileSearchOpen(false)
+            }}
+          />
+          {profileSearchOpen && profileSearch.trim().length >= 2 && (
+            <div className="feed-profile-suggestions" role="listbox" aria-label="Perfis encontrados">
+              {profileSearchLoading ? (
+                <div className="feed-profile-suggestions-status">Buscando perfis…</div>
+              ) : profileSuggestions.length ? (
+                <>
+                  {profileSuggestions.map((profile) => (
+                    <button
+                      key={profile.id}
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      className="feed-profile-suggestion"
+                      onClick={() => navigate(`/usuario/${profile.username}`)}
+                    >
+                      <ProfileAvatar src={profile.foto_url} name={profile.nome || profile.username} className="feed-profile-suggestion-avatar" />
+                      <span><strong>{profile.nome || profile.username}</strong><small>@{profile.username}</small></span>
+                      {profile.is_verified && <span className="feed-profile-suggestion-verified" aria-label="Perfil verificado">✓</span>}
+                    </button>
+                  ))}
+                  <button type="submit" className="feed-profile-suggestions-all">Ver todos os resultados</button>
+                </>
+              ) : (
+                <div className="feed-profile-suggestions-status">Nenhum perfil encontrado.</div>
+              )}
+            </div>
+          )}
         </form>
         <div className="nexo-top-actions">
           <button type="button" onClick={() => navigate('/talentos')} className="feed-top-notifications feed-top-talents" aria-label="Abrir palco de talentos" title="Talentos">
