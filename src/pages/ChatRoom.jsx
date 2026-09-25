@@ -1008,6 +1008,7 @@ export default function ChatRoom() {
   async function uploadMidiaChat(file) {
     if (!file || !meuPerfil) return null
 
+    const contentType = `${file.type || ''}`.split(';', 1)[0].trim().toLowerCase()
     const mediaKind = file.type.startsWith('video/')
       ? 'video'
       : file.type.startsWith('audio/')
@@ -1027,7 +1028,7 @@ export default function ChatRoom() {
       .upload(nomeArquivo, file, {
         upsert: false,
         cacheControl: '86400',
-        contentType: file.type || undefined,
+        contentType: contentType || undefined,
       })
 
     if (uploadError) throw uploadError
@@ -2094,7 +2095,8 @@ export default function ChatRoom() {
       await enviarEventoDigitando(false)
 
       if (temMidia) {
-        if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(arquivoMidia.type)) {
+        const contentType = `${arquivoMidia.type || ''}`.split(';', 1)[0].trim().toLowerCase()
+        if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(contentType)) {
           throw new Error('Conteúdo aguardando análise. Este formato ainda não pode ser enviado.')
         }
         mediaPayload = await uploadMidiaChat(arquivoMidia)

@@ -114,7 +114,8 @@ export default function GroupRoom() {
 
   async function uploadFile(file, kindOverride = '', sendOnce = false) {
     if (!file || !me) return
-    if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(file.type)) {
+    const contentType = `${file.type || ''}`.split(';', 1)[0].trim().toLowerCase()
+    if (!['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/ogg'].includes(contentType)) {
       setError('Conteúdo aguardando análise. Este formato ainda não pode ser enviado.')
       return
     }
@@ -124,7 +125,7 @@ export default function GroupRoom() {
       const extension = file.name?.split('.').pop()?.toLowerCase() || 'bin'
       const path = `groups/${groupId}/${me.id}/${Date.now()}-${crypto.randomUUID()}.${extension}`
       const { error: uploadError } = await supabase.storage.from('stories').upload(path, file, {
-        contentType: file.type, upsert: false,
+        contentType, upsert: false,
       })
       if (uploadError) throw uploadError
       const { data } = supabase.storage.from('stories').getPublicUrl(path)
