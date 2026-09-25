@@ -20816,3 +20816,24 @@ body[data-theme='claro'] .pull-refresh.ready {
   .bottom-nav.nexo-main-nav a { padding-inline: 1px; }
   .bottom-nav.nexo-main-nav .bottom-nav-label { font-size: 8px; }
 }
+
+/* Ícone compacto para abrir a pesquisa no topo do feed. */
+.nexo-top-actions .feed-top-search,
+.nexo-top-actions .feed-top-search:hover,
+.nexo-top-actions .feed-top-search:focus-visible {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 7px;
+}
+
+.feed-top-search svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
