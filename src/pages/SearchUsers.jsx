@@ -1,5 +1,5 @@
-﻿import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import { formatDisplayName } from '../lib/textFormat'
 import { supabase } from '../lib/supabase'
@@ -69,7 +69,13 @@ export default function SearchUsers() {
   const [loading, setLoading] = useState(true)
   const [recentSearches, setRecentSearches] = useState([])
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const latestRequestRef = useRef(0)
+
+  useEffect(() => {
+    const query = searchParams.get('q') || ''
+    if (query) setSearch(query)
+  }, [searchParams])
 
   useEffect(() => {
     setRecentSearches(loadRecentSearches())

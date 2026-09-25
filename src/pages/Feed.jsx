@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useRef } from 'react'
 import BottomNav from '../components/BottomNav'
@@ -1300,7 +1300,19 @@ export default function Feed() {
           <img src={logoNexo} alt="Logo NEXO" />
           <span><b>NEXO</b><small>rede escolar</small></span>
         </button>
-
+        <form
+          className="feed-profile-search"
+          role="search"
+          aria-label="Pesquisar perfis"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const term = new FormData(event.currentTarget).get('profile-search')?.toString().trim() || ''
+            navigate(term ? '/pesquisar?q=' + encodeURIComponent(term) : '/pesquisar')
+          }}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+          <input name="profile-search" type="search" placeholder="Pesquisar perfis" aria-label="Pesquisar perfis" />
+        </form>
         <div className="nexo-top-actions">
           <button type="button" onClick={() => navigate('/talentos')} className="feed-top-notifications feed-top-talents" aria-label="Abrir palco de talentos" title="Talentos">
             <IconeTalento />
