@@ -53,6 +53,32 @@ function PageLoader() {
   return <SocialLoader variant="feed" />
 }
 
+function FullscreenExitControl({ enabled }) {
+  const [active, setActive] = useState(() => Boolean(document.fullscreenElement || document.webkitFullscreenElement))
+
+  useEffect(() => {
+    const sync = () => setActive(Boolean(document.fullscreenElement || document.webkitFullscreenElement))
+    document.addEventListener('fullscreenchange', sync)
+    document.addEventListener('webkitfullscreenchange', sync)
+    return () => {
+      document.removeEventListener('fullscreenchange', sync)
+      document.removeEventListener('webkitfullscreenchange', sync)
+    }
+  }, [])
+
+  if (!enabled || !active) return null
+
+  async function sairDaTelaCheia() {
+    const exit = document.exitFullscreen || document.webkitExitFullscreen
+    try {
+      await exit?.call(document)
+    } catch {}
+  }
+
+  return <button type="button" className="nexo-fullscreen-exit" onClick={sairDaTelaCheia} aria-label="Sair da tela cheia" title="Sair da tela cheia">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v4a2 2 0 0 1-2 2H3m18 0h-4a2 2 0 0 1-2-2V3M3 15h4a2 2 0 0 1 2 2v4m12-6h-4a2 2 0 0 0-2 2v4"/></svg>
+  </button>
+}
 export default function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -171,6 +197,7 @@ export default function App() {
       <NotificationBridge session={session} />
       <LegalAcceptanceGate session={session} />
       <UpdateAnnouncement session={session} />
+      <FullscreenExitControl enabled={Boolean(session)} />
       {session && <GlobalXpRanking />}
 
       <Suspense fallback={<PageLoader />}>

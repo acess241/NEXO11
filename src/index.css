@@ -20837,3 +20837,56 @@ body[data-theme='claro'] .pull-refresh.ready {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Controles compactos de tela cheia para tablets sem instalação do NEXO. */
+.nexo-install-dialog > .nexo-fullscreen-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(27, 255, 0, 0.35);
+  background: rgba(27, 255, 0, 0.11);
+  color: #dfffd9;
+}
+.nexo-fullscreen-action svg,
+.nexo-fullscreen-exit svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nexo-install-dialog .nexo-fullscreen-unavailable,
+.nexo-install-dialog .nexo-fullscreen-error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+.nexo-install-dialog .nexo-fullscreen-error { color: #ffe1a6; }
+.nexo-fullscreen-exit {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: calc(82px + env(safe-area-inset-bottom));
+  z-index: 10040;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  background: rgba(7, 14, 24, 0.68);
+  color: #fff;
+  opacity: 0.68;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.nexo-fullscreen-exit:hover,
+.nexo-fullscreen-exit:focus-visible { opacity: 1; }
+.nexo-fullscreen-exit:focus-visible { outline: 2px solid #1bff00; outline-offset: 2px; }
+.nexo-fullscreen-exit svg { width: 17px; height: 17px; }
